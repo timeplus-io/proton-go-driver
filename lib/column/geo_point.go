@@ -31,7 +31,7 @@ type Point struct {
 }
 
 func (col *Point) Type() Type {
-	return "Point"
+	return "point"
 }
 
 func (col *Point) ScanType() reflect.Type {
@@ -61,7 +61,7 @@ func (col *Point) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "Point",
+			From: "point",
 			Hint: fmt.Sprintf("try using *%s", col.ScanType()),
 		}
 	}
@@ -79,7 +79,7 @@ func (col *Point) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Point",
+			To:   "point",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -93,7 +93,7 @@ func (col *Point) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Point",
+			To:   "point",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

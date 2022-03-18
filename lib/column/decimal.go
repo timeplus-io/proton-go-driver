@@ -101,7 +101,7 @@ func (col *Decimal) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "Decimal",
+			From: "decimal",
 		}
 	}
 	return nil

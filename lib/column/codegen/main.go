@@ -41,9 +41,10 @@ var (
 )
 
 type _type struct {
-	Size   int
-	ChType string
-	GoType string
+	Size       int
+	ChTypeName string
+	ChType     string
+	GoType     string
 }
 
 func init() {
@@ -51,10 +52,12 @@ func init() {
 		types = append(types, _type{
 			Size:   size,
 			ChType: fmt.Sprintf("Int%d", size),
+			ChTypeName: fmt.Sprintf("int%d", size),
 			GoType: fmt.Sprintf("int%d", size),
 		}, _type{
 			Size:   size,
 			ChType: fmt.Sprintf("UInt%d", size),
+			ChTypeName: fmt.Sprintf("uint%d", size),
 			GoType: fmt.Sprintf("uint%d", size),
 		})
 	}
@@ -62,6 +65,7 @@ func init() {
 		types = append(types, _type{
 			Size:   size,
 			ChType: fmt.Sprintf("Float%d", size),
+			ChTypeName: fmt.Sprintf("float%d", size),
 			GoType: fmt.Sprintf("float%d", size),
 		})
 	}

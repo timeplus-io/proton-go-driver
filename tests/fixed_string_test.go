@@ -57,16 +57,16 @@ func TestFixedString(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_fixed_string (
-				Col1 FixedString(10)
-				, Col2 FixedString(10)
-				, Col3 Nullable(FixedString(10))
-				, Col4 Array(FixedString(10))
-				, Col5 Array(Nullable(FixedString(10)))
+			CREATE STREAM test_fixed_string (
+				Col1 fixed_string(10)
+				, Col2 fixed_string(10)
+				, Col3 nullable(fixed_string(10))
+				, Col4 array(fixed_string(10))
+				, Col5 array(nullable(fixed_string(10)))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_fixed_string")
+			conn.Exec(ctx, "DROP STREAM test_fixed_string")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string"); assert.NoError(t, err) {
@@ -100,7 +100,7 @@ func TestFixedString(t *testing.T) {
 			}
 		}
 
-		if rows, err := conn.Query(ctx, "SELECT CAST('RU' AS FixedString(2)) FROM system.numbers_mt LIMIT 10"); assert.NoError(t, err) {
+		if rows, err := conn.Query(ctx, "SELECT CAST('RU' AS fixed_string(2)) FROM system.numbers_mt LIMIT 10"); assert.NoError(t, err) {
 			var count int
 			for rows.Next() {
 				var code string
@@ -134,13 +134,13 @@ func TestNullableFixedString(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-		CREATE TABLE test_fixed_string (
-			  Col1 Nullable(FixedString(10))
-			, Col2 Nullable(FixedString(10))
+		CREATE STREAM test_fixed_string (
+			  Col1 nullable(fixed_string(10))
+			, Col2 nullable(fixed_string(10))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_fixed_string")
+			conn.Exec(ctx, "DROP STREAM test_fixed_string")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string"); assert.NoError(t, err) {
@@ -163,7 +163,7 @@ func TestNullableFixedString(t *testing.T) {
 					}
 				}
 			}
-			if err := conn.Exec(ctx, "TRUNCATE TABLE test_fixed_string"); !assert.NoError(t, err) {
+			if err := conn.Exec(ctx, "TRUNCATE STREAM test_fixed_string"); !assert.NoError(t, err) {
 				return
 			}
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string"); assert.NoError(t, err) {
@@ -204,16 +204,16 @@ func TestColumnarFixedString(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-		CREATE TABLE test_fixed_string (
-			  Col1 FixedString(10)
-			, Col2 FixedString(10)
-			, Col3 Nullable(FixedString(10))
-			, Col4 Array(FixedString(10))
-			, Col5 Array(Nullable(FixedString(10)))
+		CREATE STREAM test_fixed_string (
+			  Col1 fixed_string(10)
+			, Col2 fixed_string(10)
+			, Col3 nullable(fixed_string(10))
+			, Col4 array(fixed_string(10))
+			, Col5 array(nullable(fixed_string(10)))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_fixed_string")
+			conn.Exec(ctx, "DROP STREAM test_fixed_string")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string"); assert.NoError(t, err) {
@@ -286,12 +286,12 @@ func BenchmarkFixedString(b *testing.B) {
 		b.Fatal(err)
 	}
 	defer func() {
-		conn.Exec(ctx, "DROP TABLE benchmark_fixed_string")
+		conn.Exec(ctx, "DROP STREAM benchmark_fixed_string")
 	}()
-	if err = conn.Exec(ctx, `DROP TABLE IF EXISTS benchmark_fixed_string`); err != nil {
+	if err = conn.Exec(ctx, `DROP STREAM IF EXISTS benchmark_fixed_string`); err != nil {
 		b.Fatal(err)
 	}
-	if err = conn.Exec(ctx, `CREATE TABLE benchmark_fixed_string (Col1 UInt64, Col2 FixedString(4)) ENGINE = Null`); err != nil {
+	if err = conn.Exec(ctx, `CREATE STREAM benchmark_fixed_string (Col1 uint64, Col2 fixed_string(4)) ENGINE = Null`); err != nil {
 		b.Fatal(err)
 	}
 
@@ -330,9 +330,9 @@ func BenchmarkColumnarFixedString(b *testing.B) {
 	}
 
 	defer func() {
-		conn.Exec(ctx, "DROP TABLE benchmark_fixed_string")
+		conn.Exec(ctx, "DROP STREAM benchmark_fixed_string")
 	}()
-	if err = conn.Exec(ctx, `CREATE TABLE benchmark_fixed_string (Col1 UInt64, Col2 FixedString(4)) ENGINE = Null`); err != nil {
+	if err = conn.Exec(ctx, `CREATE STREAM benchmark_fixed_string (Col1 uint64, Col2 fixed_string(4)) ENGINE = Null`); err != nil {
 		b.Fatal(err)
 	}
 

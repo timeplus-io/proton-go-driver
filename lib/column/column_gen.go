@@ -34,117 +34,117 @@ import (
 
 func (t Type) Column() (Interface, error) {
 	switch t {
-	case "Float32":
+	case "float32":
 		return &Float32{}, nil
-	case "Float64":
+	case "float64":
 		return &Float64{}, nil
-	case "Int8":
+	case "int8":
 		return &Int8{}, nil
-	case "Int16":
+	case "int16":
 		return &Int16{}, nil
-	case "Int32":
+	case "int32":
 		return &Int32{}, nil
-	case "Int64":
+	case "int64":
 		return &Int64{}, nil
-	case "UInt8":
+	case "uint8":
 		return &UInt8{}, nil
-	case "UInt16":
+	case "uint16":
 		return &UInt16{}, nil
-	case "UInt32":
+	case "uint32":
 		return &UInt32{}, nil
-	case "UInt64":
+	case "uint64":
 		return &UInt64{}, nil
-	case "Int128":
+	case "int128":
 		return &BigInt{
 			size:   16,
 			chType: t,
 		}, nil
-	case "Int256":
+	case "int256":
 		return &BigInt{
 			size:   32,
 			chType: t,
 		}, nil
-	case "UInt256":
+	case "uint256":
 		return &BigInt{
 			size:   32,
 			chType: t,
 		}, nil
-	case "IPv4":
+	case "ipv4":
 		return &IPv4{}, nil
-	case "IPv6":
+	case "ipv6":
 		return &IPv6{}, nil
-	case "Bool", "Boolean":
+	case "bool", "boolean":
 		return &Bool{}, nil
-	case "Date":
+	case "date":
 		return &Date{}, nil
-	case "Date32":
+	case "date32":
 		return &Date32{}, nil
-	case "UUID":
+	case "uuid":
 		return &UUID{}, nil
-	case "Nothing":
+	case "nothing":
 		return &Nothing{}, nil
-	case "Ring":
-		v, err := (&Array{}).parse("Array(Point)")
+	case "ring":
+		v, err := (&Array{}).parse("array(point)")
 		if err != nil {
 			return nil, err
 		}
 		set := v.(*Array)
-		set.chType = "Ring"
+		set.chType = "ring"
 		return &Ring{
 			set: set,
 		}, nil
-	case "Polygon":
-		v, err := (&Array{}).parse("Array(Ring)")
+	case "polygon":
+		v, err := (&Array{}).parse("array(ring)")
 		if err != nil {
 			return nil, err
 		}
 		set := v.(*Array)
-		set.chType = "Polygon"
+		set.chType = "polygon"
 		return &Polygon{
 			set: set,
 		}, nil
-	case "MultiPolygon":
-		v, err := (&Array{}).parse("Array(Polygon)")
+	case "multi_polygon":
+		v, err := (&Array{}).parse("array(polygon)")
 		if err != nil {
 			return nil, err
 		}
 		set := v.(*Array)
-		set.chType = "MultiPolygon"
+		set.chType = "multi_polygon"
 		return &MultiPolygon{
 			set: set,
 		}, nil
-	case "Point":
+	case "point":
 		return &Point{}, nil
-	case "String":
+	case "string":
 		return &String{}, nil
 	}
 
 	switch strType := string(t); {
-	case strings.HasPrefix(string(t), "Map("):
+	case strings.HasPrefix(string(t), "map("):
 		return (&Map{}).parse(t)
-	case strings.HasPrefix(string(t), "Tuple("):
+	case strings.HasPrefix(string(t), "tuple("):
 		return (&Tuple{}).parse(t)
-	case strings.HasPrefix(string(t), "Decimal("):
+	case strings.HasPrefix(string(t), "decimal("):
 		return (&Decimal{}).parse(t)
-	case strings.HasPrefix(strType, "Nested("):
+	case strings.HasPrefix(strType, "nested("):
 		return (&Nested{}).parse(t)
-	case strings.HasPrefix(string(t), "Array("):
+	case strings.HasPrefix(string(t), "array("):
 		return (&Array{}).parse(t)
-	case strings.HasPrefix(string(t), "Interval"):
+	case strings.HasPrefix(string(t), "interval"):
 		return (&Interval{}).parse(t)
-	case strings.HasPrefix(string(t), "Nullable"):
+	case strings.HasPrefix(string(t), "nullable"):
 		return (&Nullable{}).parse(t)
-	case strings.HasPrefix(string(t), "FixedString"):
+	case strings.HasPrefix(string(t), "fixed_string"):
 		return (&FixedString{}).parse(t)
-	case strings.HasPrefix(string(t), "LowCardinality"):
+	case strings.HasPrefix(string(t), "low_cardinality"):
 		return (&LowCardinality{}).parse(t)
-	case strings.HasPrefix(string(t), "SimpleAggregateFunction"):
+	case strings.HasPrefix(string(t), "simple_aggregate_function"):
 		return (&SimpleAggregateFunction{}).parse(t)
-	case strings.HasPrefix(string(t), "Enum8") || strings.HasPrefix(string(t), "Enum16"):
+	case strings.HasPrefix(string(t), "enum8") || strings.HasPrefix(string(t), "enum16"):
 		return Enum(t)
-	case strings.HasPrefix(string(t), "DateTime64"):
+	case strings.HasPrefix(string(t), "datetime64"):
 		return (&DateTime64{}).parse(t)
-	case strings.HasPrefix(strType, "DateTime") && !strings.HasPrefix(strType, "DateTime64"):
+	case strings.HasPrefix(strType, "datetime") && !strings.HasPrefix(strType, "datetime64"):
 		return (&DateTime{}).parse(t)
 	}
 	return nil, &UnsupportedColumnTypeError{
@@ -205,7 +205,7 @@ var (
 )
 
 func (col *Float32) Type() Type {
-	return "Float32"
+	return "float32"
 }
 
 func (col *Float32) ScanType() reflect.Type {
@@ -260,7 +260,7 @@ func (col *Float32) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Float32",
+			To:   "float32",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -283,7 +283,7 @@ func (col *Float32) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Float32",
+			To:   "float32",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -291,7 +291,7 @@ func (col *Float32) AppendRow(v interface{}) error {
 }
 
 func (col *Float64) Type() Type {
-	return "Float64"
+	return "float64"
 }
 
 func (col *Float64) ScanType() reflect.Type {
@@ -346,7 +346,7 @@ func (col *Float64) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Float64",
+			To:   "float64",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -369,7 +369,7 @@ func (col *Float64) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Float64",
+			To:   "float64",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -377,7 +377,7 @@ func (col *Float64) AppendRow(v interface{}) error {
 }
 
 func (col *Int8) Type() Type {
-	return "Int8"
+	return "int8"
 }
 
 func (col *Int8) ScanType() reflect.Type {
@@ -432,7 +432,7 @@ func (col *Int8) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Int8",
+			To:   "int8",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -455,7 +455,7 @@ func (col *Int8) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Int8",
+			To:   "int8",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -463,7 +463,7 @@ func (col *Int8) AppendRow(v interface{}) error {
 }
 
 func (col *Int16) Type() Type {
-	return "Int16"
+	return "int16"
 }
 
 func (col *Int16) ScanType() reflect.Type {
@@ -518,7 +518,7 @@ func (col *Int16) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Int16",
+			To:   "int16",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -541,7 +541,7 @@ func (col *Int16) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Int16",
+			To:   "int16",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -549,7 +549,7 @@ func (col *Int16) AppendRow(v interface{}) error {
 }
 
 func (col *Int32) Type() Type {
-	return "Int32"
+	return "int32"
 }
 
 func (col *Int32) ScanType() reflect.Type {
@@ -604,7 +604,7 @@ func (col *Int32) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Int32",
+			To:   "int32",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -627,7 +627,7 @@ func (col *Int32) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Int32",
+			To:   "int32",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -635,7 +635,7 @@ func (col *Int32) AppendRow(v interface{}) error {
 }
 
 func (col *Int64) Type() Type {
-	return "Int64"
+	return "int64"
 }
 
 func (col *Int64) ScanType() reflect.Type {
@@ -690,7 +690,7 @@ func (col *Int64) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Int64",
+			To:   "int64",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -713,7 +713,7 @@ func (col *Int64) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Int64",
+			To:   "int64",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -721,7 +721,7 @@ func (col *Int64) AppendRow(v interface{}) error {
 }
 
 func (col *UInt8) Type() Type {
-	return "UInt8"
+	return "uint8"
 }
 
 func (col *UInt8) ScanType() reflect.Type {
@@ -776,7 +776,7 @@ func (col *UInt8) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "UInt8",
+			To:   "uint8",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -799,7 +799,7 @@ func (col *UInt8) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "UInt8",
+			To:   "uint8",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -807,7 +807,7 @@ func (col *UInt8) AppendRow(v interface{}) error {
 }
 
 func (col *UInt16) Type() Type {
-	return "UInt16"
+	return "uint16"
 }
 
 func (col *UInt16) ScanType() reflect.Type {
@@ -862,7 +862,7 @@ func (col *UInt16) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "UInt16",
+			To:   "uint16",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -885,7 +885,7 @@ func (col *UInt16) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "UInt16",
+			To:   "uint16",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -893,7 +893,7 @@ func (col *UInt16) AppendRow(v interface{}) error {
 }
 
 func (col *UInt32) Type() Type {
-	return "UInt32"
+	return "uint32"
 }
 
 func (col *UInt32) ScanType() reflect.Type {
@@ -948,7 +948,7 @@ func (col *UInt32) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "UInt32",
+			To:   "uint32",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -971,7 +971,7 @@ func (col *UInt32) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "UInt32",
+			To:   "uint32",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -979,7 +979,7 @@ func (col *UInt32) AppendRow(v interface{}) error {
 }
 
 func (col *UInt64) Type() Type {
-	return "UInt64"
+	return "uint64"
 }
 
 func (col *UInt64) ScanType() reflect.Type {
@@ -1034,7 +1034,7 @@ func (col *UInt64) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "UInt64",
+			To:   "uint64",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -1057,7 +1057,7 @@ func (col *UInt64) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "UInt64",
+			To:   "uint64",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

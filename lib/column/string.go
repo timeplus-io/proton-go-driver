@@ -27,7 +27,7 @@ import (
 type String []string
 
 func (String) Type() Type {
-	return "String"
+	return "string"
 }
 
 func (String) ScanType() reflect.Type {
@@ -58,7 +58,7 @@ func (col *String) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "String",
+			From: "string",
 		}
 	}
 	return nil
@@ -81,7 +81,7 @@ func (col *String) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "String",
+			To:   "string",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -104,7 +104,7 @@ func (col *String) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "String",
+			To:   "string",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

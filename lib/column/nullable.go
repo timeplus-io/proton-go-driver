@@ -51,7 +51,7 @@ func (col *Nullable) Base() Interface {
 }
 
 func (col *Nullable) Type() Type {
-	return "Nullable(" + col.base.Type() + ")"
+	return "nullable(" + col.base.Type() + ")"
 }
 
 func (col *Nullable) ScanType() reflect.Type {

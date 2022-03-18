@@ -29,7 +29,7 @@ type Bool struct {
 }
 
 func (col *Bool) Type() Type {
-	return "Bool"
+	return "bool"
 }
 
 func (col *Bool) ScanType() reflect.Type {
@@ -59,7 +59,7 @@ func (col *Bool) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "Bool",
+			From: "bool",
 		}
 	}
 	return nil
@@ -97,7 +97,7 @@ func (col *Bool) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Bool",
+			To:   "bool",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -117,7 +117,7 @@ func (col *Bool) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Bool",
+			To:   "bool",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

@@ -76,7 +76,7 @@ func TestQueryScanStruct(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		rows, err := conn.Query(ctx, "SELECT number, 'ABC_' || CAST(number AS String) AS col1, now() AS time FROM system.numbers LIMIT 5")
+		rows, err := conn.Query(ctx, "SELECT number, 'ABC_' || cast(number AS string) AS col1, now() AS time FROM system.numbers LIMIT 5")
 		if assert.NoError(t, err) {
 			var i uint64
 			for rows.Next() {
@@ -120,7 +120,7 @@ func TestSelectScanStruct(t *testing.T) {
 			Col2 string     `ch:"col1"`
 			Col3 *time.Time `ch:"time"`
 		}
-		err := conn.Select(ctx, &result, "SELECT number, 'ABC_' || CAST(number AS String) AS col1, now() AS time FROM system.numbers LIMIT 5")
+		err := conn.Select(ctx, &result, "SELECT number, 'ABC_' || cast(number AS string) AS col1, now() AS time FROM system.numbers LIMIT 5")
 		if assert.NoError(t, err) && assert.Len(t, result, 5) {
 			for i, v := range result {
 				if assert.NotNil(t, v.Col3) {

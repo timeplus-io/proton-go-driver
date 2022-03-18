@@ -30,7 +30,7 @@ type Ring struct {
 }
 
 func (col *Ring) Type() Type {
-	return "Ring"
+	return "ring"
 }
 
 func (col *Ring) ScanType() reflect.Type {
@@ -60,7 +60,7 @@ func (col *Ring) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "Ring",
+			From: "ring",
 			Hint: fmt.Sprintf("try using *%s", col.ScanType()),
 		}
 	}
@@ -79,7 +79,7 @@ func (col *Ring) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Ring",
+			To:   "ring",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -92,7 +92,7 @@ func (col *Ring) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Ring",
+			To:   "ring",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

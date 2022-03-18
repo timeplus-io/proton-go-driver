@@ -44,16 +44,16 @@ func TestIPv4(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_ipv4 (
-				  Col1 IPv4
-				, Col2 IPv4
-				, Col3 Nullable(IPv4)
-				, Col4 Array(IPv4)
-				, Col5 Array(Nullable(IPv4))
+			CREATE STREAM test_ipv4 (
+				  Col1 ipv4
+				, Col2 ipv4
+				, Col3 nullable(ipv4)
+				, Col4 array(ipv4)
+				, Col5 array(nullable(ipv4))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_ipv4")
+			conn.Exec(ctx, "DROP STREAM test_ipv4")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv4"); assert.NoError(t, err) {
@@ -113,13 +113,13 @@ func TestNullableIPv4(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_ipv4 (
-				  Col1 Nullable(IPv4)
-				, Col2 Nullable(IPv4)
+			CREATE STREAM test_ipv4 (
+				  Col1 nullable(ipv4)
+				, Col2 nullable(ipv4)
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_ipv4")
+			conn.Exec(ctx, "DROP STREAM test_ipv4")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv4"); assert.NoError(t, err) {
@@ -142,7 +142,7 @@ func TestNullableIPv4(t *testing.T) {
 			}
 		}
 
-		if err := conn.Exec(ctx, "TRUNCATE TABLE test_ipv4"); !assert.NoError(t, err) {
+		if err := conn.Exec(ctx, "TRUNCATE STREAM test_ipv4"); !assert.NoError(t, err) {
 			return
 		}
 		if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv4"); assert.NoError(t, err) {
@@ -182,14 +182,14 @@ func TestColumnarIPv4(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_ipv4 (
-				  Col1 IPv4
-				, Col2 IPv4
-				, Col3 Nullable(IPv4)
+			CREATE STREAM test_ipv4 (
+				  Col1 ipv4
+				, Col2 ipv4
+				, Col3 nullable(ipv4)
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_ipv4")
+			conn.Exec(ctx, "DROP STREAM test_ipv4")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv4"); assert.NoError(t, err) {

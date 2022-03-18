@@ -42,27 +42,27 @@ func TestNested(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 22, 1); err != nil {
+		/*if err := checkMinServerVersion(conn, 22, 1); err != nil {
 			t.Skip(err.Error())
 			return
-		}
+		}*/
 		const ddl = `
-			CREATE TABLE test_nested (
-				Col1 Nested(
-					  Col1_N1 UInt8
-					, Col2_N1 UInt8
+			CREATE STREAM test_nested (
+				Col1 nested(
+					  Col1_N1 uint8
+					, Col2_N1 uint8
 				)
-				, Col2 Nested(
-					  Col1_N2 UInt8
-					, Col2_N2 Nested(
-						  Col1_N2_N1 UInt8
-						, Col2_N2_N1 UInt8
+				, Col2 nested(
+					  Col1_N2 uint8
+					, Col2_N2 nested(
+						  Col1_N2_N1 uint8
+						, Col2_N2_N1 uint8
 					)
 				)
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_nested")
+			conn.Exec(ctx, "DROP STREAM test_nested")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nested"); assert.NoError(t, err) {

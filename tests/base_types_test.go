@@ -43,16 +43,16 @@ func TestUInt8(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_uint8 (
-				  ID   UInt8
-				, Col1 UInt8
-				, Col2 Nullable(UInt8)
-				, Col3 Array(UInt8)
-				, Col4 Array(Nullable(UInt8))
+			CREATE STREAM test_uint8 (
+				  ID   uint8
+				, Col1 uint8
+				, Col2 nullable(uint8)
+				, Col3 array(uint8)
+				, Col4 array(nullable(uint8))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_uint8")
+			conn.Exec(ctx, "DROP STREAM test_uint8")
 		}()
 		type result struct {
 			ColID uint8 `ch:"ID"`
@@ -117,16 +117,16 @@ func TestColumnarUInt8(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-		CREATE TABLE test_uint8 (
-			  ID   UInt64
-			, Col1 UInt8
-			, Col2 Nullable(UInt8)
-			, Col3 Array(UInt8)
-			, Col4 Array(Nullable(UInt8))
+		CREATE STREAM test_uint8 (
+			  ID   uint64
+			, Col1 uint8
+			, Col2 nullable(uint8)
+			, Col3 array(uint8)
+			, Col4 array(nullable(uint8))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_uint8")
+			conn.Exec(ctx, "DROP STREAM test_uint8")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uint8"); assert.NoError(t, err) {

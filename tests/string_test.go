@@ -46,14 +46,14 @@ func TestString(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_string (
-			  Col1 String
-			, Col2 Array(String)
-			, Col3 Nullable(String)
+		CREATE STREAM test_string (
+			  Col1 string
+			, Col2 array(string)
+			, Col3 nullable(string)
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_string")
+			conn.Exec(ctx, "DROP STREAM test_string")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_string"); assert.NoError(t, err) {
@@ -93,10 +93,10 @@ func BenchmarkString(b *testing.B) {
 		b.Fatal(err)
 	}
 	defer func() {
-		conn.Exec(ctx, "DROP TABLE benchmark_string")
+		conn.Exec(ctx, "DROP STREAM benchmark_string")
 	}()
 
-	if err = conn.Exec(ctx, `CREATE TABLE benchmark_string (Col1 UInt64, Col2 String) ENGINE = Null`); err != nil {
+	if err = conn.Exec(ctx, `CREATE STREAM benchmark_string (Col1 uint64, Col2 string) ENGINE = Null`); err != nil {
 		b.Fatal(err)
 	}
 
@@ -135,9 +135,9 @@ func BenchmarkColumnarString(b *testing.B) {
 	}
 
 	defer func() {
-		conn.Exec(ctx, "DROP TABLE benchmark_string")
+		conn.Exec(ctx, "DROP STREAM benchmark_string")
 	}()
-	if err = conn.Exec(ctx, `CREATE TABLE benchmark_string (Col1 UInt64, Col2 String) ENGINE = Null`); err != nil {
+	if err = conn.Exec(ctx, `CREATE STREAM benchmark_string (Col1 uint64, Col2 string) ENGINE = Null`); err != nil {
 		b.Fatal(err)
 	}
 

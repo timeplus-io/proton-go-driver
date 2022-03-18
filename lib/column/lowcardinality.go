@@ -163,19 +163,19 @@ func (col *LowCardinality) Decode(decoder *binary.Decoder, rows int) error {
 	case keyUInt8, keyUInt16, keyUInt32, keyUInt64:
 	default:
 		return &Error{
-			ColumnType: "LowCardinality",
+			ColumnType: "low_cardinality",
 			Err:        errors.New("invalid index serialization version value"),
 		}
 	}
 	switch {
 	case indexSerializationType&needGlobalDictionaryBit == 1:
 		return &Error{
-			ColumnType: "LowCardinality",
+			ColumnType: "low_cardinality",
 			Err:        errors.New("global dictionary is not supported"),
 		}
 	case indexSerializationType&hasAdditionalKeysBit == 0:
 		return &Error{
-			ColumnType: "LowCardinality",
+			ColumnType: "low_cardinality",
 			Err:        errors.New("additional keys bit is missing"),
 		}
 	}
@@ -254,7 +254,7 @@ func (col *LowCardinality) ReadStatePrefix(decoder *binary.Decoder) error {
 	}
 	if keyVersion != sharedDictionariesWithAdditionalKeys {
 		return &Error{
-			ColumnType: "LowCardinality",
+			ColumnType: "low_cardinality",
 			Err:        errors.New("invalid key serialization version value"),
 		}
 	}

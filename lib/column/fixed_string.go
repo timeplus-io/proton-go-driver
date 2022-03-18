@@ -31,14 +31,14 @@ type FixedString struct {
 }
 
 func (col *FixedString) parse(t Type) (*FixedString, error) {
-	if _, err := fmt.Sscanf(string(t), "FixedString(%d)", &col.size); err != nil {
+	if _, err := fmt.Sscanf(string(t), "fixed_string(%d)", &col.size); err != nil {
 		return nil, err
 	}
 	return col, nil
 }
 
 func (col *FixedString) Type() Type {
-	return Type(fmt.Sprintf("FixedString(%d)", col.size))
+	return Type(fmt.Sprintf("fixed_string(%d)", col.size))
 }
 
 func (col *FixedString) ScanType() reflect.Type {
@@ -73,7 +73,7 @@ func (col *FixedString) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "FixedString",
+			From: "fixed_string",
 		}
 	}
 	return nil
@@ -108,7 +108,7 @@ func (col *FixedString) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "FixedString",
+			To:   "fixed_string",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -132,7 +132,7 @@ func (col *FixedString) AppendRow(v interface{}) (err error) {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "FixedString",
+			To:   "fixed_string",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

@@ -30,7 +30,7 @@ type IPv4 struct {
 }
 
 func (col *IPv4) Type() Type {
-	return "IPv4"
+	return "ipv4"
 }
 
 func (col *IPv4) ScanType() reflect.Type {
@@ -60,7 +60,7 @@ func (col *IPv4) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "IPv4",
+			From: "ipv4",
 		}
 	}
 	return nil
@@ -75,8 +75,8 @@ func (col *IPv4) Append(v interface{}) (nulls []uint8, err error) {
 			if ip == nil {
 				return nil, &ColumnConverterError{
 					Op:   "Append",
-					To:   "IPv4",
-					From: "IPv6",
+					To:   "ipv4",
+					From: "ipv6",
 					Hint: "invalid IP version",
 				}
 			}
@@ -91,8 +91,8 @@ func (col *IPv4) Append(v interface{}) (nulls []uint8, err error) {
 				if ip == nil {
 					return nil, &ColumnConverterError{
 						Op:   "Append",
-						To:   "IPv4",
-						From: "IPv6",
+						To:   "ipv4",
+						From: "ipv6",
 						Hint: "invalid IP version",
 					}
 				}
@@ -104,7 +104,7 @@ func (col *IPv4) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "IPv4",
+			To:   "ipv4",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -128,7 +128,7 @@ func (col *IPv4) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "IPv4",
+			To:   "ipv4",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -136,8 +136,8 @@ func (col *IPv4) AppendRow(v interface{}) error {
 	if data == nil {
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "IPv4",
-			From: "IPv6",
+			To:   "ipv4",
+			From: "ipv6",
 			Hint: "invalid IP version",
 		}
 	}

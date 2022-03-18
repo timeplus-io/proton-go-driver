@@ -62,7 +62,7 @@ func (e *Enum16) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "Enum16",
+			From: "enum16",
 		}
 	}
 	return nil
@@ -133,7 +133,7 @@ func (e *Enum16) AppendRow(elem interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Enum16",
+			To:   "enum16",
 			From: fmt.Sprintf("%T", elem),
 		}
 	}

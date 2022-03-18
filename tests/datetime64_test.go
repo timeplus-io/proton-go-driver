@@ -48,17 +48,17 @@ func TestDateTime64(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TABLE test_datetime64 (
-				  Col1 DateTime64(3)
-				, Col2 DateTime64(9, 'Europe/Moscow')
-				, Col3 DateTime64(0, 'Europe/London')
-				, Col4 Nullable(DateTime64(3, 'Europe/Moscow'))
-				, Col5 Array(DateTime64(3, 'Europe/Moscow'))
-				, Col6 Array(Nullable(DateTime64(3, 'Europe/Moscow')))
+			CREATE STREAM test_datetime64 (
+				  Col1 datetime64(3)
+				, Col2 datetime64(9, 'Europe/Moscow')
+				, Col3 datetime64(0, 'Europe/London')
+				, Col4 nullable(datetime64(3, 'Europe/Moscow'))
+				, Col5 array(datetime64(3, 'Europe/Moscow'))
+				, Col6 array(nullable(datetime64(3, 'Europe/Moscow')))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_datetime64")
+			conn.Exec(ctx, "DROP STREAM test_datetime64")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64"); assert.NoError(t, err) {
@@ -131,17 +131,17 @@ func TestNullableDateTime64(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TABLE test_datetime64 (
-				    Col1      DateTime64(3)
-				, Col1_Null Nullable(DateTime64(3))
-				, Col2      DateTime64(9, 'Europe/Moscow')
-				, Col2_Null Nullable(DateTime64(9, 'Europe/Moscow'))
-				, Col3      DateTime64(0, 'Europe/London')
-				, Col3_Null Nullable(DateTime64(0, 'Europe/London'))
+			CREATE STREAM test_datetime64 (
+				    Col1      datetime64(3)
+				, Col1_Null nullable(datetime64(3))
+				, Col2      datetime64(9, 'Europe/Moscow')
+				, Col2_Null nullable(datetime64(9, 'Europe/Moscow'))
+				, Col3      datetime64(0, 'Europe/London')
+				, Col3_Null nullable(datetime64(0, 'Europe/London'))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_datetime64")
+			conn.Exec(ctx, "DROP STREAM test_datetime64")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64"); assert.NoError(t, err) {
@@ -175,7 +175,7 @@ func TestNullableDateTime64(t *testing.T) {
 					}
 				}
 			}
-			if err := conn.Exec(ctx, "TRUNCATE TABLE test_datetime64"); !assert.NoError(t, err) {
+			if err := conn.Exec(ctx, "TRUNCATE STREAM test_datetime64"); !assert.NoError(t, err) {
 				return
 			}
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64"); assert.NoError(t, err) {
@@ -243,16 +243,16 @@ func TestColumnarDateTime64(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_datetime64 (
-			  ID   UInt64
-			, Col1 DateTime64(3)
-			, Col2 Nullable(DateTime64(3))
-			, Col3 Array(DateTime64(3))
-			, Col4 Array(Nullable(DateTime64(3)))
+		CREATE STREAM test_datetime64 (
+			  ID   uint64
+			, Col1 datetime64(3)
+			, Col2 nullable(datetime64(3))
+			, Col3 array(datetime64(3))
+			, Col4 array(nullable(datetime64(3)))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_datetime64")
+			conn.Exec(ctx, "DROP STREAM test_datetime64")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64"); assert.NoError(t, err) {

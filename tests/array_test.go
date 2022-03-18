@@ -36,22 +36,22 @@ func TestArray(t *testing.T) {
 				Username: "default",
 				Password: "",
 			},
-			Compression: &clickhouse.Compression{
+			/*Compression: &clickhouse.Compression{
 				Method: clickhouse.CompressionLZ4,
-			},
+			},*/
 			MaxOpenConns: 1,
 		})
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-		CREATE TABLE test_array (
-			  Col1 Array(String)
-			, Col2 Array(Array(UInt32))
-			, Col3 Array(Array(Array(DateTime)))
+		CREATE STREAM test_array (
+			  Col1 array(string)
+			, Col2 array(array(uint32))
+			, Col3 array(array(array(datetime)))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_array")
+			conn.Exec(ctx, "DROP STREAM test_array")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_array"); assert.NoError(t, err) {
@@ -132,14 +132,14 @@ func TestColumnarArray(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-		CREATE TABLE test_array (
-			  Col1 Array(String)
-			, Col2 Array(Array(UInt32))
-			, Col3 Array(Array(Array(DateTime)))
+		CREATE STREAM test_array (
+			  Col1 array(string)
+			, Col2 array(array(uint32))
+			, Col3 array(array(array(datetime)))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_array")
+			conn.Exec(ctx, "DROP STREAM test_array")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			var (

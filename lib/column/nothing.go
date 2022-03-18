@@ -26,20 +26,20 @@ import (
 
 type Nothing struct{}
 
-func (Nothing) Type() Type                     { return "Nothing" }
+func (Nothing) Type() Type                     { return "nothing" }
 func (Nothing) ScanType() reflect.Type         { return reflect.TypeOf(nil) }
 func (Nothing) Rows() int                      { return 0 }
 func (Nothing) Row(int, bool) interface{}      { return nil }
 func (Nothing) ScanRow(interface{}, int) error { return nil }
 func (Nothing) Append(interface{}) ([]uint8, error) {
 	return nil, &Error{
-		ColumnType: "Nothing",
+		ColumnType: "nothing",
 		Err:        errors.New("data type values can't be stored in tables"),
 	}
 }
 func (Nothing) AppendRow(interface{}) error {
 	return &Error{
-		ColumnType: "Nothing",
+		ColumnType: "nothing",
 		Err:        errors.New("data type values can't be stored in tables"),
 	}
 }
@@ -52,7 +52,7 @@ func (Nothing) Decode(decoder *binary.Decoder, rows int) error {
 }
 func (Nothing) Encode(*binary.Encoder) error {
 	return &Error{
-		ColumnType: "Nothing",
+		ColumnType: "nothing",
 		Err:        errors.New("data type values can't be stored in tables"),
 	}
 }

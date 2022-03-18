@@ -45,14 +45,14 @@ func TestColumnarInterface(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_column_interface (
-				    Col1 UInt8
-				  , Col2 String
-				  , Col3 DateTime
+			CREATE STREAM test_column_interface (
+				    Col1 uint8
+				  , Col2 string
+				  , Col3 datetime
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_column_interface")
+			conn.Exec(ctx, "DROP STREAM test_column_interface")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface"); assert.NoError(t, err) {
@@ -131,14 +131,14 @@ func TestNullableColumnarInterface(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_column_interface (
-				  Col1 Nullable(UInt8)
-				, Col2 Nullable(String)
-				, Col3 Nullable(DateTime)
+			CREATE STREAM test_column_interface (
+				  Col1 nullable(uint8)
+				, Col2 nullable(string)
+				, Col3 nullable(datetime)
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_column_interface")
+			conn.Exec(ctx, "DROP STREAM test_column_interface")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface"); assert.NoError(t, err) {
@@ -198,7 +198,7 @@ func TestNullableColumnarInterface(t *testing.T) {
 					}
 				}
 			}
-			if err := conn.Exec(ctx, "TRUNCATE TABLE test_column_interface"); !assert.NoError(t, err) {
+			if err := conn.Exec(ctx, "TRUNCATE STREAM test_column_interface"); !assert.NoError(t, err) {
 				return
 			}
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface"); assert.NoError(t, err) {

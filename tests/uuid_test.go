@@ -44,16 +44,16 @@ func TestUUID(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_uuid (
-				  Col1 UUID
-				, Col2 UUID
-				, Col3 Array(UUID)
-				, Col4 Nullable(UUID)
-				, Col5 Array(Nullable(UUID))
+			CREATE STREAM test_uuid (
+				  Col1 uuid
+				, Col2 uuid
+				, Col3 array(uuid)
+				, Col4 nullable(uuid)
+				, Col5 array(nullable(uuid))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_uuid")
+			conn.Exec(ctx, "DROP STREAM test_uuid")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid"); assert.NoError(t, err) {
@@ -107,13 +107,13 @@ func TestNullableUUID(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_uuid (
-				  Col1 Nullable(UUID)
-				, Col2 Nullable(UUID)
+			CREATE STREAM test_uuid (
+				  Col1 nullable(uuid)
+				, Col2 nullable(uuid)
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_uuid")
+			conn.Exec(ctx, "DROP STREAM test_uuid")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid"); assert.NoError(t, err) {
@@ -136,7 +136,7 @@ func TestNullableUUID(t *testing.T) {
 			}
 		}
 
-		if err := conn.Exec(ctx, "TRUNCATE TABLE test_uuid"); !assert.NoError(t, err) {
+		if err := conn.Exec(ctx, "TRUNCATE STREAM test_uuid"); !assert.NoError(t, err) {
 			return
 		}
 
@@ -178,16 +178,16 @@ func TestColumnarUUID(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_uuid (
-				  Col1 UUID
-				, Col2 UUID
-				, Col3 Nullable(UUID)
-				, Col4 Array(UUID)
-				, Col5 Array(Nullable(UUID))
+			CREATE STREAM test_uuid (
+				  Col1 uuid
+				, Col2 uuid
+				, Col3 nullable(uuid)
+				, Col4 array(uuid)
+				, Col5 array(nullable(uuid))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_uuid")
+			conn.Exec(ctx, "DROP STREAM test_uuid")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid"); assert.NoError(t, err) {
@@ -259,10 +259,10 @@ func BenchmarkUUID(b *testing.B) {
 	}
 
 	defer func() {
-		conn.Exec(ctx, "DROP TABLE benchmark_uuid")
+		conn.Exec(ctx, "DROP STREAM benchmark_uuid")
 	}()
 
-	if err = conn.Exec(ctx, `CREATE TABLE benchmark_uuid (Col1 UInt64, Col2 UUID) ENGINE = Null`); err != nil {
+	if err = conn.Exec(ctx, `CREATE STREAM benchmark_uuid (Col1 uint64, Col2 uuid) ENGINE = Null`); err != nil {
 		b.Fatal(err)
 	}
 

@@ -27,7 +27,7 @@ type Nested struct {
 }
 
 func (col *Nested) parse(t Type) (_ Interface, err error) {
-	columns := fmt.Sprintf("Array(Tuple(%s))", strings.Join(nestedColumns(t.params()), ", "))
+	columns := fmt.Sprintf("array(tuple(%s))", strings.Join(nestedColumns(t.params()), ", "))
 	if col.Interface, err = (&Array{}).parse(Type(columns)); err != nil {
 		return nil, err
 	}
@@ -57,8 +57,8 @@ func nestedColumns(raw string) (columns []string) {
 		}
 	}
 	for i, column := range columns {
-		if strings.HasPrefix(column, "Nested(") {
-			columns[i] = fmt.Sprintf("Array(Tuple(%s))", strings.Join(nestedColumns(Type(column).params()), ", "))
+		if strings.HasPrefix(column, "nested(") {
+			columns[i] = fmt.Sprintf("array(tuple(%s))", strings.Join(nestedColumns(Type(column).params()), ", "))
 		}
 	}
 	return

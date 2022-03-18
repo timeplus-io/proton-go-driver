@@ -62,7 +62,7 @@ func (e *Enum8) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "Enum8",
+			From: "enum8",
 		}
 	}
 	return nil
@@ -102,7 +102,7 @@ func (e *Enum8) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Enum8",
+			To:   "enum8",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -139,7 +139,7 @@ func (e *Enum8) AppendRow(elem interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Enum8",
+			To:   "enum8",
 			From: fmt.Sprintf("%T", elem),
 		}
 	}
