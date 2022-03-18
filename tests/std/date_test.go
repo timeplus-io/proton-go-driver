@@ -28,16 +28,16 @@ import (
 func TestStdDate(t *testing.T) {
 	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_date (
-				  ID   UInt8
-				, Col1 Date
-				, Col2 Nullable(Date)
-				, Col3 Array(Date)
-				, Col4 Array(Nullable(Date))
+			CREATE STREAM test_date (
+				  ID   uint8
+				, Col1 date
+				, Col2 nullable(date)
+				, Col3 array(date)
+				, Col4 array(nullable(date))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_date")
+			conn.Exec("DROP STREAM test_date")
 		}()
 		type result struct {
 			ColID uint8 `ch:"ID"`

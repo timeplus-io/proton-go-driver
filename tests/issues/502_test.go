@@ -44,17 +44,17 @@ func TestIssue502(t *testing.T) {
 	if assert.NoError(t, err) {
 
 		const ddl = `
-		CREATE TABLE issue_502
+		CREATE STREAM issue_502
 		(
-			  Part UInt8
-			, Col1 UInt8
-			, Col2 UInt8
+			  Part uint8
+			, Col1 uint8
+			, Col2 uint8
 		) Engine MergeTree
 			ORDER BY Part
 			PARTITION BY (Part)
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE issue_502")
+			conn.Exec(ctx, "DROP STREAM issue_502")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_502"); assert.NoError(t, err) {

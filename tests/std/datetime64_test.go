@@ -32,17 +32,17 @@ func TestStdDateTime64(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TABLE test_datetime64 (
-				  Col1 DateTime64(3)
-				, Col2 DateTime64(9, 'Europe/Moscow')
-				, Col3 DateTime64(0, 'Europe/London')
-				, Col4 Nullable(DateTime64(3, 'Europe/Moscow'))
-				, Col5 Array(DateTime64(3, 'Europe/Moscow'))
-				, Col6 Array(Nullable(DateTime64(3, 'Europe/Moscow')))
+			CREATE STREAM test_datetime64 (
+				  Col1 datetime64(3)
+				, Col2 datetime64(9, 'Europe/Moscow')
+				, Col3 datetime64(0, 'Europe/London')
+				, Col4 nullable(datetime64(3, 'Europe/Moscow'))
+				, Col5 array(datetime64(3, 'Europe/Moscow'))
+				, Col6 array(nullable(datetime64(3, 'Europe/Moscow')))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_datetime64")
+			conn.Exec("DROP STREAM test_datetime64")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()

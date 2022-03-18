@@ -28,14 +28,14 @@ import (
 func TestStdArray(t *testing.T) {
 	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
 		const ddl = `
-		CREATE TABLE test_array (
-			  Col1 Array(String)
-			, Col2 Array(Array(UInt32))
-			, Col3 Array(Array(Array(DateTime)))
+		CREATE STREAM test_array (
+			  Col1 array(string)
+			, Col2 array(array(uint32))
+			, Col3 array(array(array(datetime)))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_array")
+			conn.Exec("DROP STREAM test_array")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()

@@ -28,13 +28,13 @@ import (
 func TestIssue357(t *testing.T) {
 	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
 		const ddl = ` -- foo.bar DDL comment
-		CREATE TEMPORARY TABLE issue_357 (
-			  Col1 Int32
-			, Col2 DateTime
-		)
+		CREATE TEMPORARY STREAM issue_357 (
+			  Col1 int32
+			, Col2 datetime
+		) ENGINE = Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE issue_357")
+			conn.Exec("DROP STREAM issue_357")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()

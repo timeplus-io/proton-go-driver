@@ -51,19 +51,19 @@ func main() {
 		}
 		return
 	}
-	conn.Exec("DROP TABLE IF EXISTS example")
+	conn.Exec("DROP STREAM IF EXISTS example")
 	_, err = conn.Exec(`
-		CREATE EXISTS example (
-			country_code FixedString(2),
-			os_id        UInt8,
-			browser_id   UInt8,
-			categories   Array(Int16),
-			action_day   Date,
-			action_time  DateTime
+		CREATE STREAM example (
+			country_code fixed_string(2),
+			os_id        uint8,
+			browser_id   uint8,
+			categories   array(int16),
+			action_day   date,
+			action_time  datetime
 		) Engine Memory
 	`)
 	defer func() {
-		conn.Exec("DROP TABLE example")
+		conn.Exec("DROP STREAM example")
 	}()
 	if err != nil {
 		log.Fatal(err)
@@ -76,7 +76,7 @@ func main() {
 		testQuery()
 	}
 
-	if _, err := conn.Exec("DROP TABLE example"); err != nil {
+	if _, err := conn.Exec("DROP STREAM example"); err != nil {
 		log.Fatal(err)
 	}
 }

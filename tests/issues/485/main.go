@@ -43,31 +43,31 @@ func example() error {
 	if err != nil {
 		return err
 	}
-	if err := conn.Exec(ctx, `DROP TABLE IF EXISTS example`); err != nil {
+	if err := conn.Exec(ctx, `DROP STREAM IF EXISTS example`); err != nil {
 		return err
 	}
 	err = conn.Exec(ctx, `
- 		CREATE TABLE IF NOT EXISTS example (
-                           timestamp DateTime64(9) CODEC(Delta, ZSTD(1)),
-                           traceID String CODEC(ZSTD(1)),
-                           spanID String CODEC(ZSTD(1)),
-                           parentSpanID String CODEC(ZSTD(1)),
-                           serviceName LowCardinality(String) CODEC(ZSTD(1)),
-                           name LowCardinality(String) CODEC(ZSTD(1)),
-                           kind Int32 CODEC(ZSTD(1)),
-                           durationNano UInt64 CODEC(ZSTD(1)),
-                           tags Array(String) CODEC(ZSTD(1)),
-                           tagsKeys Array(String) CODEC(ZSTD(1)),
-                           tagsValues Array(String) CODEC(ZSTD(1)),
-                           statusCode Int64 CODEC(ZSTD(1)),
-                           references String CODEC(ZSTD(1)),
-                           externalHttpMethod Nullable(String) CODEC(ZSTD(1)),
-                           externalHttpUrl Nullable(String) CODEC(ZSTD(1)),
-                           component Nullable(String) CODEC(ZSTD(1)),
-                           dbSystem Nullable(String) CODEC(ZSTD(1)),
-                           dbName Nullable(String) CODEC(ZSTD(1)),
-                           dbOperation Nullable(String) CODEC(ZSTD(1)),
-                           peerService Nullable(String) CODEC(ZSTD(1)),
+ 		CREATE STREAM IF NOT EXISTS example (
+                           timestamp datetime64(9) CODEC(Delta, ZSTD(1)),
+                           traceID string CODEC(ZSTD(1)),
+                           spanID string CODEC(ZSTD(1)),
+                           parentSpanID string CODEC(ZSTD(1)),
+                           serviceName low_cardinality(string) CODEC(ZSTD(1)),
+                           name low_cardinality(string) CODEC(ZSTD(1)),
+                           kind int32 CODEC(ZSTD(1)),
+                           durationNano uint64 CODEC(ZSTD(1)),
+                           tags array(string) CODEC(ZSTD(1)),
+                           tagsKeys array(string) CODEC(ZSTD(1)),
+                           tagsValues array(string) CODEC(ZSTD(1)),
+                           statusCode int64 CODEC(ZSTD(1)),
+                           references string CODEC(ZSTD(1)),
+                           externalHttpMethod nullable(string) CODEC(ZSTD(1)),
+                           externalHttpUrl nullable(string) CODEC(ZSTD(1)),
+                           component nullable(string) CODEC(ZSTD(1)),
+                           dbSystem nullable(string) CODEC(ZSTD(1)),
+                           dbName nullable(string) CODEC(ZSTD(1)),
+                           dbOperation nullable(string) CODEC(ZSTD(1)),
+                           peerService nullable(string) CODEC(ZSTD(1)),
                            INDEX idx_traceID traceID TYPE bloom_filter GRANULARITY 4,
                            INDEX idx_service serviceName TYPE bloom_filter GRANULARITY 4,
                            INDEX idx_name name TYPE bloom_filter GRANULARITY 4,
@@ -76,8 +76,8 @@ func example() error {
                            INDEX idx_tagsValues tagsValues TYPE bloom_filter(0.01) GRANULARITY 64,
                            INDEX idx_duration durationNano TYPE minmax GRANULARITY 1
                          ) ENGINE MergeTree()
-                         PARTITION BY toDate(timestamp)
-                         ORDER BY (serviceName, -toUnixTimestamp(timestamp))
+                         PARTITION BY to_date(timestamp)
+                         ORDER BY (serviceName, -to_unix_timestamp(timestamp))
  	`)
 	if err != nil {
 		return err

@@ -47,12 +47,12 @@ func TestIssue406(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TABLE issue_406 (
-				Col1 Tuple(Array(Int32), Array(Int32))
+			CREATE STREAM issue_406 (
+				Col1 tuple(array(int32), array(int32))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE issue_406")
+			conn.Exec(ctx, "DROP STREAM issue_406")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_406"); assert.NoError(t, err) {
