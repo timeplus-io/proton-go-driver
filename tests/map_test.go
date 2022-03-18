@@ -48,16 +48,16 @@ func TestMap(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_map (
-			  Col1 Map(String, UInt64)
-			, Col2 Map(String, UInt64)
-			, Col3 Map(String, UInt64)
-			, Col4 Array(Map(String, String))
-			, Col5 Map(LowCardinality(String), LowCardinality(UInt64))
+		CREATE STREAM test_map (
+			  Col1 map(string, uint64)
+			, Col2 map(string, uint64)
+			, Col3 map(string, uint64)
+			, Col4 array(map(string, string))
+			, Col5 map(low_cardinality(string), low_cardinality(uint64))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_map")
+			conn.Exec(ctx, "DROP STREAM test_map")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map"); assert.NoError(t, err) {
@@ -125,14 +125,14 @@ func TestColmnarMap(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_map (
-			  Col1 Map(String, UInt64)
-			, Col2 Map(String, UInt64)
-			, Col3 Map(String, UInt64)
+		CREATE STREAM test_map (
+			  Col1 map(string, uint64)
+			, Col2 map(string, uint64)
+			, Col3 map(string, uint64)
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_map")
+			conn.Exec(ctx, "DROP STREAM test_map")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map"); assert.NoError(t, err) {

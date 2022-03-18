@@ -27,12 +27,12 @@ import (
 func Test470PR(t *testing.T) {
 	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
 		const ddl = `
-		CREATE TABLE issue_470_pr (
-			Col1 Array(String)
+		CREATE STREAM issue_470_pr (
+			Col1 array(string)
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE issue_470_pr")
+			conn.Exec("DROP STREAM issue_470_pr")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
@@ -41,7 +41,7 @@ func Test470PR(t *testing.T) {
 			}
 			if batch, err := scope.Prepare("INSERT INTO issue_470_pr"); assert.NoError(t, err) {
 				if _, err := batch.Exec(nil); assert.Error(t, err) {
-					assert.Contains(t, err.Error(), "converting <nil> to Array(String) is unsupported")
+					assert.Contains(t, err.Error(), "converting <nil> to array(string) is unsupported")
 				}
 			}
 		}

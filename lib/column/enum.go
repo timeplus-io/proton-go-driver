@@ -36,9 +36,9 @@ func Enum(chType Type) (Interface, error) {
 		}
 	}
 	switch {
-	case strings.HasPrefix(columnType, "Enum8"):
+	case strings.HasPrefix(columnType, "enum8"):
 		payload = columnType[6:]
-	case strings.HasPrefix(columnType, "Enum16"):
+	case strings.HasPrefix(columnType, "enum16"):
 		payload = columnType[7:]
 	default:
 		return nil, &Error{
@@ -71,7 +71,7 @@ func Enum(chType Type) (Interface, error) {
 		ident = ident[1 : len(ident)-1]
 		idents, indexes = append(idents, ident), append(indexes, index)
 	}
-	if strings.HasPrefix(columnType, "Enum8") {
+	if strings.HasPrefix(columnType, "enum8") {
 		enum := Enum8{
 			iv:     make(map[string]uint8, len(idents)),
 			vi:     make(map[uint8]string, len(idents)),

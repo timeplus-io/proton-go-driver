@@ -45,9 +45,9 @@ func (col *Array) parse(t Type) (_ Interface, err error) {
 parse:
 	for {
 		switch {
-		case strings.HasPrefix(typeStr, "Array("):
+		case strings.HasPrefix(typeStr, "array("):
 			col.depth++
-			typeStr = strings.TrimPrefix(typeStr, "Array(")
+			typeStr = strings.TrimPrefix(typeStr, "array(")
 			typeStr = strings.TrimSuffix(typeStr, ")")
 		default:
 			break parse

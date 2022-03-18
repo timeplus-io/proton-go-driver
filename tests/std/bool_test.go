@@ -31,16 +31,16 @@ func TestStdBool(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TABLE test_bool (
-				    Col1 Bool
-				  , Col2 Bool
-				  , Col3 Array(Bool)
-				  , Col4 Nullable(Bool)
-				  , Col5 Array(Nullable(Bool))
+			CREATE STREAM test_bool (
+				    Col1 bool
+				  , Col2 bool
+				  , Col3 array(bool)
+				  , Col4 nullable(bool)
+				  , Col5 array(nullable(bool))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_bool")
+			conn.Exec("DROP STREAM test_bool")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()

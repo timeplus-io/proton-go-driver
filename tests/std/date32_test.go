@@ -32,16 +32,16 @@ func TestStdDate32(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TABLE test_date32 (
-				  ID   UInt8
-				, Col1 Date32
-				, Col2 Nullable(Date32)
-				, Col3 Array(Date32)
-				, Col4 Array(Nullable(Date32))
+			CREATE STREAM test_date32 (
+				  ID   uint8
+				, Col1 date32
+				, Col2 nullable(date32)
+				, Col3 array(date32)
+				, Col4 array(nullable(date32))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_date32")
+			conn.Exec("DROP STREAM test_date32")
 		}()
 		type result struct {
 			ColID uint8 `ch:"ID"`

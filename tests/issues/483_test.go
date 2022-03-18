@@ -44,23 +44,23 @@ func TestIssue483(t *testing.T) {
 	if assert.NoError(t, err) {
 
 		const ddl = `
-		CREATE TABLE issue_483
+		CREATE STREAM issue_483
 		(
-			example_id UInt8,
-			steps Nested(
-				  duration UInt8,
-				  result Nested(
-						duration UInt64,
-						error_message Nullable(String),
-						status UInt8
+			example_id uint8,
+			steps nested(
+				  duration uint8,
+				  result nested(
+						duration uint64,
+						error_message nullable(string),
+						status uint8
 					),
-				  keyword String
+				  keyword string
 				),
-			status UInt8
+			status uint8
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE issue_483")
+			conn.Exec(ctx, "DROP STREAM issue_483")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_483 (example_id)"); assert.NoError(t, err) {

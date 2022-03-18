@@ -50,13 +50,13 @@ func TestGeoMultiPolygon(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_geo_multipolygon (
-			  Col1 MultiPolygon
-			, Col2 Array(MultiPolygon)
+		CREATE STREAM test_geo_multipolygon (
+			  Col1 multi_polygon
+			, Col2 array(multi_polygon)
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_geo_multipolygon")
+			conn.Exec(ctx, "DROP STREAM test_geo_multipolygon")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_geo_multipolygon"); assert.NoError(t, err) {

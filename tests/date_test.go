@@ -44,16 +44,16 @@ func TestDate(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_date (
-				  ID   UInt8
-				, Col1 Date
-				, Col2 Nullable(Date)
-				, Col3 Array(Date)
-				, Col4 Array(Nullable(Date))
+			CREATE STREAM test_date (
+				  ID   uint8
+				, Col1 date
+				, Col2 nullable(date)
+				, Col3 array(date)
+				, Col4 array(nullable(date))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_date")
+			conn.Exec(ctx, "DROP STREAM test_date")
 		}()
 		type result struct {
 			ColID uint8 `ch:"ID"`
@@ -122,13 +122,13 @@ func TestNullableDate(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-			CREATE TABLE test_date (
-				  Col1 Date
-				, Col2 Nullable(Date)
+			CREATE STREAM test_date (
+				  Col1 date
+				, Col2 nullable(date)
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_date")
+			conn.Exec(ctx, "DROP STREAM test_date")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_date"); assert.NoError(t, err) {
@@ -149,7 +149,7 @@ func TestNullableDate(t *testing.T) {
 					}
 				}
 			}
-			if err := conn.Exec(ctx, "TRUNCATE TABLE test_date"); !assert.NoError(t, err) {
+			if err := conn.Exec(ctx, "TRUNCATE STREAM test_date"); !assert.NoError(t, err) {
 				return
 			}
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_date"); assert.NoError(t, err) {
@@ -194,16 +194,16 @@ func TestColumnarDate(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-		CREATE TABLE test_date (
-			  ID   UInt64
-			, Col1 Date
-			, Col2 Nullable(Date)
-			, Col3 Array(Date)
-			, Col4 Array(Nullable(Date))
+		CREATE STREAM test_date (
+			  ID   uint64
+			, Col1 date
+			, Col2 nullable(date)
+			, Col3 array(date)
+			, Col4 array(nullable(date))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_date")
+			conn.Exec(ctx, "DROP STREAM test_date")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_date"); assert.NoError(t, err) {

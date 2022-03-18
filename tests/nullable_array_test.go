@@ -46,25 +46,25 @@ func TestNullableArray(t *testing.T) {
 		})
 	)
 	const ddl = `
-	CREATE TABLE test_nullable_array (
-		  Col1  Array(Nullable(Bool))
-		, Col2  Array(Nullable(UInt8))
-		, Col3  Array(Nullable(Date))
-		, Col4  Array(Nullable(Date32))
-		, Col5  Array(Nullable(DateTime))
-		, Col6  Array(Nullable(DateTime64))
-		, Col7  Array(Nullable(Decimal(18,5)))
-		, Col8  Array(Nullable(Enum8  ('click'   = 1,  'house' = 2)))
-		, Col9  Array(Nullable(Enum16 ('click'   = 1,  'house' = 2)))
-		, Col10 Array(Nullable(FixedString(5)))
-		, Col11 Array(Nullable(IPv4))
-		, Col12 Array(Nullable(IPv6))
-		, Col13 Array(Nullable(String))
-		, Col14 Array(Nullable(UUID))
+	CREATE STREAM test_nullable_array (
+		  Col1  array(nullable(bool))
+		, Col2  array(nullable(uint8))
+		, Col3  array(nullable(date))
+		, Col4  array(nullable(date32))
+		, Col5  array(nullable(datetime))
+		, Col6  array(nullable(datetime64))
+		, Col7  array(nullable(decimal(18,5)))
+		, Col8  array(nullable(enum8  ('click'   = 1,  'house' = 2)))
+		, Col9  array(nullable(enum16 ('click'   = 1,  'house' = 2)))
+		, Col10 array(nullable(fixed_string(5)))
+		, Col11 array(nullable(ipv4))
+		, Col12 array(nullable(ipv6))
+		, Col13 array(nullable(string))
+		, Col14 array(nullable(uuid))
 	) Engine Memory
 	`
 	defer func() {
-		conn.Exec(ctx, "DROP TABLE test_nullable_array")
+		conn.Exec(ctx, "DROP STREAM test_nullable_array")
 	}()
 	if assert.NoError(t, err) {
 		if err := checkMinServerVersion(conn, 21, 12); err != nil {

@@ -50,13 +50,13 @@ func TestGeoRing(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_geo_ring (
-			Col1 Ring
-			, Col2 Array(Ring)
+		CREATE STREAM test_geo_ring (
+			Col1 ring
+			, Col2 array(ring)
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_geo_ring")
+			conn.Exec(ctx, "DROP STREAM test_geo_ring")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_geo_ring"); assert.NoError(t, err) {

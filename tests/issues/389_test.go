@@ -48,12 +48,12 @@ func TestIssue389(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TEMPORARY TABLE issue_389 (
-				    Col1 DateTime64(3, 'America/New_York')
-			)
+			CREATE TEMPORARY STREAM issue_389 (
+				    Col1 datetime64(3, 'America/New_York')
+			) ENGINE = Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE issue_389")
+			conn.Exec(ctx, "DROP STREAM issue_389")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_389"); assert.NoError(t, err) {

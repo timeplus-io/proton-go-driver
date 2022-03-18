@@ -44,12 +44,12 @@ func TestIssue260(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-		CREATE TABLE issue_260 (
-			Col1 Nullable(DateTime('UTC'))
+		CREATE STREAM issue_260 (
+			Col1 nullable(dateTime('UTC'))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE issue_260")
+			conn.Exec(ctx, "DROP STREAM issue_260")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_260"); assert.NoError(t, err) {

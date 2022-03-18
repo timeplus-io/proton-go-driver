@@ -29,8 +29,8 @@ import (
 func TestStdConnCheck(t *testing.T) {
 	const (
 		ddl = `
-		CREATE TABLE clickhouse_test_conncheck (
-			Value String
+		CREATE STREAM clickhouse_test_conncheck (
+			Value string
 		) Engine Memory
 		`
 		dml = `INSERT INTO clickhouse_test_conncheck VALUES `
@@ -40,7 +40,7 @@ func TestStdConnCheck(t *testing.T) {
 		// We can only change the settings at the connection level.
 		// If we have only one connection, we change the settings specifically for that connection.
 		connect.SetMaxOpenConns(1)
-		if _, err := connect.Exec("DROP TABLE IF EXISTS clickhouse_test_conncheck"); assert.NoError(t, err) {
+		if _, err := connect.Exec("DROP STREAM IF EXISTS clickhouse_test_conncheck"); assert.NoError(t, err) {
 			if _, err := connect.Exec(ddl); assert.NoError(t, err) {
 				_, err = connect.Exec("set idle_connection_timeout=1")
 				assert.NoError(t, err)
@@ -58,6 +58,6 @@ func TestStdConnCheck(t *testing.T) {
 				assert.NoError(t, tx.Commit())
 			}
 		}
-		connect.Exec("DROP TABLE IF EXISTS clickhouse_test_conncheck")
+		connect.Exec("DROP STREAM IF EXISTS clickhouse_test_conncheck")
 	}
 }

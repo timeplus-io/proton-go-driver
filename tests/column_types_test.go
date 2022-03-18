@@ -44,8 +44,8 @@ func TestColumnTypes(t *testing.T) {
 	)
 	const query = `
 		SELECT
-			  CAST(1   AS UInt8)  AS Col1
-			, CAST('X' AS String) AS Col2
+			  CAST(1   AS uint8)  AS Col1
+			, CAST('X' AS string) AS Col2
 	`
 	if assert.NoError(t, err) {
 		if rows, err := conn.Query(ctx, query); assert.NoError(t, err) {
@@ -56,13 +56,13 @@ func TestColumnTypes(t *testing.T) {
 						if assert.False(t, v.Nullable()) {
 							assert.Equal(t, "Col1", v.Name())
 							assert.Equal(t, reflect.TypeOf(uint8(0)), v.ScanType())
-							assert.Equal(t, "UInt8", v.DatabaseTypeName())
+							assert.Equal(t, "uint8", v.DatabaseTypeName())
 						}
 					case 1:
 						if assert.False(t, v.Nullable()) {
 							assert.Equal(t, "Col2", v.Name())
 							assert.Equal(t, reflect.TypeOf(""), v.ScanType())
-							assert.Equal(t, "String", v.DatabaseTypeName())
+							assert.Equal(t, "string", v.DatabaseTypeName())
 						}
 
 					}

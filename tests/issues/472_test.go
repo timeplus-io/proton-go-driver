@@ -46,15 +46,15 @@ func TestIssue472(t *testing.T) {
 	if assert.NoError(t, err) {
 
 		const ddl = `
-			CREATE TABLE issue_472 (
-				PodUID               UUID
-				, EventType          String
-				, ControllerRevision UInt8
-				, Timestamp          DateTime
+			CREATE STREAM issue_472 (
+				PodUID               uuid
+				, EventType          string
+				, ControllerRevision uint8
+				, Timestamp          datetime
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE issue_472")
+			conn.Exec(ctx, "DROP STREAM issue_472")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_472"); assert.NoError(t, err) {

@@ -30,7 +30,7 @@ type MultiPolygon struct {
 }
 
 func (col *MultiPolygon) Type() Type {
-	return "MultiPolygon"
+	return "multi_polygon"
 }
 
 func (col *MultiPolygon) ScanType() reflect.Type {
@@ -60,7 +60,7 @@ func (col *MultiPolygon) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "MultiPolygon",
+			From: "multi_polygon",
 			Hint: fmt.Sprintf("try using *%s", col.ScanType()),
 		}
 	}
@@ -79,7 +79,7 @@ func (col *MultiPolygon) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "MultiPolygon",
+			To:   "multi_polygon",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -92,7 +92,7 @@ func (col *MultiPolygon) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "MultiPolygon",
+			To:   "multi_polygon",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

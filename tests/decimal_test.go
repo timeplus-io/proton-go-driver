@@ -51,16 +51,16 @@ func TestDecimal(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TABLE test_decimal (
-				  Col1 Decimal32(5)
-				, Col2 Decimal(18,5)
-				, Col3 Decimal(15,3)
-				, Col4 Decimal128(5)
-				, Col5 Decimal256(5)
+			CREATE STREAM test_decimal (
+				  Col1 decimal32(5)
+				, Col2 decimal(18,5)
+				, Col3 decimal(15,3)
+				, Col4 decimal128(5)
+				, Col5 decimal256(5)
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_decimal")
+			conn.Exec(ctx, "DROP STREAM test_decimal")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal"); assert.NoError(t, err) {
@@ -119,14 +119,14 @@ func TestNullableDecimal(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_decimal (
-			  Col1 Nullable(Decimal32(5))
-			, Col2 Nullable(Decimal(18,5))
-			, Col3 Nullable(Decimal(15,3))
+		CREATE STREAM test_decimal (
+			  Col1 nullable(decimal32(5))
+			, Col2 nullable(decimal(18,5))
+			, Col3 nullable(decimal(15,3))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_decimal")
+			conn.Exec(ctx, "DROP STREAM test_decimal")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal"); assert.NoError(t, err) {
@@ -147,7 +147,7 @@ func TestNullableDecimal(t *testing.T) {
 				}
 			}
 
-			if err := conn.Exec(ctx, "TRUNCATE TABLE test_decimal"); !assert.NoError(t, err) {
+			if err := conn.Exec(ctx, "TRUNCATE STREAM test_decimal"); !assert.NoError(t, err) {
 				return
 			}
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal"); assert.NoError(t, err) {

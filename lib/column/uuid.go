@@ -32,7 +32,7 @@ type UUID struct {
 }
 
 func (col *UUID) Type() Type {
-	return "UUID"
+	return "uuid"
 }
 
 func (col *UUID) ScanType() reflect.Type {
@@ -62,7 +62,7 @@ func (col *UUID) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "UUID",
+			From: "uuid",
 			Hint: fmt.Sprintf("try using *%s", col.ScanType()),
 		}
 	}
@@ -90,7 +90,7 @@ func (col *UUID) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "UUID",
+			To:   "uuid",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -114,7 +114,7 @@ func (col *UUID) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "UUID",
+			To:   "uuid",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

@@ -31,16 +31,16 @@ func TestStdMap(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_map (
-			  Col1 Map(String, UInt64)
-			, Col2 Map(String, UInt64)
-			, Col3 Map(String, UInt64)
-			, Col4 Array(Map(String, String))
-			, Col5 Map(LowCardinality(String), LowCardinality(UInt64))
+		CREATE STREAM test_map (
+			  Col1 map(string, uint64)
+			, Col2 map(string, uint64)
+			, Col3 map(string, uint64)
+			, Col4 array(map(string, string))
+			, Col5 map(low_cardinality(string), low_cardinality(uint64))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_map")
+			conn.Exec("DROP STREAM test_map")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()

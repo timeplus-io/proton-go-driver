@@ -47,16 +47,16 @@ func TestBool(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TABLE test_bool (
-				  Col1 Bool
-				, Col2 Bool
-				, Col3 Array(Bool)
-				, Col4 Nullable(Bool)
-				, Col5 Array(Nullable(Bool))
+			CREATE STREAM test_bool (
+				  Col1 bool
+				, Col2 bool
+				, Col3 array(bool)
+				, Col4 nullable(bool)
+				, Col5 array(nullable(bool))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_bool")
+			conn.Exec(ctx, "DROP STREAM test_bool")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bool"); assert.NoError(t, err) {
@@ -107,17 +107,17 @@ func TestColumnarBool(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TABLE test_bool (
-				  ID   UInt64
-				, Col1 Bool
-				, Col2 Bool
-				, Col3 Array(Bool)
-				, Col4 Nullable(Bool)
-				, Col5 Array(Nullable(Bool))
+			CREATE STREAM test_bool (
+				  ID   uint64
+				, Col1 bool
+				, Col2 bool
+				, Col3 array(bool)
+				, Col4 nullable(bool)
+				, Col5 array(nullable(bool))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_bool")
+			conn.Exec(ctx, "DROP STREAM test_bool")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			val := true

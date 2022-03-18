@@ -18,100 +18,100 @@ import (
 func (t Type) Column() (Interface, error) {
 	switch t {
 {{- range . }}
-	case "{{ .ChType }}":
+	case "{{ .ChTypeName }}":
 		return &{{ .ChType }}{}, nil
 {{- end }}
-	case "Int128":
+	case "int128":
 		return &BigInt{
 			size: 16,
 			chType: t,
 		}, nil
-	case "Int256":
+	case "int256":
 		return &BigInt{
 			size: 32,
 			chType: t,
 		}, nil
-	case "UInt256":
+	case "uint256":
 		return &BigInt{
 			size: 32,
 			chType: t,
 		}, nil
-	case "IPv4":
+	case "ipv4":
 		return &IPv4{}, nil
-	case "IPv6":
+	case "ipv6":
 		return &IPv6{}, nil
-	case "Bool", "Boolean":
+	case "bool", "boolean":
 		return &Bool{}, nil
-	case "Date":
+	case "date":
 		return &Date{}, nil
-	case "Date32":
+	case "date32":
 		return &Date32{}, nil
-	case "UUID":
+	case "uuid":
 		return &UUID{}, nil
-	case "Nothing":
+	case "nothing":
 		return &Nothing{}, nil
-	case "Ring":
-		v, err := (&Array{}).parse("Array(Point)")
+	case "ring":
+		v, err := (&Array{}).parse("array(point)")
 		if err != nil{
 			return nil, err
 		}
 		set := v.(*Array)
-		set.chType = "Ring"
+		set.chType = "ring"
 		return &Ring{
 			set: set,
 		}, nil
-	case "Polygon":
-		v, err := (&Array{}).parse("Array(Ring)")
+	case "polygon":
+		v, err := (&Array{}).parse("array(ring)")
 		if err != nil{
 			return nil, err
 		}
 		set := v.(*Array)
-		set.chType = "Polygon"
+		set.chType = "polygon"
 		return &Polygon{
 			set: set,
 		}, nil
-	case "MultiPolygon":
-		v, err := (&Array{}).parse("Array(Polygon)")
+	case "multi_polygon":
+		v, err := (&Array{}).parse("array(polygon)")
 		if err != nil{
 			return nil, err
 		}
 		set := v.(*Array)
-		set.chType = "MultiPolygon"
+		set.chType = "multi_polygon"
 		return &MultiPolygon{
 			set: set,
 		}, nil
-	case "Point":
+	case "point":
 		return &Point{}, nil
-	case "String":
+	case "string":
 		return &String{}, nil
 	}
 
 	switch strType := string(t); {
-	case strings.HasPrefix(string(t), "Map("):
+	case strings.HasPrefix(string(t), "map("):
 		return (&Map{}).parse(t)
-	case strings.HasPrefix(string(t), "Tuple("):
+	case strings.HasPrefix(string(t), "tuple("):
 		return (&Tuple{}).parse(t)
-	case strings.HasPrefix(string(t), "Decimal("):
+	case strings.HasPrefix(string(t), "decimal("):
 		return (&Decimal{}).parse(t)
-	case strings.HasPrefix(strType, "Nested("):
+	case strings.HasPrefix(strType, "nested("):
 		return (&Nested{}).parse(t)
-	case strings.HasPrefix(string(t), "Array("):
+	case strings.HasPrefix(string(t), "array("):
 		return (&Array{}).parse(t)
-	case strings.HasPrefix(string(t), "Interval"):
+	case strings.HasPrefix(string(t), "interval"):
 		return (&Interval{}).parse(t)
-	case strings.HasPrefix(string(t), "Nullable"):
+	case strings.HasPrefix(string(t), "nullable"):
 		return (&Nullable{}).parse(t)
-	case strings.HasPrefix(string(t), "FixedString"):
+	case strings.HasPrefix(string(t), "fixed_string"):
 		return (&FixedString{}).parse(t)
-	case strings.HasPrefix(string(t), "LowCardinality"):
+	case strings.HasPrefix(string(t), "low_cardinality"):
 		return (&LowCardinality{}).parse(t)
-	case strings.HasPrefix(string(t), "SimpleAggregateFunction"):
+	case strings.HasPrefix(string(t), "simple_aggregate_function"):
 		return (&SimpleAggregateFunction{}).parse(t)
-	case strings.HasPrefix(string(t), "Enum8") || strings.HasPrefix(string(t), "Enum16"):
+	case strings.HasPrefix(string(t), "enum8") || strings.HasPrefix(string(t), "enum16"):
 		return Enum(t)
-	case strings.HasPrefix(string(t), "DateTime64"):
+	case strings.HasPrefix(string(t), "datetime64"):
 		return (&DateTime64{}).parse(t)
-	case strings.HasPrefix(strType, "DateTime") && !strings.HasPrefix(strType, "DateTime64"):
+	case strings.HasPrefix(strType, "datetime") && !strings.HasPrefix(strType, "datetime64"):
 		return (&DateTime{}).parse(t)
 	}
 	return nil, &UnsupportedColumnTypeError{
@@ -153,7 +153,7 @@ var (
 {{- range . }}
 
 func (col *{{ .ChType }}) Type() Type {
-	return "{{ .ChType }}"
+	return "{{ .ChTypeName }}"
 }
 
 func (col *{{ .ChType }}) ScanType() reflect.Type {
@@ -208,7 +208,7 @@ func (col *{{ .ChType }}) Append(v interface{}) (nulls []uint8,err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "{{ .ChType }}",
+			To:   "{{ .ChTypeName }}",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -231,7 +231,7 @@ func (col *{{ .ChType }}) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "{{ .ChType }}",
+			To:   "{{ .ChTypeName }}",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

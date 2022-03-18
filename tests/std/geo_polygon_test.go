@@ -37,13 +37,13 @@ func TestStdGeoPolygon(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_geo_polygon (
-			  Col1 Polygon
-			, Col2 Array(Polygon)
+		CREATE STREAM test_geo_polygon (
+			  Col1 polygon
+			, Col2 array(polygon)
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_geo_polygon")
+			conn.Exec("DROP STREAM test_geo_polygon")
 		}()
 		if _, err := conn.ExecContext(ctx, ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()

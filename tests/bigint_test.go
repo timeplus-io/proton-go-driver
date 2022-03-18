@@ -48,17 +48,17 @@ func TestBigInt(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_bigint (
-			  Col1 Int128
-			, Col2 Array(Int128)
-			, Col3 Int256
-			, Col4 Array(Int256)
-			, Col5 UInt256
-			, Col6 Array(UInt256)
+		CREATE STREAM test_bigint (
+			  Col1 int128
+			, Col2 array(int128)
+			, Col3 int256
+			, Col4 array(int256)
+			, Col5 uint256
+			, Col6 array(uint256)
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_bigint")
+			conn.Exec(ctx, "DROP STREAM test_bigint")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bigint"); assert.NoError(t, err) {
@@ -129,17 +129,17 @@ func TestNullableBigInt(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_nullable_bigint (
-			  Col1 Nullable(Int128)
-			, Col2 Array(Nullable(Int128))
-			, Col3 Nullable(Int256)
-			, Col4 Array(Nullable(Int256))
-			, Col5 Nullable(UInt256)
-			, Col6 Array(Nullable(UInt256))
+		CREATE STREAM test_nullable_bigint (
+			  Col1 nullable(int128)
+			, Col2 array(nullable(int128))
+			, Col3 nullable(int256)
+			, Col4 array(nullable(int256))
+			, Col5 nullable(uint256)
+			, Col6 array(nullable(uint256))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_nullable_bigint")
+			conn.Exec(ctx, "DROP STREAM test_nullable_bigint")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nullable_bigint"); assert.NoError(t, err) {

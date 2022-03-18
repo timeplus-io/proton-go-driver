@@ -38,19 +38,19 @@ func TestStdLowCardinality(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_lowcardinality (
-			  Col1 LowCardinality(String)
-			, Col2 LowCardinality(FixedString(2))
-			, Col3 LowCardinality(DateTime)
-			, Col4 LowCardinality(Int32)
-			, Col5 Array(LowCardinality(String))
-			, Col6 Array(Array(LowCardinality(String)))
-			, Col7 LowCardinality(Nullable(String))
-			, Col8 Array(Array(LowCardinality(Nullable(String))))
+		CREATE STREAM test_lowcardinality (
+			  Col1 low_cardinality(string)
+			, Col2 low_cardinality(fixed_string(2))
+			, Col3 low_cardinality(datetime)
+			, Col4 low_cardinality(int32)
+			, Col5 array(low_cardinality(string))
+			, Col6 array(Array(LowCardinality(string)))
+			, Col7 low_cardinality(nullable(string))
+			, Col8 array(array(low_cardinality(nullable(string))))
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_lowcardinality")
+			conn.Exec("DROP STREAM test_lowcardinality")
 		}()
 		if _, err := conn.ExecContext(ctx, ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()

@@ -39,10 +39,10 @@ type DateTime struct {
 }
 
 func (dt *DateTime) parse(t Type) (_ *DateTime, err error) {
-	if dt.chType = t; dt.chType == "DateTime" {
+	if dt.chType = t; dt.chType == "datetime" {
 		return dt, nil
 	}
-	var name = strings.TrimSuffix(strings.TrimPrefix(string(t), "DateTime('"), "')")
+	var name = strings.TrimSuffix(strings.TrimPrefix(string(t), "datetime('"), "')")
 	if dt.timezone, err = timezone.Load(name); err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (dt *DateTime) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "DateTime",
+			To:   "datetime",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -139,7 +139,7 @@ func (dt *DateTime) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "DateTime",
+			To:   "datetime",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

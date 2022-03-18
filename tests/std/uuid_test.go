@@ -28,13 +28,13 @@ import (
 func TestStdUUID(t *testing.T) {
 	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
 		const ddl = `
-			CREATE TEMPORARY TABLE test_uuid (
-				  Col1 UUID
-				, Col2 UUID
+			CREATE TEMPORARY STREAM test_uuid (
+				  Col1 uuid
+				, Col2 uuid
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_uuid")
+			conn.Exec("DROP STREAM test_uuid")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
@@ -67,10 +67,10 @@ func TestStdUUID(t *testing.T) {
 func TestStdNullableUUID(t *testing.T) {
 	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
 		const ddl = `
-			CREATE TEMPORARY TABLE test_uuid (
-				  Col1 Nullable(UUID)
-				, Col2 Nullable(UUID)
-			)
+			CREATE TEMPORARY STREAM test_uuid (
+				  Col1 nullable(uuid)
+				, Col2 nullable(uuid)
+			) ENGINE = Memory
 		`
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
@@ -96,7 +96,7 @@ func TestStdNullableUUID(t *testing.T) {
 				}
 			}
 		}
-		if _, err := conn.Exec("TRUNCATE TABLE test_uuid"); !assert.NoError(t, err) {
+		if _, err := conn.Exec("TRUNCATE STREAM test_uuid"); !assert.NoError(t, err) {
 			return
 		}
 		scope, err := conn.Begin()

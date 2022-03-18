@@ -33,7 +33,7 @@ type Interval struct {
 
 func (col *Interval) parse(t Type) (Interface, error) {
 	switch col.chType = t; col.chType {
-	case "IntervalSecond", "IntervalMinute", "IntervalHour", "IntervalDay", "IntervalWeek", "IntervalMonth", "IntervalYear":
+	case "interval_second", "interval_minute", "interval_hour", "interval_day", "interval_week", "interval_month", "interval_year":
 		return col, nil
 	}
 	return nil, &UnsupportedColumnTypeError{
@@ -58,7 +58,7 @@ func (col *Interval) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "Interval",
+			From: "interval",
 		}
 	}
 	return nil
@@ -66,14 +66,14 @@ func (col *Interval) ScanRow(dest interface{}, row int) error {
 
 func (Interval) Append(interface{}) ([]uint8, error) {
 	return nil, &Error{
-		ColumnType: "Interval",
+		ColumnType: "interval",
 		Err:        errors.New("data type values can't be stored in tables"),
 	}
 }
 
 func (Interval) AppendRow(interface{}) error {
 	return &Error{
-		ColumnType: "Interval",
+		ColumnType: "interval",
 		Err:        errors.New("data type values can't be stored in tables"),
 	}
 }
@@ -84,7 +84,7 @@ func (col *Interval) Decode(decoder *binary.Decoder, rows int) error {
 
 func (Interval) Encode(*binary.Encoder) error {
 	return &Error{
-		ColumnType: "Interval",
+		ColumnType: "interval",
 		Err:        errors.New("data type values can't be stored in tables"),
 	}
 }

@@ -44,13 +44,13 @@ func TestIssue476(t *testing.T) {
 	if assert.NoError(t, err) {
 
 		const ddl = `
-			CREATE TABLE issue_476 (
-				  Col1 Array(LowCardinality(String))
-				, Col2 Array(LowCardinality(String))
+			CREATE STREAM issue_476 (
+				  Col1 array(low_cardinality(string))
+				, Col2 array(low_cardinality(string))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE issue_476")
+			conn.Exec(ctx, "DROP STREAM issue_476")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_476"); assert.NoError(t, err) {

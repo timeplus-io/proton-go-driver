@@ -31,9 +31,9 @@ import (
 
 func TestStdExternalTable(t *testing.T) {
 	table1, err := external.NewTable("external_table_1",
-		external.Column("col1", "UInt8"),
-		external.Column("col2", "String"),
-		external.Column("col3", "DateTime"),
+		external.Column("col1", "uint8"),
+		external.Column("col2", "string"),
+		external.Column("col3", "datetime"),
 	)
 	if assert.NoError(t, err) {
 		for i := 0; i < 10; i++ {
@@ -41,9 +41,9 @@ func TestStdExternalTable(t *testing.T) {
 		}
 	}
 	table2, err := external.NewTable("external_table_2",
-		external.Column("col1", "UInt8"),
-		external.Column("col2", "String"),
-		external.Column("col3", "DateTime"),
+		external.Column("col1", "uint8"),
+		external.Column("col2", "string"),
+		external.Column("col3", "datetime"),
 	)
 	if assert.NoError(t, err) {
 		for i := 0; i < 10; i++ {

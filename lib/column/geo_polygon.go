@@ -30,7 +30,7 @@ type Polygon struct {
 }
 
 func (col *Polygon) Type() Type {
-	return "Polygon"
+	return "polygon"
 }
 
 func (col *Polygon) ScanType() reflect.Type {
@@ -60,7 +60,7 @@ func (col *Polygon) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "Polygon",
+			From: "polygon",
 			Hint: fmt.Sprintf("try using *%s", col.ScanType()),
 		}
 	}
@@ -79,7 +79,7 @@ func (col *Polygon) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Polygon",
+			To:   "polygon",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -92,7 +92,7 @@ func (col *Polygon) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Polygon",
+			To:   "polygon",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

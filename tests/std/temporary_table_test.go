@@ -28,9 +28,9 @@ import (
 func TestStdTemporaryTable(t *testing.T) {
 	const (
 		ddl = `
-			CREATE TEMPORARY TABLE clickhouse_test_temporary_table (
-				ID UInt64
-			);
+			CREATE TEMPORARY STREAM clickhouse_test_temporary_table (
+				ID uint64
+			) Engine = Memory;
 		`
 	)
 	if connect, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {

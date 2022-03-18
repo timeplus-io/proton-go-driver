@@ -32,15 +32,15 @@ func TestStdDecimal(t *testing.T) {
 			return
 		}
 		const ddl = `
-			CREATE TABLE test_decimal (
-				Col1 Decimal32(5)
-				, Col2 Decimal(18,5)
-				, Col3 Nullable(Decimal(15,3))
-				, Col4 Array(Decimal(15,3))
+			CREATE STREAM test_decimal (
+				Col1 decimal32(5)
+				, Col2 decimal(18,5)
+				, Col3 nullable(decimal(15,3))
+				, Col4 array(decimal(15,3))
 			) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_decimal")
+			conn.Exec("DROP STREAM test_decimal")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()

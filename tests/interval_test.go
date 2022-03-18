@@ -64,10 +64,10 @@ func TestInterval(t *testing.T) {
 		)
 
 		if assert.NoError(t, err) {
-			assert.Equal(t, "1 Second", col1)
-			assert.Equal(t, "4 Seconds", col2)
-			assert.Equal(t, "1 Minute", col3)
-			assert.Equal(t, "5 Minutes", col4)
+			assert.Equal(t, "1 interval_second", col1)
+			assert.Equal(t, "4 interval_seconds", col2)
+			assert.Equal(t, "1 interval_minute", col3)
+			assert.Equal(t, "5 interval_minutes", col4)
 		}
 	}
 }

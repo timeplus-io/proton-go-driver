@@ -94,7 +94,7 @@ func (dt *DateTime64) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "Datetime64",
+			From: "datetime64",
 		}
 	}
 	return nil
@@ -129,7 +129,7 @@ func (dt *DateTime64) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Datetime64",
+			To:   "datetime64",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -157,7 +157,7 @@ func (dt *DateTime64) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Datetime64",
+			To:   "datetime64",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

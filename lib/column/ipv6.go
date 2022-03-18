@@ -30,7 +30,7 @@ type IPv6 struct {
 }
 
 func (col *IPv6) Type() Type {
-	return "IPv6"
+	return "ipv6"
 }
 
 func (col *IPv6) ScanType() reflect.Type {
@@ -60,7 +60,7 @@ func (col *IPv6) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "IPv6",
+			From: "ipv6",
 		}
 	}
 	return nil
@@ -99,7 +99,7 @@ func (col *IPv6) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "IPv6",
+			To:   "ipv6",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -123,7 +123,7 @@ func (col *IPv6) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "IPv6",
+			To:   "ipv6",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

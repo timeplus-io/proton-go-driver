@@ -19,6 +19,7 @@ package tests
 
 import (
 	"context"
+	"github.com/ClickHouse/clickhouse-go/v2/lib/compress"
 	"testing"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -36,19 +37,19 @@ func TestAbort(t *testing.T) {
 				Password: "",
 			},
 			Compression: &clickhouse.Compression{
-				Method: clickhouse.CompressionLZ4,
+				Method: compress.NONE,
 			},
 			MaxOpenConns: 1,
 		})
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-		CREATE TABLE test_abort (
-			Col1 UInt8
+		CREATE STREAM test_abort (
+			Col1 uint8
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP TABLE test_abort")
+			conn.Exec(ctx, "DROP STREAM test_abort")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort"); assert.NoError(t, err) {
@@ -61,7 +62,7 @@ func TestAbort(t *testing.T) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort"); assert.NoError(t, err) {
 				if assert.NoError(t, batch.Append(uint8(1))) && assert.NoError(t, batch.Send()) {
 					var col1 uint8
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_abort").Scan(&col1); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT * FROM test_abort SETTINGS query_mode='table'").Scan(&col1); assert.NoError(t, err) {
 						assert.Equal(t, uint8(1), col1)
 					}
 				}

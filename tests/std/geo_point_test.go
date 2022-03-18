@@ -37,13 +37,13 @@ func TestStdGeoPoint(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE TABLE test_geo_point (
-			Col1 Point
-			, Col2 Array(Point)
+		CREATE STREAM test_geo_point (
+			Col1 point
+			, Col2 array(point)
 		) Engine Memory
 		`
 		defer func() {
-			conn.Exec("DROP TABLE test_geo_point")
+			conn.Exec("DROP STREAM test_geo_point")
 		}()
 		if _, err := conn.ExecContext(ctx, ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()

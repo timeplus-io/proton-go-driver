@@ -35,7 +35,7 @@ type Date struct {
 }
 
 func (dt *Date) Type() Type {
-	return "Date"
+	return "date"
 }
 
 func (col *Date) ScanType() reflect.Type {
@@ -65,7 +65,7 @@ func (dt *Date) ScanRow(dest interface{}, row int) error {
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
-			From: "Date",
+			From: "date",
 		}
 	}
 	return nil
@@ -98,7 +98,7 @@ func (dt *Date) Append(v interface{}) (nulls []uint8, err error) {
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
-			To:   "Date",
+			To:   "date",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
@@ -124,7 +124,7 @@ func (dt *Date) AppendRow(v interface{}) error {
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
-			To:   "Date",
+			To:   "date",
 			From: fmt.Sprintf("%T", v),
 		}
 	}

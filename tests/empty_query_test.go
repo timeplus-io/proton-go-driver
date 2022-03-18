@@ -40,15 +40,15 @@ func TestEmptyQuery(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-		CREATE TEMPORARY TABLE test_empty_query (
-			  Col1 UInt8
-			, Col2 Array(UInt8)
-			, Col3 LowCardinality(String)
-			, NestedCol  Nested (
-				  First  UInt32
-				, Second UInt32
+		CREATE TEMPORARY STREAM test_empty_query (
+			  Col1 uint8
+			, Col2 array(uint8)
+			, Col3 low_cardinality(string)
+			, NestedCol  nested (
+				  First  uint32
+				, Second uint32
 			)
-		)
+		) ENGINE = Memory
 		`
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Second))
