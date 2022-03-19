@@ -24,7 +24,7 @@
 package column
 
 import (
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 )
 
 func (col *Float32) Decode(decoder *binary.Decoder, rows int) error {

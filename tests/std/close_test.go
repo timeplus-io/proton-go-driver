@@ -21,8 +21,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/timeplus-io/proton-go-driver/v2"
 )
 
 func TestStdConnClose(t *testing.T) {

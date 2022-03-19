@@ -23,8 +23,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/google/uuid"
+	"github.com/timeplus-io/proton-go-driver/v2"
 )
 
 func example() error {
@@ -79,9 +79,9 @@ func example() error {
 			[]string{"Q", "W", "E", "R", "T", "Y"}, // Array(String)
 			[]interface{}{ // Tuple(String, UInt8, Array(Map(String, String)))
 				"String Value", uint8(5), []map[string]string{
-					map[string]string{"key": "value"},
-					map[string]string{"key": "value"},
-					map[string]string{"key": "value"},
+					{"key": "value"},
+					{"key": "value"},
+					{"key": "value"},
 				},
 			},
 			time.Now(),

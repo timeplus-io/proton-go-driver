@@ -23,8 +23,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/timeplus-io/proton-go-driver/v2"
 )
 
 func TestTuple(t *testing.T) {
@@ -70,8 +70,8 @@ func TestTuple(t *testing.T) {
 						"key": "value",
 					}}
 					col4Data = [][][]interface{}{
-						[][]interface{}{
-							[]interface{}{"Hi", int64(42)},
+						{
+							{"Hi", int64(42)},
 						},
 					}
 					col5Data = []interface{}{

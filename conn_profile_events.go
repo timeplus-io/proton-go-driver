@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2/lib/proto"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/proto"
 )
 
 type ProfileEvent struct {

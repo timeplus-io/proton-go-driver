@@ -27,7 +27,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2/lib/compress"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/compress"
 )
 
 var CompressionLZ4 compress.Method = compress.LZ4

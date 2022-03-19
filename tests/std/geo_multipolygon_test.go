@@ -22,9 +22,9 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/paulmach/orb"
 	"github.com/stretchr/testify/assert"
+	"github.com/timeplus-io/proton-go-driver/v2"
 )
 
 func TestStdGeoMultiPolygon(t *testing.T) {
@@ -77,21 +77,21 @@ func TestStdGeoMultiPolygon(t *testing.T) {
 					col2Data = []orb.MultiPolygon{
 						[]orb.Polygon{
 							[]orb.Ring{
-								orb.Ring{
+								{
 									orb.Point{1, 2},
 									orb.Point{1, 22},
 								},
-								orb.Ring{
+								{
 									orb.Point{1, 23},
 									orb.Point{12, 2},
 								},
 							},
 							[]orb.Ring{
-								orb.Ring{
+								{
 									orb.Point{21, 2},
 									orb.Point{1, 222},
 								},
-								orb.Ring{
+								{
 									orb.Point{21, 23},
 									orb.Point{12, 22},
 								},
@@ -99,21 +99,21 @@ func TestStdGeoMultiPolygon(t *testing.T) {
 						},
 						[]orb.Polygon{
 							[]orb.Ring{
-								orb.Ring{
+								{
 									orb.Point{11, 2},
 									orb.Point{1, 22},
 								},
-								orb.Ring{
+								{
 									orb.Point{1, 23},
 									orb.Point{12, 22},
 								},
 							},
 							[]orb.Ring{
-								orb.Ring{
+								{
 									orb.Point{21, 2},
 									orb.Point{1, 222},
 								},
-								orb.Ring{
+								{
 									orb.Point{21, 23},
 									orb.Point{12, 22},
 								},

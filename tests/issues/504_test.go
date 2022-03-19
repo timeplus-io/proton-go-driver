@@ -21,8 +21,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/timeplus-io/proton-go-driver/v2"
 )
 
 func Test504(t *testing.T) {
@@ -63,8 +63,8 @@ func Test504(t *testing.T) {
 		WHERE (Col1, Col2) IN ($1)
 		`
 		err := conn.Select(ctx, &result, query, [][]interface{}{
-			[]interface{}{"A", 2},
-			[]interface{}{"A", 4},
+			{"A", 2},
+			{"A", 4},
 		})
 
 		if assert.NoError(t, err) {

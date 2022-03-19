@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/timeplus-io/proton-go-driver/v2"
 )
 
 const ddl = `

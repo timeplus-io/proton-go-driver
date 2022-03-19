@@ -20,8 +20,8 @@ package clickhouse
 import (
 	"reflect"
 
-	"github.com/ClickHouse/clickhouse-go/v2/lib/column"
-	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/column"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/driver"
 )
 
 type columnType struct {
