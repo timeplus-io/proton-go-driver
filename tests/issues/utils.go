@@ -22,7 +22,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/driver"
 )
 
 func init() {

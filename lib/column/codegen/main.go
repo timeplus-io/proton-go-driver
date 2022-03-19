@@ -50,23 +50,23 @@ type _type struct {
 func init() {
 	for _, size := range []int{8, 16, 32, 64} {
 		types = append(types, _type{
-			Size:   size,
-			ChType: fmt.Sprintf("Int%d", size),
+			Size:       size,
+			ChType:     fmt.Sprintf("Int%d", size),
 			ChTypeName: fmt.Sprintf("int%d", size),
-			GoType: fmt.Sprintf("int%d", size),
+			GoType:     fmt.Sprintf("int%d", size),
 		}, _type{
-			Size:   size,
-			ChType: fmt.Sprintf("UInt%d", size),
+			Size:       size,
+			ChType:     fmt.Sprintf("UInt%d", size),
 			ChTypeName: fmt.Sprintf("uint%d", size),
-			GoType: fmt.Sprintf("uint%d", size),
+			GoType:     fmt.Sprintf("uint%d", size),
 		})
 	}
 	for _, size := range []int{32, 64} {
 		types = append(types, _type{
-			Size:   size,
-			ChType: fmt.Sprintf("Float%d", size),
+			Size:       size,
+			ChType:     fmt.Sprintf("Float%d", size),
 			ChTypeName: fmt.Sprintf("float%d", size),
-			GoType: fmt.Sprintf("float%d", size),
+			GoType:     fmt.Sprintf("float%d", size),
 		})
 	}
 	sort.Slice(types, func(i, j int) bool {

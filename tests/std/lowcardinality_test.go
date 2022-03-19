@@ -24,8 +24,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/timeplus-io/proton-go-driver/v2"
 )
 
 func TestStdLowCardinality(t *testing.T) {
@@ -70,13 +70,13 @@ func TestStdLowCardinality(t *testing.T) {
 						col4Data = rnd + int32(i)
 						col5Data = []string{"A", "B", "C"}
 						col6Data = [][]string{
-							[]string{"Q", "W", "E"},
-							[]string{"R", "T", "Y"},
+							{"Q", "W", "E"},
+							{"R", "T", "Y"},
 						}
 						col7Data = &col2Data
 						col8Data = [][]*string{
-							[]*string{&col2Data, nil, &col2Data},
-							[]*string{nil, &col2Data, nil},
+							{&col2Data, nil, &col2Data},
+							{nil, &col2Data, nil},
 						}
 					)
 					if i%2 == 0 {
@@ -112,8 +112,8 @@ func TestStdLowCardinality(t *testing.T) {
 							assert.Equal(t, rnd+int32(i), col4)
 							assert.Equal(t, []string{"A", "B", "C"}, col5)
 							assert.Equal(t, [][]string{
-								[]string{"Q", "W", "E"},
-								[]string{"R", "T", "Y"},
+								{"Q", "W", "E"},
+								{"R", "T", "Y"},
 							}, col6)
 							switch {
 							case i%2 == 0:
@@ -123,8 +123,8 @@ func TestStdLowCardinality(t *testing.T) {
 							}
 							col2Data := "RU"
 							assert.Equal(t, [][]*string{
-								[]*string{&col2Data, nil, &col2Data},
-								[]*string{nil, &col2Data, nil},
+								{&col2Data, nil, &col2Data},
+								{nil, &col2Data, nil},
 							}, col8)
 						}
 					}

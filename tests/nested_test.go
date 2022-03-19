@@ -21,8 +21,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/timeplus-io/proton-go-driver/v2"
 )
 
 func TestNested(t *testing.T) {
@@ -71,14 +71,14 @@ func TestNested(t *testing.T) {
 					col2Data = []uint8{10, 20, 30}
 					col3Data = []uint8{101, 201, 230} // Col2.Col1_N2
 					col4Data = [][][]interface{}{
-						[][]interface{}{
-							[]interface{}{uint8(1), uint8(2)},
+						{
+							{uint8(1), uint8(2)},
 						},
-						[][]interface{}{
-							[]interface{}{uint8(1), uint8(2)},
+						{
+							{uint8(1), uint8(2)},
 						},
-						[][]interface{}{
-							[]interface{}{uint8(1), uint8(2)},
+						{
+							{uint8(1), uint8(2)},
 						},
 					}
 				)

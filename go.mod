@@ -1,9 +1,9 @@
-module github.com/ClickHouse/clickhouse-go/v2
+module github.com/timeplus-io/proton-go-driver/v2
 
 go 1.16
 
 require (
-	github.com/ClickHouse/clickhouse-go v1.5.3
+	github.com/timeplus-io/proton-go-driver v1.5.3
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/mkevac/debugcharts v0.0.0-20191222103121-ae1c48aa8615

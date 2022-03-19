@@ -44,11 +44,11 @@ func TestStructIdx(t *testing.T) {
 		Col1: "X",
 	}))
 	assert.Equal(t, map[string][]int{
-		"Col1":   []int{0},
-		"Col2":   []int{1},
-		"ColPtr": []int{2},
-		"named":  []int{3, 0},
-		"Col6":   []int{3, 1, 0},
+		"Col1":   {0},
+		"Col2":   {1},
+		"ColPtr": {2},
+		"named":  {3, 0},
+		"Col6":   {3, 1, 0},
 	}, index)
 }
 

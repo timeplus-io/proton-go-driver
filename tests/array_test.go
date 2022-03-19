@@ -22,8 +22,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/timeplus-io/proton-go-driver/v2"
 )
 
 func TestArray(t *testing.T) {
@@ -59,26 +59,26 @@ func TestArray(t *testing.T) {
 					timestamp = time.Now().Truncate(time.Second)
 					col1Data  = []string{"A", "b", "c"}
 					col2Data  = [][]uint32{
-						[]uint32{1, 2},
-						[]uint32{3, 87},
-						[]uint32{33, 3, 847},
+						{1, 2},
+						{3, 87},
+						{33, 3, 847},
 					}
 					col3Data = [][][]time.Time{
-						[][]time.Time{
-							[]time.Time{
+						{
+							{
 								timestamp,
 								timestamp,
 								timestamp,
 								timestamp,
 							},
 						},
-						[][]time.Time{
-							[]time.Time{
+						{
+							{
 								timestamp,
 								timestamp,
 								timestamp,
 							},
-							[]time.Time{
+							{
 								timestamp,
 								timestamp,
 							},
@@ -146,26 +146,26 @@ func TestColumnarArray(t *testing.T) {
 				timestamp = time.Now().Truncate(time.Second)
 				col1Data  = []string{"A", "b", "c"}
 				col2Data  = [][]uint32{
-					[]uint32{1, 2},
-					[]uint32{3, 87},
-					[]uint32{33, 3, 847},
+					{1, 2},
+					{3, 87},
+					{33, 3, 847},
 				}
 				col3Data = [][][]time.Time{
-					[][]time.Time{
-						[]time.Time{
+					{
+						{
 							timestamp,
 							timestamp,
 							timestamp,
 							timestamp,
 						},
 					},
-					[][]time.Time{
-						[]time.Time{
+					{
+						{
 							timestamp,
 							timestamp,
 							timestamp,
 						},
-						[]time.Time{
+						{
 							timestamp,
 							timestamp,
 						},

@@ -24,7 +24,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 )
 
 const indexTypeMask = 0b11111111

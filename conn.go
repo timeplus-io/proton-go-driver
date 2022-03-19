@@ -27,9 +27,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
-	"github.com/ClickHouse/clickhouse-go/v2/lib/io"
-	"github.com/ClickHouse/clickhouse-go/v2/lib/proto"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/io"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/proto"
 )
 
 func dial(ctx context.Context, addr string, num int, opt *Options) (*connect, error) {

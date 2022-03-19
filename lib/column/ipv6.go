@@ -22,7 +22,7 @@ import (
 	"net"
 	"reflect"
 
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 )
 
 type IPv6 struct {

@@ -23,7 +23,7 @@ import (
 	"log"
 	"time"
 
-	_ "github.com/ClickHouse/clickhouse-go/v2"
+	_ "github.com/timeplus-io/proton-go-driver/v2"
 )
 
 const query = `
