@@ -28,9 +28,9 @@ import (
 func example() error {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
+		conn, err = proton.Open(&proton.Options{
 			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
@@ -90,7 +90,7 @@ func example() error {
 	return err
 }
 
-func examplePrep(ctx context.Context, conn clickhouse.Conn) error {
+func examplePrep(ctx context.Context, conn proton.Conn) error {
 	batch, err := conn.PrepareBatch(ctx, "INSERT INTO example")
 	if err != nil {
 		return err

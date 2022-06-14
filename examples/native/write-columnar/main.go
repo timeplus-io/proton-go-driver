@@ -34,7 +34,7 @@ CREATE TEMPORARY TABLE example (
 )
 `
 
-func example(conn clickhouse.Conn) error {
+func example(conn proton.Conn) error {
 	batch, err := conn.PrepareBatch(context.Background(), "INSERT INTO example")
 	if err != nil {
 		return err
@@ -69,9 +69,9 @@ func example(conn clickhouse.Conn) error {
 func main() {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
+		conn, err = proton.Open(&proton.Options{
 			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",

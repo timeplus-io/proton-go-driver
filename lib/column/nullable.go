@@ -71,7 +71,7 @@ func (col *Nullable) Row(i int, ptr bool) interface{} {
 			return nil
 		}
 	}
-	return col.base.Row(i, true)
+	return col.base.Row(i, ptr)
 }
 
 func (col *Nullable) ScanRow(dest interface{}, row int) error {

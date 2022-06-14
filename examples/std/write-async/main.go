@@ -36,14 +36,14 @@ CREATE TEMPORARY TABLE example (
 `
 
 func main() {
-	conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000")
+	conn, err := sql.Open("proton", "proton://127.0.0.1:9000")
 	if err != nil {
 		log.Fatal(err)
 	}
 	if _, err := conn.Exec(ddl); err != nil {
 		log.Fatal(err)
 	}
-	ctx := clickhouse.Context(context.Background(), clickhouse.WithStdAsync(false))
+	ctx := proton.Context(context.Background(), proton.WithStdAsync(false))
 	{
 		for i := 0; i < 100; i++ {
 			_, err := conn.ExecContext(ctx, fmt.Sprintf(`INSERT INTO example VALUES (

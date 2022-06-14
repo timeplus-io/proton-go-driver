@@ -42,15 +42,15 @@ func (bin *BinFixedString) UnmarshalBinary(b []byte) error {
 func TestFixedString(t *testing.T) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:7587"},
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
 			},
-			Compression: &clickhouse.Compression{
-				Method: clickhouse.CompressionLZ4,
+			Compression: &proton.Compression{
+				Method: proton.CompressionLZ4,
 			},
 			//Debug: true,
 		})
@@ -119,15 +119,15 @@ func TestFixedString(t *testing.T) {
 func TestNullableFixedString(t *testing.T) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:7587"},
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
 			},
-			Compression: &clickhouse.Compression{
-				Method: clickhouse.CompressionLZ4,
+			Compression: &proton.Compression{
+				Method: proton.CompressionLZ4,
 			},
 			//Debug: true,
 		})
@@ -189,15 +189,15 @@ func TestNullableFixedString(t *testing.T) {
 func TestColumnarFixedString(t *testing.T) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:7587"},
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
 			},
-			Compression: &clickhouse.Compression{
-				Method: clickhouse.CompressionLZ4,
+			Compression: &proton.Compression{
+				Method: proton.CompressionLZ4,
 			},
 			//Debug: true,
 		})
@@ -273,9 +273,9 @@ func TestColumnarFixedString(t *testing.T) {
 func BenchmarkFixedString(b *testing.B) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:7587"},
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
@@ -316,9 +316,9 @@ func BenchmarkFixedString(b *testing.B) {
 func BenchmarkColumnarFixedString(b *testing.B) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:7587"},
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",

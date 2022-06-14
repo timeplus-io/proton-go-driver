@@ -26,7 +26,7 @@ import (
 )
 
 func TestStdDateTime64(t *testing.T) {
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
 		if err := checkMinServerVersion(conn, 20, 3); err != nil {
 			t.Skip(err.Error())
 			return

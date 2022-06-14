@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package clickhouse
+package proton
 
 import (
 	"context"
@@ -26,7 +26,7 @@ import (
 	"github.com/timeplus-io/proton-go-driver/v2/lib/proto"
 )
 
-func (ch *clickhouse) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (ch *proton) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
 	value := reflect.ValueOf(dest)
 	if value.Kind() != reflect.Ptr {
 		return &OpError{

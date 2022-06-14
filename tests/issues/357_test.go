@@ -26,7 +26,7 @@ import (
 )
 
 func TestIssue357(t *testing.T) {
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
 		const ddl = ` -- foo.bar DDL comment
 		CREATE TEMPORARY STREAM issue_357 (
 			  Col1 int32

@@ -27,32 +27,32 @@ import (
 )
 
 func example() error {
-	conn := clickhouse.OpenDB(&clickhouse.Options{
+	conn := proton.OpenDB(&proton.Options{
 		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
 		},
-		Settings: clickhouse.Settings{
+		Settings: proton.Settings{
 			"max_execution_time": 60,
 		},
 		DialTimeout: 5 * time.Second,
-		Compression: &clickhouse.Compression{
-			clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			proton.CompressionLZ4,
 		},
 		//Debug: true,
 	})
 	conn.SetMaxIdleConns(5)
 	conn.SetMaxOpenConns(10)
 	conn.SetConnMaxLifetime(time.Hour)
-	ctx := clickhouse.Context(context.Background(), clickhouse.WithSettings(clickhouse.Settings{
+	ctx := proton.Context(context.Background(), proton.WithSettings(proton.Settings{
 		"max_block_size": 10,
-	}), clickhouse.WithProgress(func(p *clickhouse.Progress) {
+	}), proton.WithProgress(func(p *proton.Progress) {
 		fmt.Println("progress: ", p)
 	}))
 	if err := conn.PingContext(ctx); err != nil {
-		if exception, ok := err.(*clickhouse.Exception); ok {
+		if exception, ok := err.(*proton.Exception); ok {
 			fmt.Printf("Catch exception [%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
 		}
 		return err

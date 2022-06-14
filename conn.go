@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package clickhouse
+package proton
 
 import (
 	"context"
@@ -53,7 +53,7 @@ func dial(ctx context.Context, addr string, num int, opt *Options) (*connect, er
 		return nil, err
 	}
 	if opt.Debug {
-		debugf = log.New(os.Stdout, fmt.Sprintf("[clickhouse][conn=%d][%s]", num, conn.RemoteAddr()), 0).Printf
+		debugf = log.New(os.Stdout, fmt.Sprintf("[proton][conn=%d][%s]", num, conn.RemoteAddr()), 0).Printf
 	}
 	var compression bool
 	if opt.Compression != nil {

@@ -25,7 +25,7 @@ import (
 )
 
 func Test470PR(t *testing.T) {
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
 		const ddl = `
 		CREATE STREAM issue_470_pr (
 			Col1 array(string)

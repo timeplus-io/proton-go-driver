@@ -36,7 +36,7 @@ func main() {
 	}()
 
 	var err error
-	conn, err = sql.Open("clickhouse", "tcp://127.0.0.1:9000?debug=false")
+	conn, err = sql.Open("proton", "tcp://127.0.0.1:9000?debug=false")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func main() {
 	conn.SetMaxIdleConns(1)
 	conn.SetConnMaxLifetime(15 * time.Minute)
 	if err := conn.Ping(); err != nil {
-		if exception, ok := err.(*clickhouse.Exception); ok {
+		if exception, ok := err.(*proton.Exception); ok {
 			fmt.Printf("[%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
 		} else {
 			fmt.Println(err)

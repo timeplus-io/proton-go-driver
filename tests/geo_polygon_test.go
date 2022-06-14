@@ -23,29 +23,29 @@ import (
 
 	"github.com/paulmach/orb"
 	"github.com/stretchr/testify/assert"
-	"github.com/timeplus-io/proton-go-driver/v2"
+	proton "github.com/timeplus-io/proton-go-driver/v2"
 )
 
 func TestGeoPolygon(t *testing.T) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:7587"},
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
 			},
-			Compression: &clickhouse.Compression{
-				Method: clickhouse.CompressionLZ4,
+			Compression: &proton.Compression{
+				Method: proton.CompressionLZ4,
 			},
-			Settings: clickhouse.Settings{
+			Settings: proton.Settings{
 				"allow_experimental_geo_types": 1,
 			},
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 21, 12); err != nil {
+		if err := checkMinServerVersion(conn, 99, 99); err != nil {
 			t.Skip(err.Error())
 			return
 		}

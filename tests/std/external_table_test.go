@@ -50,9 +50,9 @@ func TestStdExternalTable(t *testing.T) {
 			assert.NoError(t, table2.Append(uint8(i), fmt.Sprintf("value_%d", i), time.Now()))
 		}
 	}
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
-		ctx := clickhouse.Context(context.Background(),
-			clickhouse.WithExternalTable(table1, table2),
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+		ctx := proton.Context(context.Background(),
+			proton.WithExternalTable(table1, table2),
 		)
 		if rows, err := conn.QueryContext(ctx, "SELECT * FROM external_table_1"); assert.NoError(t, err) {
 			for rows.Next() {

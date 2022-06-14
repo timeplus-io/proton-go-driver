@@ -26,19 +26,19 @@ import (
 )
 
 func TestStdConnClose(t *testing.T) {
-	conn := clickhouse.OpenDB(&clickhouse.Options{
+	conn := proton.OpenDB(&proton.Options{
 		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
 		},
-		Settings: clickhouse.Settings{
+		Settings: proton.Settings{
 			"max_execution_time": 60,
 		},
 		DialTimeout: 5 * time.Second,
-		Compression: &clickhouse.Compression{
-			clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			proton.CompressionLZ4,
 		},
 		//	Debug: true,
 	})

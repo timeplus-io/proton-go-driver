@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package clickhouse
+package proton
 
 import (
 	"github.com/timeplus-io/proton-go-driver/v2/lib/proto"

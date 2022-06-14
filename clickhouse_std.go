@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package clickhouse
+package proton
 
 import (
 	"context"
@@ -64,7 +64,7 @@ func (o *stdConnOpener) Connect(ctx context.Context) (_ driver.Conn, err error) 
 }
 
 func init() {
-	sql.Register("clickhouse", &stdDriver{})
+	sql.Register("proton", &stdDriver{})
 }
 
 func OpenDB(opt *Options) *sql.DB {
@@ -134,7 +134,7 @@ func (std *stdDriver) CheckNamedValue(nv *driver.NamedValue) error { return nil 
 func (std *stdDriver) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {
 	if options := queryOptions(ctx); options.async.ok {
 		if len(args) != 0 {
-			return nil, errors.New("clickhouse: you can't use parameters in an asynchronous insert")
+			return nil, errors.New("proton: you can't use parameters in an asynchronous insert")
 		}
 		return driver.RowsAffected(0), std.conn.asyncInsert(ctx, query, options.async.wait)
 	}

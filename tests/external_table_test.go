@@ -49,21 +49,21 @@ func TestExternalTable(t *testing.T) {
 			assert.NoError(t, table2.Append(uint8(i), fmt.Sprintf("value_%d", i), time.Now()))
 		}
 	}
-	conn, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{
+	conn, err := proton.Open(&proton.Options{
+		Addr: []string{"127.0.0.1:7587"},
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
 		},
-		Compression: &clickhouse.Compression{
-			Method: clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			Method: proton.CompressionLZ4,
 		},
 		//	Debug: true,
 	})
 	if assert.NoError(t, err) {
-		ctx := clickhouse.Context(context.Background(),
-			clickhouse.WithExternalTable(table1, table2),
+		ctx := proton.Context(context.Background(),
+			proton.WithExternalTable(table1, table2),
 		)
 		if rows, err := conn.Query(ctx, "SELECT * FROM external_table_1"); assert.NoError(t, err) {
 			for rows.Next() {

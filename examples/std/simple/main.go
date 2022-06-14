@@ -28,20 +28,20 @@ import (
 )
 
 func example() error {
-	conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000?dial_timeout=1s&compress=true")
+	conn, err := sql.Open("proton", "proton://127.0.0.1:9000?dial_timeout=1s&compress=true")
 	if err != nil {
 		return err
 	}
 	conn.SetMaxIdleConns(5)
 	conn.SetMaxOpenConns(10)
 	conn.SetConnMaxLifetime(time.Hour)
-	ctx := clickhouse.Context(context.Background(), clickhouse.WithSettings(clickhouse.Settings{
+	ctx := proton.Context(context.Background(), proton.WithSettings(proton.Settings{
 		"max_block_size": 10,
-	}), clickhouse.WithProgress(func(p *clickhouse.Progress) {
+	}), proton.WithProgress(func(p *proton.Progress) {
 		fmt.Println("progress: ", p)
 	}))
 	if err := conn.PingContext(ctx); err != nil {
-		if exception, ok := err.(*clickhouse.Exception); ok {
+		if exception, ok := err.(*proton.Exception); ok {
 			fmt.Printf("Catch exception [%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
 		}
 		return err

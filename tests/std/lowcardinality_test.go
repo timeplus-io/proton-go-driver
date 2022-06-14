@@ -29,10 +29,10 @@ import (
 )
 
 func TestStdLowCardinality(t *testing.T) {
-	ctx := clickhouse.Context(context.Background(), clickhouse.WithSettings(clickhouse.Settings{
+	ctx := proton.Context(context.Background(), proton.WithSettings(proton.Settings{
 		"allow_suspicious_low_cardinality_types": 1,
 	}))
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
 		if err := checkMinServerVersion(conn, 19, 11); err != nil {
 			t.Skip(err.Error())
 			return

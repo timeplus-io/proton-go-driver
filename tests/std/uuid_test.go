@@ -26,7 +26,7 @@ import (
 )
 
 func TestStdUUID(t *testing.T) {
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
 		const ddl = `
 			CREATE TEMPORARY STREAM test_uuid (
 				  Col1 uuid
@@ -65,7 +65,7 @@ func TestStdUUID(t *testing.T) {
 }
 
 func TestStdNullableUUID(t *testing.T) {
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
 		const ddl = `
 			CREATE TEMPORARY STREAM test_uuid (
 				  Col1 nullable(uuid)

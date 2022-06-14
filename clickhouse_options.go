@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package clickhouse
+package proton
 
 import (
 	"context"
@@ -104,7 +104,7 @@ func (o *Options) fromDSN(in string) error {
 		case "dial_timeout":
 			duration, err := time.ParseDuration(params.Get(v))
 			if err != nil {
-				return fmt.Errorf("clickhouse [dsn parse]: dial timeout: %s", err)
+				return fmt.Errorf("proton [dsn parse]: dial timeout: %s", err)
 			}
 			o.DialTimeout = duration
 		case "secure":

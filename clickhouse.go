@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package clickhouse
+package proton
 
 import (
 	"context"
@@ -40,10 +40,10 @@ type (
 )
 
 var (
-	ErrBatchAlreadySent               = errors.New("clickhouse: batch has already been sent")
-	ErrAcquireConnTimeout             = errors.New("clickhouse: acquire conn timeout. you can increase the number of max open conn or the dial timeout")
-	ErrUnsupportedServerRevision      = errors.New("clickhouse: unsupported server revision")
-	ErrBindMixedNamedAndNumericParams = errors.New("clickhouse [bind]: mixed named and numeric parameters")
+	ErrBatchAlreadySent               = errors.New("proton: batch has already been sent")
+	ErrAcquireConnTimeout             = errors.New("proton: acquire conn timeout. you can increase the number of max open conn or the dial timeout")
+	ErrUnsupportedServerRevision      = errors.New("proton: unsupported server revision")
+	ErrBindMixedNamedAndNumericParams = errors.New("proton [bind]: mixed named and numeric parameters")
 )
 
 type OpError struct {
@@ -55,38 +55,38 @@ type OpError struct {
 func (e *OpError) Error() string {
 	switch err := e.Err.(type) {
 	case *column.Error:
-		return fmt.Sprintf("clickhouse [%s]: (%s %s) %s", e.Op, e.ColumnName, err.ColumnType, err.Err)
+		return fmt.Sprintf("proton [%s]: (%s %s) %s", e.Op, e.ColumnName, err.ColumnType, err.Err)
 	case *column.ColumnConverterError:
 		var hint string
 		if len(err.Hint) != 0 {
 			hint += ". " + err.Hint
 		}
-		return fmt.Sprintf("clickhouse [%s]: (%s) converting %s to %s is unsupported%s",
+		return fmt.Sprintf("proton [%s]: (%s) converting %s to %s is unsupported%s",
 			err.Op, e.ColumnName,
 			err.From, err.To,
 			hint,
 		)
 	}
-	return fmt.Sprintf("clickhouse [%s]: %s", e.Op, e.Err)
+	return fmt.Sprintf("proton [%s]: %s", e.Op, e.Err)
 }
 
 func Open(opt *Options) (driver.Conn, error) {
 	opt.setDefaults()
-	return &clickhouse{
+	return &proton{
 		opt:  opt,
 		idle: make(chan *connect, opt.MaxIdleConns),
 		open: make(chan struct{}, opt.MaxOpenConns),
 	}, nil
 }
 
-type clickhouse struct {
+type proton struct {
 	opt    *Options
 	idle   chan *connect
 	open   chan struct{}
 	connID int64
 }
 
-func (clickhouse) Contributors() []string {
+func (proton) Contributors() []string {
 	list := contributors.List
 	if len(list[len(list)-1]) == 0 {
 		return list[:len(list)-1]
@@ -94,7 +94,7 @@ func (clickhouse) Contributors() []string {
 	return list
 }
 
-func (ch *clickhouse) ServerVersion() (*driver.ServerVersion, error) {
+func (ch *proton) ServerVersion() (*driver.ServerVersion, error) {
 	var (
 		ctx, cancel = context.WithTimeout(context.Background(), ch.opt.DialTimeout)
 		conn, err   = ch.acquire(ctx)
@@ -107,7 +107,7 @@ func (ch *clickhouse) ServerVersion() (*driver.ServerVersion, error) {
 	return &conn.server, nil
 }
 
-func (ch *clickhouse) Query(ctx context.Context, query string, args ...interface{}) (rows driver.Rows, err error) {
+func (ch *proton) Query(ctx context.Context, query string, args ...interface{}) (rows driver.Rows, err error) {
 	conn, err := ch.acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -115,7 +115,7 @@ func (ch *clickhouse) Query(ctx context.Context, query string, args ...interface
 	return conn.query(ctx, ch.release, query, args...)
 }
 
-func (ch *clickhouse) QueryRow(ctx context.Context, query string, args ...interface{}) (rows driver.Row) {
+func (ch *proton) QueryRow(ctx context.Context, query string, args ...interface{}) (rows driver.Row) {
 	conn, err := ch.acquire(ctx)
 	if err != nil {
 		return &row{
@@ -125,7 +125,7 @@ func (ch *clickhouse) QueryRow(ctx context.Context, query string, args ...interf
 	return conn.queryRow(ctx, ch.release, query, args...)
 }
 
-func (ch *clickhouse) Exec(ctx context.Context, query string, args ...interface{}) error {
+func (ch *proton) Exec(ctx context.Context, query string, args ...interface{}) error {
 	conn, err := ch.acquire(ctx)
 	if err != nil {
 		return err
@@ -138,7 +138,7 @@ func (ch *clickhouse) Exec(ctx context.Context, query string, args ...interface{
 	return nil
 }
 
-func (ch *clickhouse) PrepareBatch(ctx context.Context, query string) (driver.Batch, error) {
+func (ch *proton) PrepareBatch(ctx context.Context, query string) (driver.Batch, error) {
 	conn, err := ch.acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -146,7 +146,7 @@ func (ch *clickhouse) PrepareBatch(ctx context.Context, query string) (driver.Ba
 	return conn.prepareBatch(ctx, query, ch.release)
 }
 
-func (ch *clickhouse) AsyncInsert(ctx context.Context, query string, wait bool) error {
+func (ch *proton) AsyncInsert(ctx context.Context, query string, wait bool) error {
 	conn, err := ch.acquire(ctx)
 	if err != nil {
 		return err
@@ -159,7 +159,7 @@ func (ch *clickhouse) AsyncInsert(ctx context.Context, query string, wait bool) 
 	return nil
 }
 
-func (ch *clickhouse) Ping(ctx context.Context) (err error) {
+func (ch *proton) Ping(ctx context.Context) (err error) {
 	conn, err := ch.acquire(ctx)
 	if err != nil {
 		return err
@@ -172,7 +172,7 @@ func (ch *clickhouse) Ping(ctx context.Context) (err error) {
 	return nil
 }
 
-func (ch *clickhouse) Stats() driver.Stats {
+func (ch *proton) Stats() driver.Stats {
 	return driver.Stats{
 		Open:         len(ch.open),
 		Idle:         len(ch.idle),
@@ -181,7 +181,7 @@ func (ch *clickhouse) Stats() driver.Stats {
 	}
 }
 
-func (ch *clickhouse) dial(ctx context.Context) (conn *connect, err error) {
+func (ch *proton) dial(ctx context.Context) (conn *connect, err error) {
 	connID := int(atomic.AddInt64(&ch.connID, 1))
 	for num := range ch.opt.Addr {
 		if ch.opt.ConnOpenStrategy == ConnOpenRoundRobin {
@@ -194,7 +194,7 @@ func (ch *clickhouse) dial(ctx context.Context) (conn *connect, err error) {
 	return nil, err
 }
 
-func (ch *clickhouse) acquire(ctx context.Context) (conn *connect, err error) {
+func (ch *proton) acquire(ctx context.Context) (conn *connect, err error) {
 	timer := time.NewTimer(ch.opt.DialTimeout)
 	defer timer.Stop()
 	select {
@@ -235,7 +235,7 @@ func (ch *clickhouse) acquire(ctx context.Context) (conn *connect, err error) {
 	return conn, nil
 }
 
-func (ch *clickhouse) release(conn *connect, err error) {
+func (ch *proton) release(conn *connect, err error) {
 	if conn.released {
 		return
 	}
@@ -255,7 +255,7 @@ func (ch *clickhouse) release(conn *connect, err error) {
 	}
 }
 
-func (ch *clickhouse) Close() error {
+func (ch *proton) Close() error {
 	for {
 		select {
 		case c := <-ch.idle:

@@ -28,7 +28,7 @@ import (
 )
 
 func example() error {
-	conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000?dial_timeout=1s&compress=true")
+	conn, err := sql.Open("proton", "proton://127.0.0.1:9000?dial_timeout=1s&compress=true")
 	if err != nil {
 		return err
 	}
