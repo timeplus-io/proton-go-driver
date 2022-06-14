@@ -117,6 +117,10 @@ func (t Type) Column() (Interface, error) {
 		return &Point{}, nil
 	case "string":
 		return &String{}, nil
+	case "json":
+        return (&Json{}).parse(false)
+    case "nullable_json":
+        return (&Json{}).parse(true)
 	}
 
 	switch strType := string(t); {
