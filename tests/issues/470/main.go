@@ -73,7 +73,7 @@ func (f DatabaseFrame) Next() ([]interface{}, bool, error) {
 
 func NewNativeClient(host string, port uint16, username string, password string) (*sql.DB, error) {
 	// debug output ?debug=true
-	connection, err := sql.Open("clickhouse", fmt.Sprintf("clickhouse://%s:%s@%s:%d/", username, password, host, port))
+	connection, err := sql.Open("proton", fmt.Sprintf("proton://%s:%s@%s:%d/", username, password, host, port))
 	if err != nil {
 		return nil, err
 	}

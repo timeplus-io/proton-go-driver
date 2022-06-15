@@ -121,9 +121,9 @@ func main() {
 	go func() {
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	}()
-	conn, err := clickhouse.Open(&clickhouse.Options{
+	conn, err := proton.Open(&proton.Options{
 		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
@@ -131,8 +131,8 @@ func main() {
 		MaxOpenConns:    20,
 		MaxIdleConns:    15,
 		ConnMaxLifetime: 3 * time.Minute,
-		Compression: &clickhouse.Compression{
-			Method: clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			Method: proton.CompressionLZ4,
 		},
 		Debug: true,
 	})

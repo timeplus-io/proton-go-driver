@@ -29,9 +29,9 @@ import (
 func example() error {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
+		conn, err = proton.Open(&proton.Options{
 			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
@@ -80,8 +80,8 @@ func example() error {
 	}
 	{
 		if err := conn.QueryRow(ctx, `SELECT * FROM example WHERE Col1 = @Col1 AND Col3 = @Col2`,
-			clickhouse.Named("Col1", 4),
-			clickhouse.Named("Col2", datetime),
+			proton.Named("Col1", 4),
+			proton.Named("Col2", datetime),
 		).ScanStruct(&result); err != nil {
 			return err
 		}

@@ -27,15 +27,15 @@ import (
 )
 
 func TestConn(t *testing.T) {
-	conn, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{
+	conn, err := proton.Open(&proton.Options{
+		Addr: []string{"127.0.0.1:7587"},
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
 		},
-		Compression: &clickhouse.Compression{
-			Method: clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			Method: proton.CompressionLZ4,
 		},
 		//Debug: true,
 	})
@@ -51,9 +51,9 @@ func TestConn(t *testing.T) {
 }
 
 func TestBadConn(t *testing.T) {
-	conn, err := clickhouse.Open(&clickhouse.Options{
+	conn, err := proton.Open(&proton.Options{
 		Addr: []string{"127.0.0.1:9790"},
-		Auth: clickhouse.Auth{
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
@@ -70,19 +70,19 @@ func TestBadConn(t *testing.T) {
 	}
 }
 func TestConnFailover(t *testing.T) {
-	conn, err := clickhouse.Open(&clickhouse.Options{
+	conn, err := proton.Open(&proton.Options{
 		Addr: []string{
 			"127.0.0.1:9001",
 			"127.0.0.1:9002",
-			"127.0.0.1:9000",
+			"127.0.0.1:7587",
 		},
-		Auth: clickhouse.Auth{
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
 		},
-		Compression: &clickhouse.Compression{
-			Method: clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			Method: proton.CompressionLZ4,
 		},
 		//	Debug: true,
 	})
@@ -94,15 +94,15 @@ func TestConnFailover(t *testing.T) {
 	}
 }
 func TestPingDeadline(t *testing.T) {
-	conn, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{
+	conn, err := proton.Open(&proton.Options{
+		Addr: []string{"127.0.0.1:7587"},
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
 		},
-		Compression: &clickhouse.Compression{
-			Method: clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			Method: proton.CompressionLZ4,
 		},
 		//Debug: true,
 	})

@@ -27,20 +27,20 @@ import (
 )
 
 func TestOpenTelemetry(t *testing.T) {
-	conn, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{
+	conn, err := proton.Open(&proton.Options{
+		Addr: []string{"127.0.0.1:7587"},
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
 		},
-		Compression: &clickhouse.Compression{
-			Method: clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			Method: proton.CompressionLZ4,
 		},
 	})
 	if assert.NoError(t, err) {
 		var count uint64
-		rows := conn.QueryRow(clickhouse.Context(context.Background(), clickhouse.WithSpan(
+		rows := conn.QueryRow(proton.Context(context.Background(), proton.WithSpan(
 			trace.NewSpanContext(trace.SpanContextConfig{
 				SpanID:  trace.SpanID{1, 2, 3, 4, 5},
 				TraceID: trace.TraceID{5, 4, 3, 2, 1},

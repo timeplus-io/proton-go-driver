@@ -28,20 +28,20 @@ import (
 )
 
 func getClickhouseClient() driver.Conn {
-	conn, _ := clickhouse.Open(&clickhouse.Options{
+	conn, _ := proton.Open(&proton.Options{
 		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{
+		Auth: proton.Auth{
 			Database: "",
 			Username: "",
 			Password: "",
 		},
-		Settings: clickhouse.Settings{
+		Settings: proton.Settings{
 			"max_execution_time": 60,
 		},
 		DialTimeout:     5 * time.Second,
 		ConnMaxLifetime: 15 * time.Second,
-		Compression: &clickhouse.Compression{
-			Method: clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			Method: proton.CompressionLZ4,
 		},
 		Debug: true,
 	})

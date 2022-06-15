@@ -30,9 +30,9 @@ import (
 func example() error {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
+		conn, err = proton.Open(&proton.Options{
 			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",

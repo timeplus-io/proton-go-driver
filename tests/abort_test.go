@@ -19,8 +19,9 @@ package tests
 
 import (
 	"context"
-	"github.com/timeplus-io/proton-go-driver/v2/lib/compress"
 	"testing"
+
+	"github.com/timeplus-io/proton-go-driver/v2/lib/compress"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/timeplus-io/proton-go-driver/v2"
@@ -29,14 +30,14 @@ import (
 func TestAbort(t *testing.T) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:7587"},
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
 			},
-			Compression: &clickhouse.Compression{
+			Compression: &proton.Compression{
 				Method: compress.NONE,
 			},
 			MaxOpenConns: 1,
@@ -55,7 +56,7 @@ func TestAbort(t *testing.T) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort"); assert.NoError(t, err) {
 				if assert.NoError(t, batch.Abort()) {
 					if err := batch.Abort(); assert.Error(t, err) {
-						assert.Equal(t, clickhouse.ErrBatchAlreadySent, err)
+						assert.Equal(t, proton.ErrBatchAlreadySent, err)
 					}
 				}
 			}

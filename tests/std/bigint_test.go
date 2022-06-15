@@ -26,7 +26,7 @@ import (
 )
 
 func TestStdBigInt(t *testing.T) {
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
 		if err := checkMinServerVersion(conn, 21, 12); err != nil {
 			t.Skip(err.Error())
 			return
@@ -96,7 +96,7 @@ func TestStdBigInt(t *testing.T) {
 }
 
 func TestStdNullableBigInt(t *testing.T) {
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
 		if err := checkMinServerVersion(conn, 21, 12); err != nil {
 			t.Skip(err.Error())
 			return

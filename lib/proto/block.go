@@ -52,7 +52,7 @@ func (b *Block) Append(v ...interface{}) (err error) {
 	if len(columns) != len(v) {
 		return &BlockError{
 			Op:  "Append",
-			Err: fmt.Errorf("clickhouse: expected %d arguments, got %d", len(columns), len(v)),
+			Err: fmt.Errorf("proton: expected %d arguments, got %d", len(columns), len(v)),
 		}
 	}
 	for i, v := range v {
@@ -231,9 +231,9 @@ type BlockError struct {
 func (e *BlockError) Error() string {
 	switch err := e.Err.(type) {
 	case *column.Error:
-		return fmt.Sprintf("clickhouse [%s]: (%s %s) %s", e.Op, e.ColumnName, err.ColumnType, err.Err)
+		return fmt.Sprintf("proton [%s]: (%s %s) %s", e.Op, e.ColumnName, err.ColumnType, err.Err)
 	case *column.DateOverflowError:
-		return fmt.Sprintf("clickhouse: dateTime overflow. %s must be between %s and %s", e.ColumnName, err.Min.Format(err.Format), err.Max.Format(err.Format))
+		return fmt.Sprintf("proton: dateTime overflow. %s must be between %s and %s", e.ColumnName, err.Min.Format(err.Format), err.Max.Format(err.Format))
 	}
-	return fmt.Sprintf("clickhouse [%s]: %s %s", e.Op, e.ColumnName, e.Err)
+	return fmt.Sprintf("proton [%s]: %s %s", e.Op, e.ColumnName, e.Err)
 }

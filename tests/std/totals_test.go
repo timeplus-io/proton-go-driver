@@ -33,7 +33,7 @@ func TestStdWithTotals(t *testing.T) {
 		SELECT number FROM system.numbers LIMIT 100
 	) GROUP BY n WITH TOTALS
 	`
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
 		if rows, err := conn.Query(query); assert.NoError(t, err) {
 			var count int
 			for rows.Next() {

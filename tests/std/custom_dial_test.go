@@ -29,9 +29,9 @@ import (
 func TestStdCustomDial(t *testing.T) {
 	var (
 		dialCount int
-		conn      = clickhouse.OpenDB(&clickhouse.Options{
+		conn      = proton.OpenDB(&proton.Options{
 			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",

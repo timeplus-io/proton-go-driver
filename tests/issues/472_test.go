@@ -30,15 +30,15 @@ import (
 func TestIssue472(t *testing.T) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
+		conn, err = proton.Open(&proton.Options{
 			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
 			},
-			Compression: &clickhouse.Compression{
-				Method: clickhouse.CompressionLZ4,
+			Compression: &proton.Compression{
+				Method: proton.CompressionLZ4,
 			},
 			//Debug: true,
 		})
@@ -79,7 +79,7 @@ func TestIssue472(t *testing.T) {
 								AND (EventType = $2 or EventType = $3)
 								AND ControllerRevision = $4 LIMIT 1`
 
-					ctx := clickhouse.Context(context.Background(), clickhouse.WithSettings(clickhouse.Settings{
+					ctx := proton.Context(context.Background(), proton.WithSettings(proton.Settings{
 						"max_block_size": 10,
 					}))
 					if err := conn.Select(ctx, &records, query, podUID, "Test", "", 1); assert.NoError(t, err) {

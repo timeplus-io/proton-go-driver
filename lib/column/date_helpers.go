@@ -43,5 +43,5 @@ type DateOverflowError struct {
 }
 
 func (e *DateOverflowError) Error() string {
-	return fmt.Sprintf("clickhouse: dateTime overflow. must be between %s and %s", e.Min.Format(e.Format), e.Max.Format(e.Format))
+	return fmt.Sprintf("proton: dateTime overflow. must be between %s and %s", e.Min.Format(e.Format), e.Max.Format(e.Format))
 }

@@ -28,10 +28,10 @@ import (
 )
 
 func TestStdGeoMultiPolygon(t *testing.T) {
-	ctx := clickhouse.Context(context.Background(), clickhouse.WithSettings(clickhouse.Settings{
+	ctx := proton.Context(context.Background(), proton.WithSettings(proton.Settings{
 		"allow_experimental_geo_types": 1,
 	}))
-	if conn, err := sql.Open("clickhouse", "clickhouse://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
 		if err := checkMinServerVersion(conn, 21, 12); err != nil {
 			t.Skip(err.Error())
 			return

@@ -56,7 +56,7 @@ func (e *ColumnConverterError) Error() string {
 	if len(e.Hint) != 0 {
 		hint += ". " + e.Hint
 	}
-	return fmt.Sprintf("clickhouse [%s]: converting %s to %s is unsupported%s", e.Op, e.From, e.To, hint)
+	return fmt.Sprintf("proton [%s]: converting %s to %s is unsupported%s", e.Op, e.From, e.To, hint)
 }
 
 type UnsupportedColumnTypeError struct {
@@ -64,7 +64,7 @@ type UnsupportedColumnTypeError struct {
 }
 
 func (e *UnsupportedColumnTypeError) Error() string {
-	return fmt.Sprintf("clickhouse: unsupported column type %q", e.t)
+	return fmt.Sprintf("proton: unsupported column type %q", e.t)
 }
 
 type Interface interface {

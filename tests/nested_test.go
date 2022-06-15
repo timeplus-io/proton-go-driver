@@ -28,21 +28,21 @@ import (
 func TestNested(t *testing.T) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:7587"},
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
 			},
-			Compression: &clickhouse.Compression{
-				Method: clickhouse.CompressionLZ4,
+			Compression: &proton.Compression{
+				Method: proton.CompressionLZ4,
 			},
 			//	Debug: true,
 		})
 	)
 	if assert.NoError(t, err) {
-		/*if err := checkMinServerVersion(conn, 22, 1); err != nil {
+		/*if err := checkMinServerVersion(conn, 1, 0); err != nil {
 			t.Skip(err.Error())
 			return
 		}*/

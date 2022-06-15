@@ -28,15 +28,15 @@ import (
 func TestUInt8(t *testing.T) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:7587"},
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
 			},
-			Compression: &clickhouse.Compression{
-				Method: clickhouse.CompressionLZ4,
+			Compression: &proton.Compression{
+				Method: proton.CompressionLZ4,
 			},
 			MaxOpenConns: 1,
 		})
@@ -102,15 +102,15 @@ func TestUInt8(t *testing.T) {
 func TestColumnarUInt8(t *testing.T) {
 	var (
 		ctx       = context.Background()
-		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"127.0.0.1:9000"},
-			Auth: clickhouse.Auth{
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:7587"},
+			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
 				Password: "",
 			},
-			Compression: &clickhouse.Compression{
-				Method: clickhouse.CompressionLZ4,
+			Compression: &proton.Compression{
+				Method: proton.CompressionLZ4,
 			},
 			MaxOpenConns: 1,
 		})

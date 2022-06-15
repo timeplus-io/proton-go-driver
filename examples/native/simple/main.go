@@ -27,9 +27,9 @@ import (
 )
 
 func example() error {
-	conn, err := clickhouse.Open(&clickhouse.Options{
+	conn, err := proton.Open(&proton.Options{
 		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
@@ -39,22 +39,22 @@ func example() error {
 		MaxOpenConns:    10,
 		MaxIdleConns:    5,
 		ConnMaxLifetime: time.Hour,
-		Compression: &clickhouse.Compression{
-			Method: clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			Method: proton.CompressionLZ4,
 		},
 	})
 	if err != nil {
 		return err
 	}
-	ctx := clickhouse.Context(context.Background(), clickhouse.WithSettings(clickhouse.Settings{
+	ctx := proton.Context(context.Background(), proton.WithSettings(proton.Settings{
 		"max_block_size": 10,
-	}), clickhouse.WithProgress(func(p *clickhouse.Progress) {
+	}), proton.WithProgress(func(p *proton.Progress) {
 		fmt.Println("progress: ", p)
-	}), clickhouse.WithProfileInfo(func(p *clickhouse.ProfileInfo) {
+	}), proton.WithProfileInfo(func(p *proton.ProfileInfo) {
 		fmt.Println("profile info: ", p)
 	}))
 	if err := conn.Ping(ctx); err != nil {
-		if exception, ok := err.(*clickhouse.Exception); ok {
+		if exception, ok := err.(*proton.Exception); ok {
 			fmt.Printf("Catch exception [%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
 		}
 		return err

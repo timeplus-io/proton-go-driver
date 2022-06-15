@@ -27,17 +27,17 @@ import (
 )
 
 func main() {
-	conn, err := clickhouse.Open(&clickhouse.Options{
+	conn, err := proton.Open(&proton.Options{
 		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{
+		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
 			Password: "",
 		},
-		Compression: &clickhouse.Compression{
-			Method: clickhouse.CompressionLZ4,
+		Compression: &proton.Compression{
+			Method: proton.CompressionLZ4,
 		},
-		Settings: clickhouse.Settings{
+		Settings: proton.Settings{
 			"max_execution_time": 60,
 		},
 		//Debug: true,
@@ -65,7 +65,7 @@ func main() {
 	if err = conn.Exec(context.Background(), "TUNCATE TABLE X"); err == nil {
 		panic("unexpected")
 	}
-	if exception, ok := err.(*clickhouse.Exception); ok {
+	if exception, ok := err.(*proton.Exception); ok {
 		fmt.Printf("Catch exception [%d]\n", exception.Code)
 	}
 	const ddl = `
@@ -104,7 +104,7 @@ func main() {
 	if err := batch.Send(); err != nil {
 		log.Fatal(err)
 	}
-	ctx := clickhouse.Context(context.Background(), clickhouse.WithProgress(func(p *clickhouse.Progress) {
+	ctx := proton.Context(context.Background(), proton.WithProgress(func(p *proton.Progress) {
 		fmt.Println("progress: ", p)
 	}))
 
