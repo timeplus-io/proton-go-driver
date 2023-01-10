@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 )
 
 var (
@@ -140,16 +141,8 @@ func (dt *Date) Encode(encoder *binary.Encoder) error {
 	return dt.values.Encode(encoder)
 }
 
-func (dt *Date) row(i int) ProtonDate {
-	return ProtonDate{time.Unix(int64(dt.values[i])*secInDay, 0).UTC()}
+func (dt *Date) row(i int) types.Date {
+	return types.Date{Time: time.Unix(int64(dt.values[i])*secInDay, 0).UTC()}
 }
 
 var _ Interface = (*Date)(nil)
-
-type ProtonDate struct {
-	time.Time
-}
-
-func (pd ProtonDate) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("\"%s\"", pd.Format("2006-01-02"))), nil
-}
