@@ -57,10 +57,10 @@ func (dt *Date) Row(i int, ptr bool) interface{} {
 func (dt *Date) ScanRow(dest interface{}, row int) error {
 	switch d := dest.(type) {
 	case *time.Time:
-		*d = dt.row(row)
+		*d = dt.row(row).Time
 	case **time.Time:
 		*d = new(time.Time)
-		**d = dt.row(row)
+		**d = dt.row(row).Time
 	default:
 		return &ColumnConverterError{
 			Op:   "ScanRow",
@@ -140,8 +140,16 @@ func (dt *Date) Encode(encoder *binary.Encoder) error {
 	return dt.values.Encode(encoder)
 }
 
-func (dt *Date) row(i int) time.Time {
-	return time.Unix(int64(dt.values[i])*secInDay, 0).UTC()
+func (dt *Date) row(i int) ProtonDate {
+	return ProtonDate{time.Unix(int64(dt.values[i])*secInDay, 0).UTC()}
 }
 
 var _ Interface = (*Date)(nil)
+
+type ProtonDate struct {
+	time.Time
+}
+
+func (pd ProtonDate) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%s\"", pd.Format("2006-01-02"))), nil
+}
