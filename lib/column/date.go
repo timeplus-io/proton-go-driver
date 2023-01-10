@@ -39,7 +39,7 @@ func (dt *Date) Type() Type {
 }
 
 func (col *Date) ScanType() reflect.Type {
-	return scanTypeTime
+	return scanTypeDate
 }
 
 func (dt *Date) Rows() int {

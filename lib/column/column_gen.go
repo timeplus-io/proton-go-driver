@@ -197,6 +197,7 @@ var (
 	scanTypeBool         = reflect.TypeOf(true)
 	scanTypeByte         = reflect.TypeOf([]byte{})
 	scanTypeUUID         = reflect.TypeOf(uuid.UUID{})
+	scanTypeDate         = reflect.TypeOf(ProtonDate{})
 	scanTypeTime         = reflect.TypeOf(time.Time{})
 	scanTypeRing         = reflect.TypeOf(orb.Ring{})
 	scanTypePoint        = reflect.TypeOf(orb.Point{})
