@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 )
 
 var (
@@ -39,7 +40,7 @@ func (dt *Date32) Type() Type {
 }
 
 func (col *Date32) ScanType() reflect.Type {
-	return scanTypeTime
+	return scanTypeDate
 }
 
 func (dt *Date32) Rows() int {
@@ -57,10 +58,10 @@ func (dt *Date32) Row(i int, ptr bool) interface{} {
 func (dt *Date32) ScanRow(dest interface{}, row int) error {
 	switch d := dest.(type) {
 	case *time.Time:
-		*d = dt.row(row)
+		*d = dt.row(row).Time
 	case **time.Time:
 		*d = new(time.Time)
-		**d = dt.row(row)
+		**d = dt.row(row).Time
 	default:
 		return &ColumnConverterError{
 			Op:   "ScanRow",
@@ -140,8 +141,8 @@ func (dt *Date32) Encode(encoder *binary.Encoder) error {
 	return dt.values.Encode(encoder)
 }
 
-func (dt *Date32) row(i int) time.Time {
-	return time.Unix((int64(dt.values[i]) * secInDay), 0).UTC()
+func (dt *Date32) row(i int) types.Date {
+	return types.Date{Time: time.Unix((int64(dt.values[i]) * secInDay), 0).UTC()}
 }
 
 func timeToInt32(t time.Time) int32 {
