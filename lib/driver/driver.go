@@ -74,6 +74,7 @@ type (
 		AppendStruct(v interface{}) error
 		Column(int) BatchColumn
 		Send() error
+		SendOnce() error
 	}
 	BatchColumn interface {
 		Append(interface{}) error

@@ -47,17 +47,19 @@ func (c *connect) prepareBatch(ctx context.Context, query string, release func(*
 		return nil, err
 	}
 	var (
-		onProcess  = options.onProcess()
-		block, err = c.firstBlock(ctx, onProcess)
+		onProcess        = options.onProcess()
+		first_block, err = c.firstBlock(ctx, onProcess)
+		block            = *first_block
 	)
 	if err != nil {
 		release(c, err)
 		return nil, err
 	}
 	return &batch{
-		ctx:   ctx,
-		conn:  c,
-		block: block,
+		ctx:         ctx,
+		conn:        c,
+		first_block: first_block,
+		block:       &block,
 		release: func(err error) {
 			release(c, err)
 		},
@@ -66,13 +68,14 @@ func (c *connect) prepareBatch(ctx context.Context, query string, release func(*
 }
 
 type batch struct {
-	err       error
-	ctx       context.Context
-	conn      *connect
-	sent      bool
-	block     *proto.Block
-	release   func(error)
-	onProcess *onProcess
+	err         error
+	ctx         context.Context
+	conn        *connect
+	sent        bool
+	first_block *proto.Block
+	block       *proto.Block
+	release     func(error)
+	onProcess   *onProcess
 }
 
 func (b *batch) Abort() error {
@@ -150,6 +153,20 @@ func (b *batch) Send() (err error) {
 	if err = b.conn.process(b.ctx, b.onProcess); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (b *batch) SendOnce() (err error) {
+	if b.block.Rows() != 0 {
+		if err = b.conn.sendData(b.block, ""); err != nil {
+			return err
+		}
+	}
+	if err = b.conn.encoder.Flush(); err != nil {
+		return err
+	}
+
+	*b.block = *b.first_block
 	return nil
 }
 
