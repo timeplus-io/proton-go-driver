@@ -28,7 +28,7 @@ import (
 )
 
 func example() error {
-	conn, err := sql.Open("proton", "proton://127.0.0.1:9000?dial_timeout=1s&compress=true")
+	conn, err := sql.Open("proton", "proton://127.0.0.1:8463?dial_timeout=1s&compress=true")
 	if err != nil {
 		return err
 	}
@@ -36,18 +36,18 @@ func example() error {
 	if err != nil {
 		return err
 	}
-	if _, err := conn.Exec(`DROP TABLE IF EXISTS example`); err != nil {
+	if _, err := conn.Exec(`DROP STREAM IF EXISTS example`); err != nil {
 		return err
 	}
 	_, err = conn.Exec(`
-		CREATE TABLE IF NOT EXISTS example (
-			  Col1 UInt8
-			, Col2 String
-			, Col3 FixedString(3)
-			, Col4 UUID
-			, Col5 Map(String, UInt8)
-			, Col6 Array(String)
-			, Col7 Tuple(String, UInt8, Array(Map(String, String)))
+		CREATE STREAM IF NOT EXISTS example (
+			  Col1 uint8
+			, Col2 string
+			, Col3 fixed_string(3)
+			, Col4 uuid
+			, Col5 map(string, uint8)
+			, Col6 array(string)
+			, Col7 tuple(string, uint8, array(map(string, string)))
 			, Col8 DateTime
 		) Engine = Null
 	`)

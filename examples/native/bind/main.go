@@ -30,7 +30,7 @@ func example() error {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:9000"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -42,11 +42,11 @@ func example() error {
 		return err
 	}
 	const ddl = `
-	CREATE TEMPORARY TABLE example (
-		  Col1 UInt8
-		, Col2 String
+	CREATE TEMPORARY STREAM example (
+		  Col1 uint8
+		, Col2 string
 		, Col3 DateTime
-	)
+	)Engine = Memory
 	`
 	if err := conn.Exec(ctx, ddl); err != nil {
 		return err

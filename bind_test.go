@@ -126,8 +126,8 @@ func TestFormatTime(t *testing.T) {
 		tz, err = time.LoadLocation("Europe/London")
 	)
 	if assert.NoError(t, err) {
-		if assert.Equal(t, "toDateTime('2022-01-12 15:00:00')", format(t1.Location(), t1)) {
-			assert.Equal(t, "toDateTime('2022-01-12 15:00:00', 'UTC')", format(tz, t1))
+		if assert.Equal(t, "to_datetime('2022-01-12 15:00:00')", format(t1.Location(), t1)) {
+			assert.Equal(t, "to_datetime('2022-01-12 15:00:00', 'UTC')", format(tz, t1))
 		}
 	}
 }

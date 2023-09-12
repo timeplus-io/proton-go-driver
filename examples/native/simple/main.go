@@ -28,7 +28,7 @@ import (
 
 func example() error {
 	conn, err := proton.Open(&proton.Options{
-		Addr: []string{"127.0.0.1:9000"},
+		Addr: []string{"127.0.0.1:8463"},
 		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
@@ -59,13 +59,13 @@ func example() error {
 		}
 		return err
 	}
-	if err := conn.Exec(ctx, `DROP TABLE IF EXISTS example`); err != nil {
+	if err := conn.Exec(ctx, `DROP STREAM IF EXISTS example`); err != nil {
 		return err
 	}
 	err = conn.Exec(ctx, `
-		CREATE TABLE IF NOT EXISTS example (
-			Col1 UInt8,
-			Col2 String,
+		CREATE STREAM IF NOT EXISTS example (
+			Col1 uint8,
+			Col2 string,
 			Col3 DateTime
 		) engine=Memory
 	`)

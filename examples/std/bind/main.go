@@ -27,16 +27,16 @@ import (
 )
 
 func example() error {
-	conn, err := sql.Open("proton", "proton://127.0.0.1:9000")
+	conn, err := sql.Open("proton", "proton://127.0.0.1:8463")
 	if err != nil {
 		return err
 	}
 	const ddl = `
-	CREATE TEMPORARY TABLE example (
-		  Col1 UInt8
-		, Col2 String
+	CREATE TEMPORARY STREAM example (
+		  Col1 uint8
+		, Col2 string
 		, Col3 DateTime
-	)
+	) ENGINE = Memory
 	`
 	if _, err := conn.Exec(ddl); err != nil {
 		return err

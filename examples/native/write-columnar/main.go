@@ -26,12 +26,12 @@ import (
 )
 
 const ddl = `
-CREATE TEMPORARY TABLE example (
-	  Col1 UInt64
-	, Col2 String
-	, Col3 Array(UInt8)
+CREATE TEMPORARY STREAM example (
+	  Col1 uint64
+	, Col2 string
+	, Col3 array(uint8)
 	, Col4 DateTime
-)
+) ENGINE = Memory
 `
 
 func example(conn proton.Conn) error {
@@ -70,7 +70,7 @@ func main() {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:9000"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
