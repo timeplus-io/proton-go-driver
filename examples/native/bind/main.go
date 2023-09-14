@@ -42,18 +42,21 @@ func example() error {
 		return err
 	}
 	const ddl = `
-	CREATE TEMPORARY STREAM example (
+	CREATE STREAM example (
 		  Col1 uint8
 		, Col2 string
 		, Col3 DateTime
-	)Engine = Memory
+	)
 	`
+	if err := conn.Exec(ctx, `drop stream if exists example`); err != nil {
+		return err
+	}
 	if err := conn.Exec(ctx, ddl); err != nil {
 		return err
 	}
 	datetime := time.Now()
 	{
-		batch, err := conn.PrepareBatch(ctx, "INSERT INTO example")
+		batch, err := conn.PrepareBatch(ctx, "INSERT INTO example (* except _tp_time)")
 		if err != nil {
 			return err
 		}
@@ -73,13 +76,13 @@ func example() error {
 		Col3 time.Time
 	}
 	{
-		if err := conn.QueryRow(ctx, `SELECT * FROM example WHERE Col1 = $1 AND Col3 = $2`, 2, datetime).ScanStruct(&result); err != nil {
+		if err := conn.QueryRow(ctx, `SELECT * except _tp_time FROM example WHERE _tp_time > earliest_ts() AND Col1 = $1 AND Col3 = $2 LIMIT 1`, 2, datetime).ScanStruct(&result); err != nil {
 			return err
 		}
 		fmt.Println(result)
 	}
 	{
-		if err := conn.QueryRow(ctx, `SELECT * FROM example WHERE Col1 = @Col1 AND Col3 = @Col2`,
+		if err := conn.QueryRow(ctx, `SELECT * except _tp_time FROM example WHERE _tp_time > earliest_ts() AND Col1 = @Col1 AND Col3 = @Col2 LIMIT 1`,
 			proton.Named("Col1", 4),
 			proton.Named("Col2", datetime),
 		).ScanStruct(&result); err != nil {

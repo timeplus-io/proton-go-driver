@@ -49,7 +49,7 @@ func example() error {
 			, Col6 array(string)
 			, Col7 tuple(string, uint8, array(map(string, string)))
 			, Col8 DateTime
-		) Engine = Null
+		) 
 	`)
 	if err != nil {
 		return err
@@ -58,11 +58,11 @@ func example() error {
 	if err != nil {
 		return err
 	}
-	batch, err := scope.Prepare("INSERT INTO example")
+	batch, err := scope.Prepare("INSERT INTO example (* except _tp_time)")
 	if err != nil {
 		return err
 	}
-	for i := 0; i < 500_000; i++ {
+	for i := 0; i < 100; i++ {
 		_, err := batch.Exec(
 			uint8(42),
 			"ClickHouse", "Inc",

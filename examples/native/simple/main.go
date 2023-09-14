@@ -53,6 +53,8 @@ func example() error {
 	}), proton.WithProfileInfo(func(p *proton.ProfileInfo) {
 		fmt.Println("profile info: ", p)
 	}))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(5))
+	defer cancel()
 	if err := conn.Ping(ctx); err != nil {
 		if exception, ok := err.(*proton.Exception); ok {
 			fmt.Printf("Catch exception [%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
@@ -67,7 +69,7 @@ func example() error {
 			Col1 uint8,
 			Col2 string,
 			Col3 DateTime
-		) engine=Memory
+		)
 	`)
 	if err != nil {
 		return err
@@ -84,8 +86,7 @@ func example() error {
 	if err := batch.Send(); err != nil {
 		return err
 	}
-
-	rows, err := conn.Query(ctx, "SELECT Col1, Col2, Col3 FROM example WHERE Col1 >= $1 AND Col2 <> $2 AND Col3 <= $3", 0, "xxx", time.Now())
+	rows, err := conn.Query(ctx, "SELECT Col1, Col2, Col3 FROM example WHERE _tp_time > earliest_ts() AND Col1 >= $1 AND Col2 <> $2 AND Col3 <= $3 LIMIT 12", 0, "xxx", time.Now())
 	if err != nil {
 		return err
 	}

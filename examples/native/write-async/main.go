@@ -27,12 +27,12 @@ import (
 )
 
 const ddl = `
-CREATE TEMPORARY STREAM example (
+CREATE STREAM example (
 	  Col1 uint64
 	, Col2 string
 	, Col3 array(int)
 	, Col4 DateTime
-) ENGINE = Memory
+) 
 `
 
 func main() {
@@ -55,6 +55,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	conn.Exec(ctx, `DROP STREAM IF EXISTS example`)
 	if err := conn.Exec(ctx, ddl); err != nil {
 		log.Fatal(err)
 	}
