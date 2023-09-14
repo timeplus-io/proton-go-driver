@@ -28,7 +28,7 @@ import (
 
 func example() error {
 	conn, err := proton.Open(&proton.Options{
-		Addr: []string{"127.0.0.1:9000"},
+		Addr: []string{"127.0.0.1:8463"},
 		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
@@ -46,7 +46,9 @@ func example() error {
 	if err != nil {
 		return err
 	}
-	ctx := proton.Context(context.Background(), proton.WithSettings(proton.Settings{
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(3))
+	defer cancel()
+	ctx = proton.Context(ctx, proton.WithSettings(proton.Settings{
 		"max_block_size": 10,
 	}), proton.WithProgress(func(p *proton.Progress) {
 		fmt.Println("progress: ", p)
@@ -57,15 +59,15 @@ func example() error {
 		}
 		return err
 	}
-	if err := conn.Exec(ctx, `DROP TABLE IF EXISTS example`); err != nil {
+	if err := conn.Exec(ctx, `DROP STREAM IF EXISTS example`); err != nil {
 		return err
 	}
 	err = conn.Exec(ctx, `
-		CREATE TABLE IF NOT EXISTS example (
-			Col1 UInt8,
-			Col2 String,
+		CREATE STREAM IF NOT EXISTS example (
+			Col1 uint8,
+			Col2 string,
 			Col3 DateTime
-		) engine=Memory
+		)
 	`)
 	if err != nil {
 		return err
@@ -89,7 +91,7 @@ func example() error {
 		ColumnWithName time.Time `ch:"Col3"`
 	}
 
-	if err = conn.Select(ctx, &result, "SELECT Col1, Col2, Col3 FROM example"); err != nil {
+	if err = conn.Select(ctx, &result, "SELECT Col1, Col2, Col3 FROM example  WHERE _tp_time > earliest_ts() LIMIT 10"); err != nil {
 		return err
 	}
 

@@ -28,7 +28,7 @@ import (
 
 func main() {
 	conn, err := proton.Open(&proton.Options{
-		Addr: []string{"127.0.0.1:9000"},
+		Addr: []string{"127.0.0.1:8463"},
 		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
@@ -62,28 +62,28 @@ func main() {
 		fmt.Printf("name: %s, value: %s, type=%s\n", s.Name, s.Value, s.Type)
 	}
 
-	if err = conn.Exec(context.Background(), "TUNCATE TABLE X"); err == nil {
+	if err = conn.Exec(context.Background(), "TRUNCATE STREAM X"); err == nil {
 		panic("unexpected")
 	}
 	if exception, ok := err.(*proton.Exception); ok {
 		fmt.Printf("Catch exception [%d]\n", exception.Code)
 	}
 	const ddl = `
-	CREATE TABLE example (
-		  Col1 UInt64
-		, Col2 FixedString(2)
-		, Col3 Map(String, String)
-		, Col4 Array(String)
+	CREATE STREAM example (
+		  Col1 uint64
+		, Col2 fixed_string(2)
+		, Col3 map(string, string)
+		, Col4 array(string)
 		, Col5 DateTime64(3)
-	) Engine Memory
+	)
 	`
-	if err := conn.Exec(context.Background(), "DROP TABLE IF EXISTS example"); err != nil {
+	if err := conn.Exec(context.Background(), "DROP STREAM IF EXISTS example"); err != nil {
 		log.Fatal(err)
 	}
 	if err := conn.Exec(context.Background(), ddl); err != nil {
 		log.Fatal(err)
 	}
-	batch, err := conn.PrepareBatch(context.Background(), "INSERT INTO example")
+	batch, err := conn.PrepareBatch(context.Background(), "INSERT INTO example (* except _tp_time)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -107,9 +107,10 @@ func main() {
 	ctx := proton.Context(context.Background(), proton.WithProgress(func(p *proton.Progress) {
 		fmt.Println("progress: ", p)
 	}))
-
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(10)*time.Second)
+	defer cancel()
 	var count uint64
-	if err := conn.QueryRow(ctx, "SELECT COUNT() FROM example").Scan(&count); err != nil {
+	if err := conn.QueryRow(ctx, "SELECT count() FROM example WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("count", count)
@@ -117,7 +118,7 @@ func main() {
 		Col1  uint64
 		Count uint64 `ch:"count"`
 	}
-	if err := conn.QueryRow(ctx, "SELECT Col1, COUNT() AS count FROM example WHERE Col1 = $1 GROUP BY Col1", 42).ScanStruct(&result); err != nil {
+	if err := conn.QueryRow(ctx, "SELECT Col1, count() AS count FROM example WHERE _tp_time > earliest_ts() AND Col1 = $1 GROUP BY Col1 LIMIT 1", 42).ScanStruct(&result); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("result", result)

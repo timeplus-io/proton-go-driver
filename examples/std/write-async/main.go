@@ -27,17 +27,20 @@ import (
 )
 
 const ddl = `
-CREATE TEMPORARY TABLE example (
-	  Col1 UInt64
-	, Col2 String
-	, Col3 Array(UInt8)
+CREATE STREAM example (
+	  Col1 uint64
+	, Col2 string
+	, Col3 array(uint8)
 	, Col4 DateTime
 )
 `
 
 func main() {
-	conn, err := sql.Open("proton", "proton://127.0.0.1:9000")
+	conn, err := sql.Open("proton", "proton://127.0.0.1:8463")
 	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err := conn.Exec(`DROP STREAM IF EXISTS example`); err != nil {
 		log.Fatal(err)
 	}
 	if _, err := conn.Exec(ddl); err != nil {

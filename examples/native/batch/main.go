@@ -31,7 +31,7 @@ func example() error {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:9000"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -47,30 +47,30 @@ func example() error {
 	if err != nil {
 		return err
 	}
-	if err := conn.Exec(ctx, `DROP TABLE IF EXISTS example`); err != nil {
+	if err := conn.Exec(ctx, `DROP STREAM IF EXISTS example`); err != nil {
 		return err
 	}
 	err = conn.Exec(ctx, `
-		CREATE TABLE IF NOT EXISTS example (
-			  Col1 UInt8
-			, Col2 String
-			, Col3 FixedString(3)
-			, Col4 UUID
-			, Col5 Map(String, UInt8)
-			, Col6 Array(String)
-			, Col7 Tuple(String, UInt8, Array(Map(String, String)))
+		CREATE STREAM IF NOT EXISTS example (
+			  Col1 uint8
+			, Col2 string
+			, Col3 fixed_string(3)
+			, Col4 uuid
+			, Col5 map(string, uint8)
+			, Col6 array(string)
+			, Col7 tuple(string, uint8, array(map(string, string)))
 			, Col8 DateTime
-		) Engine = Null
+		)
 	`)
 	if err != nil {
 		return err
 	}
 
-	batch, err := conn.PrepareBatch(ctx, "INSERT INTO example")
+	batch, err := conn.PrepareBatch(ctx, "INSERT INTO example (* except _tp_time)")
 	if err != nil {
 		return err
 	}
-	for i := 0; i < 500_000; i++ {
+	for i := 0; i < 100; i++ {
 		err := batch.Append(
 			uint8(42),
 			"ClickHouse", "Inc",

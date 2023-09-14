@@ -27,17 +27,20 @@ import (
 )
 
 func example() error {
-	conn, err := sql.Open("proton", "proton://127.0.0.1:9000")
+	conn, err := sql.Open("proton", "proton://127.0.0.1:8463")
 	if err != nil {
 		return err
 	}
 	const ddl = `
-	CREATE TEMPORARY TABLE example (
-		  Col1 UInt8
-		, Col2 String
+	CREATE STREAM example (
+		  Col1 uint8
+		, Col2 string
 		, Col3 DateTime
-	)
+	) 
 	`
+	if _, err := conn.Exec(`DROP STREAM IF EXISTS example`); err != nil {
+		return err
+	}
 	if _, err := conn.Exec(ddl); err != nil {
 		return err
 	}
@@ -47,7 +50,7 @@ func example() error {
 		if err != nil {
 			return err
 		}
-		batch, err := scope.Prepare("INSERT INTO example")
+		batch, err := scope.Prepare("INSERT INTO example (* except _tp_time)")
 		if err != nil {
 			return err
 		}
@@ -67,7 +70,7 @@ func example() error {
 		Col3 time.Time
 	}
 	{
-		if err := conn.QueryRow(`SELECT * FROM example WHERE Col1 = $1 AND Col3 = $2`, 2, datetime).Scan(
+		if err := conn.QueryRow(`SELECT * except _tp_time FROM example WHERE _tp_time > earliest_ts() AND Col1 = $1 AND Col3 = $2 LIMIT 1`, 2, datetime).Scan(
 			&result.Col1,
 			&result.Col2,
 			&result.Col3,
@@ -77,7 +80,7 @@ func example() error {
 		fmt.Println(result)
 	}
 	{
-		if err := conn.QueryRow(`SELECT * FROM example WHERE Col1 = @Col1 AND Col3 = @Col2`,
+		if err := conn.QueryRow(`SELECT * except _tp_time FROM example WHERE _tp_time > earliest_ts() AND Col1 = @Col1 AND Col3 = @Col2 LIMIT 1`,
 			sql.Named("Col1", 4),
 			sql.Named("Col2", datetime),
 		).Scan(

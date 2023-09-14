@@ -26,12 +26,12 @@ import (
 )
 
 const ddl = `
-CREATE TEMPORARY TABLE example (
-	  Col1 UInt64
-	, Col2 String
-	, Col3 Array(UInt8)
+CREATE STREAM example (
+	  Col1 uint64
+	, Col2 string
+	, Col3 array(uint8)
 	, Col4 DateTime
-)
+) 
 `
 
 type row struct {
@@ -42,7 +42,7 @@ type row struct {
 }
 
 func example(conn proton.Conn) error {
-	batch, err := conn.PrepareBatch(context.Background(), "INSERT INTO example")
+	batch, err := conn.PrepareBatch(context.Background(), "INSERT INTO example (* except _tp_time)")
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func main() {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:9000"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -78,6 +78,9 @@ func main() {
 		})
 	)
 	if err != nil {
+		log.Fatal(err)
+	}
+	if err := conn.Exec(context.Background(), `DROP STREAM IF EXISTS example`); err != nil {
 		log.Fatal(err)
 	}
 	if err := conn.Exec(ctx, ddl); err != nil {

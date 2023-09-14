@@ -132,11 +132,11 @@ func format(tz *time.Location, v interface{}) string {
 	case time.Time:
 		switch v.Location().String() {
 		case "Local":
-			return fmt.Sprintf("toDateTime(%d)", v.Unix())
+			return fmt.Sprintf("to_datetime(%d)", v.Unix())
 		case tz.String():
-			return v.Format("toDateTime('2006-01-02 15:04:05')")
+			return v.Format("to_datetime('2006-01-02 15:04:05')")
 		}
-		return v.Format("toDateTime('2006-01-02 15:04:05', '" + v.Location().String() + "')")
+		return v.Format("to_datetime('2006-01-02 15:04:05', '" + v.Location().String() + "')")
 	case []interface{}: // tuple
 		elements := make([]string, 0, len(v))
 		for _, e := range v {
