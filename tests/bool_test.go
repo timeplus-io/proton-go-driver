@@ -29,7 +29,7 @@ func TestBool(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -53,13 +53,13 @@ func TestBool(t *testing.T) {
 				, Col3 array(bool)
 				, Col4 nullable(bool)
 				, Col5 array(nullable(bool))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_bool")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bool"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bool (* except _tp_time)"); assert.NoError(t, err) {
 				var val bool
 				if err := batch.Append(true, false, []bool{true, false, true}, nil, []*bool{&val, nil, &val}); assert.NoError(t, err) {
 					if err := batch.Send(); assert.NoError(t, err) {
@@ -70,7 +70,7 @@ func TestBool(t *testing.T) {
 							col4 *bool
 							col5 []*bool
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_bool").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_bool WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 							assert.Equal(t, true, col1)
 							assert.Equal(t, false, col2)
 							assert.Equal(t, []bool{true, false, true}, col3)
@@ -89,7 +89,7 @@ func TestColumnarBool(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -114,14 +114,14 @@ func TestColumnarBool(t *testing.T) {
 				, Col3 array(bool)
 				, Col4 nullable(bool)
 				, Col5 array(nullable(bool))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_bool")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			val := true
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bool"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bool (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					id   []uint64
 					col1 []bool
@@ -166,7 +166,7 @@ func TestColumnarBool(t *testing.T) {
 							col4 *bool
 							col5 []*bool
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_bool WHERE ID = $1", 42).Scan(&id, &col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_bool WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 42).Scan(&id, &col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 							assert.Equal(t, true, col1)
 							assert.Equal(t, false, col2)
 							assert.Equal(t, []bool{true, false, true}, col3)

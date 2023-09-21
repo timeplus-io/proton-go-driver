@@ -31,7 +31,7 @@ func Testlow_cardinality(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -61,13 +61,13 @@ func Testlow_cardinality(t *testing.T) {
 			, Col6 array(Array(low_cardinality(string)))
 			, Col7 low_cardinality(nullable(string))
 			, Col8 array(array(low_cardinality(nullable(string))))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_lowcardinality")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_lowcardinality"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_lowcardinality (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					rnd       = rand.Int31()
 					timestamp = time.Now()
@@ -101,7 +101,7 @@ func Testlow_cardinality(t *testing.T) {
 				}
 				if assert.NoError(t, batch.Send()) {
 					var count uint64
-					if err := conn.QueryRow(ctx, "SELECT COUNT() FROM test_lowcardinality").Scan(&count); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT count() FROM test_lowcardinality").Scan(&count); assert.NoError(t, err) {
 						assert.Equal(t, uint64(10), count)
 					}
 					for i := 0; i < 10; i++ {
@@ -115,7 +115,7 @@ func Testlow_cardinality(t *testing.T) {
 							col7 *string
 							col8 [][]*string
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_lowcardinality WHERE Col4 = $1", rnd+int32(i)).Scan(&col1, &col2, &col3, &col4, &col5, &col6, &col7, &col8); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_lowcardinality WHERE _tp_time > earliest_ts() AND Col4 = $1 LIMIT 1", rnd+int32(i)).Scan(&col1, &col2, &col3, &col4, &col5, &col6, &col7, &col8); assert.NoError(t, err) {
 							assert.Equal(t, timestamp.String(), col1)
 							assert.Equal(t, "RU", col2)
 							assert.Equal(t, timestamp.Add(time.Duration(i)*time.Minute).Truncate(time.Second), col3)
@@ -148,7 +148,7 @@ func TestColmnarlow_cardinality(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -174,13 +174,13 @@ func TestColmnarlow_cardinality(t *testing.T) {
 			, Col2 low_cardinality(fixed_string(2))
 			, Col3 low_cardinality(datetime)
 			, Col4 low_cardinality(int32)
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_lowcardinality")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_lowcardinality"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_lowcardinality (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					rnd       = rand.Int31()
 					timestamp = time.Now()
@@ -209,7 +209,7 @@ func TestColmnarlow_cardinality(t *testing.T) {
 				}
 				if assert.NoError(t, batch.Send()) {
 					var count uint64
-					if err := conn.QueryRow(ctx, "SELECT COUNT() FROM test_lowcardinality").Scan(&count); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT count() FROM test_lowcardinality WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
 						assert.Equal(t, uint64(10), count)
 					}
 					var (
@@ -218,7 +218,7 @@ func TestColmnarlow_cardinality(t *testing.T) {
 						col3 time.Time
 						col4 int32
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_lowcardinality WHERE Col4 = $1", rnd+6).Scan(&col1, &col2, &col3, &col4); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_lowcardinality WHERE _tp_time > earliest_ts() AND Col4 = $1 LIMIT 1", rnd+6).Scan(&col1, &col2, &col3, &col4); assert.NoError(t, err) {
 						assert.Equal(t, timestamp.String(), col1)
 						assert.Equal(t, "RU", col2)
 						assert.Equal(t, timestamp.Add(time.Duration(6)*time.Minute).Truncate(time.Second), col3)

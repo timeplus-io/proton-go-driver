@@ -29,7 +29,7 @@ func TestUInt8(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -49,7 +49,7 @@ func TestUInt8(t *testing.T) {
 				, Col2 nullable(uint8)
 				, Col3 array(uint8)
 				, Col4 array(nullable(uint8))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_uint8")
@@ -62,7 +62,7 @@ func TestUInt8(t *testing.T) {
 			Col4  []*uint8
 		}
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uint8"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uint8 (* except _tp_time)"); assert.NoError(t, err) {
 				data := uint8(42)
 				if !assert.NoError(t, err) {
 					return
@@ -78,14 +78,14 @@ func TestUInt8(t *testing.T) {
 						result1 result
 						result2 result
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_uint8 WHERE ID = $1", 1).ScanStruct(&result1); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_uint8 WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 1).ScanStruct(&result1); assert.NoError(t, err) {
 						if assert.Equal(t, data, result1.Col1) {
 							assert.Equal(t, data, *result1.Col2)
 							assert.Equal(t, []uint8{data}, result1.Col3)
 							assert.Equal(t, []*uint8{&data, nil, &data}, result1.Col4)
 						}
 					}
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_uint8 WHERE ID = $1", 2).ScanStruct(&result2); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_uint8 WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 2).ScanStruct(&result2); assert.NoError(t, err) {
 						if assert.Equal(t, data, result2.Col1) {
 							if assert.Nil(t, result2.Col2) {
 								assert.Equal(t, []uint8{data}, result2.Col3)
@@ -103,7 +103,7 @@ func TestColumnarUInt8(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -123,13 +123,13 @@ func TestColumnarUInt8(t *testing.T) {
 			, Col2 nullable(uint8)
 			, Col3 array(uint8)
 			, Col4 array(nullable(uint8))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_uint8")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uint8"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uint8 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					id       []uint64
 					col1Data []uint8
@@ -177,7 +177,7 @@ func TestColumnarUInt8(t *testing.T) {
 						Col3 []uint8
 						Col4 []*uint8
 					}
-					if err := conn.QueryRow(ctx, "SELECT Col1, Col2, Col3, Col4 FROM test_uint8 WHERE ID = $1", 11).ScanStruct(&result); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT Col1, Col2, Col3, Col4 FROM test_uint8 WHERE ID = $1 AND _tp_time > earliest_ts() LIMIT 1", 11).ScanStruct(&result); assert.NoError(t, err) {
 						if assert.Nil(t, result.Col2) {
 							assert.Equal(t, data, result.Col1)
 							assert.Equal(t, []uint8{data, data, data}, result.Col3)

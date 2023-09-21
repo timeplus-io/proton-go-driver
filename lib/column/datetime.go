@@ -19,6 +19,7 @@ package column
 
 import (
 	"fmt"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"reflect"
 	"strings"
 	"time"
@@ -76,6 +77,11 @@ func (dt *DateTime) ScanRow(dest interface{}, row int) error {
 	case **time.Time:
 		*d = new(time.Time)
 		**d = dt.row(row)
+	case *types.Datetime:
+		*d = types.Datetime{dt.row(row)}
+	case **types.Datetime:
+		*d = new(types.Datetime)
+		**d = types.Datetime{dt.row(row)}
 	default:
 		return &ColumnConverterError{
 			Op:   "ScanRow",
@@ -110,6 +116,28 @@ func (dt *DateTime) Append(v interface{}) (nulls []uint8, err error) {
 				dt.values, nulls[i] = append(dt.values, 0), 1
 			}
 		}
+	case []types.Datetime:
+		in := make([]uint32, 0, len(v))
+		for _, t := range v {
+			if err := dateOverflow(minDateTime, maxDateTime, t.Time, "2006-01-02 15:04:05"); err != nil {
+				return nil, err
+			}
+			in = append(in, uint32(t.Unix()))
+		}
+		dt.values, nulls = append(dt.values, in...), make([]uint8, len(v))
+	case []*types.Datetime:
+		nulls = make([]uint8, len(v))
+		for i, v := range v {
+			switch {
+			case v != nil:
+				if err := dateOverflow(minDateTime, maxDateTime, (*v).Time, "2006-01-02 15:04:05"); err != nil {
+					return nil, err
+				}
+				dt.values = append(dt.values, uint32(v.Unix()))
+			default:
+				dt.values, nulls[i] = append(dt.values, 0), 1
+			}
+		}
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
@@ -131,6 +159,18 @@ func (dt *DateTime) AppendRow(v interface{}) error {
 	case *time.Time:
 		if v != nil {
 			if err := dateOverflow(minDateTime, maxDateTime, *v, "2006-01-02 15:04:05"); err != nil {
+				return err
+			}
+			datetime = uint32(v.Unix())
+		}
+	case types.Datetime:
+		if err := dateOverflow(minDateTime, maxDateTime, v.Time, "2006-01-02 15:04:05"); err != nil {
+			return err
+		}
+		datetime = uint32(v.Unix())
+	case *types.Datetime:
+		if v != nil {
+			if err := dateOverflow(minDateTime, maxDateTime, (*v).Time, "2006-01-02 15:04:05"); err != nil {
 				return err
 			}
 			datetime = uint32(v.Unix())

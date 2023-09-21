@@ -28,7 +28,7 @@ import (
 )
 
 func TestStdContextStdTimeout(t *testing.T) {
-	if connect, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) && assert.NoError(t, connect.Ping()) {
+	if connect, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) && assert.NoError(t, connect.Ping()) {
 		{
 			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*20)
 			defer cancel()

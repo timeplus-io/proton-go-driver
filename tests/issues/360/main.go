@@ -36,7 +36,7 @@ func main() {
 	}()
 
 	var err error
-	conn, err = sql.Open("proton", "tcp://127.0.0.1:9000?debug=false")
+	conn, err = sql.Open("proton", "tcp://127.0.0.1:8463?debug=false")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -29,7 +29,7 @@ func TestString(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -50,13 +50,13 @@ func TestString(t *testing.T) {
 			  Col1 string
 			, Col2 array(string)
 			, Col3 nullable(string)
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_string")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_string"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_string (* except _tp_time)"); assert.NoError(t, err) {
 				if err := batch.Append("A", []string{"A", "B", "C"}, nil); assert.NoError(t, err) {
 					if assert.NoError(t, batch.Send()) {
 						var (
@@ -64,7 +64,7 @@ func TestString(t *testing.T) {
 							col2 []string
 							col3 *string
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_string").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_string WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 							if assert.Nil(t, col3) {
 								assert.Equal(t, "A", col1)
 								assert.Equal(t, []string{"A", "B", "C"}, col2)
@@ -81,7 +81,7 @@ func BenchmarkString(b *testing.B) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -96,14 +96,14 @@ func BenchmarkString(b *testing.B) {
 		conn.Exec(ctx, "DROP STREAM benchmark_string")
 	}()
 
-	if err = conn.Exec(ctx, `CREATE STREAM benchmark_string (Col1 uint64, Col2 string) ENGINE = Null`); err != nil {
+	if err = conn.Exec(ctx, `CREATE STREAM benchmark_string (Col1 uint64, Col2 string)`); err != nil {
 		b.Fatal(err)
 	}
 
 	const rowsInBlock = 10_000_000
 
 	for n := 0; n < b.N; n++ {
-		batch, err := conn.PrepareBatch(ctx, "INSERT INTO benchmark_string VALUES")
+		batch, err := conn.PrepareBatch(ctx, "INSERT INTO benchmark_string VALUES (* except _tp_time)")
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -122,7 +122,7 @@ func BenchmarkColumnarString(b *testing.B) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -137,7 +137,7 @@ func BenchmarkColumnarString(b *testing.B) {
 	defer func() {
 		conn.Exec(ctx, "DROP STREAM benchmark_string")
 	}()
-	if err = conn.Exec(ctx, `CREATE STREAM benchmark_string (Col1 uint64, Col2 string) ENGINE = Null`); err != nil {
+	if err = conn.Exec(ctx, `CREATE STREAM benchmark_string (Col1 uint64, Col2 string)`); err != nil {
 		b.Fatal(err)
 	}
 
@@ -148,7 +148,7 @@ func BenchmarkColumnarString(b *testing.B) {
 		col2 []string
 	)
 	for n := 0; n < b.N; n++ {
-		batch, err := conn.PrepareBatch(ctx, "INSERT INTO benchmark_string VALUES")
+		batch, err := conn.PrepareBatch(ctx, "INSERT INTO benchmark_string VALUES (* except _tp_time)")
 		if err != nil {
 			b.Fatal(err)
 		}

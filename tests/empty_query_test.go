@@ -30,7 +30,7 @@ func TestEmptyQuery(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -40,7 +40,7 @@ func TestEmptyQuery(t *testing.T) {
 	)
 	if assert.NoError(t, err) {
 		const ddl = `
-		CREATE TEMPORARY STREAM test_empty_query (
+		CREATE STREAM test_empty_query (
 			  Col1 uint8
 			, Col2 array(uint8)
 			, Col3 low_cardinality(string)
@@ -48,12 +48,16 @@ func TestEmptyQuery(t *testing.T) {
 				  First  uint32
 				, Second uint32
 			)
-		) ENGINE = Memory
+		)
 		`
+		defer func() {
+			conn.Exec(ctx, "DROP STREAM test_empty_query")
+		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
+
 			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Second))
 			defer cancel()
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_empty_query"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_empty_query (* except _tp_time)"); assert.NoError(t, err) {
 				assert.NoError(t, batch.Send())
 			}
 		}

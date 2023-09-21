@@ -27,10 +27,11 @@ import (
 )
 
 func TestGeoMultiPolygon(t *testing.T) {
+	t.Skip("Geo haven't been implemented")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -45,21 +46,21 @@ func TestGeoMultiPolygon(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 99, 99); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+		//if err := checkMinServerVersion(conn, 99, 99); err != nil {
+		//	t.Skip(err.Error())
+		//	return
+		//}
 		const ddl = `
 		CREATE STREAM test_geo_multipolygon (
 			  Col1 multi_polygon
 			, Col2 array(multi_polygon)
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_geo_multipolygon")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_geo_multipolygon"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_geo_multipolygon (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = orb.MultiPolygon{
 						orb.Polygon{
@@ -136,7 +137,7 @@ func TestGeoMultiPolygon(t *testing.T) {
 							col1 orb.MultiPolygon
 							col2 []orb.MultiPolygon
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_geo_multipolygon").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_geo_multipolygon WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 						}

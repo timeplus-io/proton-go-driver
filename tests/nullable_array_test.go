@@ -19,6 +19,7 @@ package tests
 
 import (
 	"context"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"net"
 	"testing"
 	"time"
@@ -33,7 +34,7 @@ func TestNullableArray(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -61,7 +62,7 @@ func TestNullableArray(t *testing.T) {
 		, Col12 array(nullable(ipv6))
 		, Col13 array(nullable(string))
 		, Col14 array(nullable(uuid))
-	) Engine Memory
+	) 
 	`
 	defer func() {
 		conn.Exec(ctx, "DROP STREAM test_nullable_array")
@@ -73,7 +74,7 @@ func TestNullableArray(t *testing.T) {
 		}
 
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nullable_array"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nullable_array (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					strVal       = "ClickHouse"
 					uint8Val     = uint8(42)
@@ -89,7 +90,8 @@ func TestNullableArray(t *testing.T) {
 					IPv4Val      = net.ParseIP("127.0.0.1")
 					IPv6Val1     = net.ParseIP("2001:44c8:129:2632:33:0:252:2")
 					IPv6Val2     = net.ParseIP("127.0.0.1")
-					dateVal, err = time.Parse("2006-01-02 15:04:05", "2022-01-12 00:00:00")
+					timeVal, err = time.Parse("2006-01-02 15:04:05", "2022-01-12 00:00:00")
+					dateVal      = types.Date{Time: timeVal}
 				)
 				if !assert.NoError(t, err) {
 					return
@@ -97,8 +99,8 @@ func TestNullableArray(t *testing.T) {
 				err = batch.Append(
 					[]*bool{&boolTrue, nil, &boolFalse},
 					[]*uint8{&uint8Val, nil, &uint8Val},
-					[]*time.Time{&dateVal, nil, &dateVal},
-					[]*time.Time{&dateVal, nil, &dateVal},
+					[]*types.Date{&dateVal, nil, &dateVal},
+					[]*types.Date{&dateVal, nil, &dateVal},
 					[]*time.Time{&datetime, nil, &datetime},
 					[]*time.Time{&datetime, nil, &datetime},
 					[]*decimal.Decimal{&decimalVal, nil, &decimalVal},
@@ -117,8 +119,8 @@ func TestNullableArray(t *testing.T) {
 					var result struct {
 						Col1  []*bool
 						Col2  []*uint8
-						Col3  []*time.Time
-						Col4  []*time.Time
+						Col3  []*types.Date
+						Col4  []*types.Date
 						Col5  []*time.Time
 						Col6  []*time.Time
 						Col7  []*decimal.Decimal
@@ -130,11 +132,11 @@ func TestNullableArray(t *testing.T) {
 						Col13 []*string
 						Col14 []*uuid.UUID
 					}
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_nullable_array").ScanStruct(&result); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_nullable_array WHERE _tp_time > earliest_ts() LIMIT 1").ScanStruct(&result); assert.NoError(t, err) {
 						assert.Equal(t, []*bool{&boolTrue, nil, &boolFalse}, result.Col1)
 						assert.Equal(t, []*uint8{&uint8Val, nil, &uint8Val}, result.Col2)
-						assert.Equal(t, []*time.Time{&dateVal, nil, &dateVal}, result.Col3)
-						assert.Equal(t, []*time.Time{&dateVal, nil, &dateVal}, result.Col4)
+						assert.Equal(t, []*types.Date{&dateVal, nil, &dateVal}, result.Col3)
+						assert.Equal(t, []*types.Date{&dateVal, nil, &dateVal}, result.Col4)
 						assert.Equal(t, []*time.Time{&datetime, nil, &datetime}, result.Col5)
 						assert.Equal(t, []*time.Time{&datetime, nil, &datetime}, result.Col6)
 						if assert.Nil(t, result.Col7[1]) {

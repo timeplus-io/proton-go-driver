@@ -29,7 +29,7 @@ func TestIssue406(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:9000"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -42,20 +42,20 @@ func TestIssue406(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 21, 9); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+		//if err := checkMinServerVersion(conn, 21, 9); err != nil {
+		//	t.Skip(err.Error())
+		//	return
+		//}
 		const ddl = `
 			CREATE STREAM issue_406 (
 				Col1 tuple(array(int32), array(int32))
-			) Engine Memory
+			)
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM issue_406")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_406"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_406 (* except _tp_time)"); assert.NoError(t, err) {
 				if err := batch.Append(
 					[]interface{}{
 						[]int32{1, 2, 3, 4, 5},
@@ -64,7 +64,7 @@ func TestIssue406(t *testing.T) {
 				); assert.NoError(t, err) {
 					if err := batch.Send(); assert.NoError(t, err) {
 						var col1 []interface{}
-						if err := conn.QueryRow(ctx, "SELECT * FROM issue_406").Scan(&col1); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM issue_406 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1); assert.NoError(t, err) {
 							assert.Equal(t, []interface{}{
 								[]int32{1, 2, 3, 4, 5},
 								[]int32{5, 1, 2, 3, 4},

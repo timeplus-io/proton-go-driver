@@ -29,7 +29,7 @@ func TestNested(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -59,13 +59,13 @@ func TestNested(t *testing.T) {
 						, Col2_N2_N1 uint8
 					)
 				)
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_nested")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nested"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nested (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = []uint8{1, 2, 3}
 					col2Data = []uint8{10, 20, 30}
@@ -90,7 +90,7 @@ func TestNested(t *testing.T) {
 							col3 []uint8
 							col4 [][][]interface{}
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_nested").Scan(&col1, &col2, &col3, &col4); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_nested WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, col3Data, col3)

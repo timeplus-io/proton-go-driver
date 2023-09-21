@@ -25,11 +25,11 @@ import (
 )
 
 func TestStdBool(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 21, 12); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
+		//if err := checkMinServerVersion(conn, 21, 12); err != nil {
+		//	t.Skip(err.Error())
+		//	return
+		//}
 		const ddl = `
 			CREATE STREAM test_bool (
 				    Col1 bool
@@ -37,7 +37,7 @@ func TestStdBool(t *testing.T) {
 				  , Col3 array(bool)
 				  , Col4 nullable(bool)
 				  , Col5 array(nullable(bool))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec("DROP STREAM test_bool")
@@ -47,7 +47,7 @@ func TestStdBool(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_bool"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_bool (* except _tp_time)"); assert.NoError(t, err) {
 				var val bool
 				if _, err := batch.Exec(true, false, []bool{true, false, true}, nil, []*bool{&val, nil, &val}); assert.NoError(t, err) {
 					if err := scope.Commit(); assert.NoError(t, err) {
@@ -58,7 +58,7 @@ func TestStdBool(t *testing.T) {
 							col4 *bool
 							col5 []*bool
 						)
-						if err := conn.QueryRow("SELECT * FROM test_bool").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_bool WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 							assert.Equal(t, true, col1)
 							assert.Equal(t, false, col2)
 							assert.Equal(t, []bool{true, false, true}, col3)

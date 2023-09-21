@@ -28,7 +28,7 @@ import (
 
 func TestConn(t *testing.T) {
 	conn, err := proton.Open(&proton.Options{
-		Addr: []string{"127.0.0.1:7587"},
+		Addr: []string{"127.0.0.1:8463"},
 		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
@@ -74,7 +74,7 @@ func TestConnFailover(t *testing.T) {
 		Addr: []string{
 			"127.0.0.1:9001",
 			"127.0.0.1:9002",
-			"127.0.0.1:7587",
+			"127.0.0.1:8463",
 		},
 		Auth: proton.Auth{
 			Database: "default",
@@ -95,7 +95,7 @@ func TestConnFailover(t *testing.T) {
 }
 func TestPingDeadline(t *testing.T) {
 	conn, err := proton.Open(&proton.Options{
-		Addr: []string{"127.0.0.1:7587"},
+		Addr: []string{"127.0.0.1:8463"},
 		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",

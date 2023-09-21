@@ -31,7 +31,7 @@ func TestColumnarInterface(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -49,13 +49,13 @@ func TestColumnarInterface(t *testing.T) {
 				    Col1 uint8
 				  , Col2 string
 				  , Col3 datetime
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_column_interface")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data    []uint8
 					col2Data    []string
@@ -78,9 +78,9 @@ func TestColumnarInterface(t *testing.T) {
 				}
 				if assert.NoError(t, batch.Send()) {
 					var count uint64
-					if err := conn.QueryRow(ctx, "SELECT COUNT() FROM test_column_interface").Scan(&count); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT count() FROM test_column_interface WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
 						if assert.Equal(t, uint64(150), count) {
-							rows, err := conn.Query(ctx, "SELECT * FROM test_column_interface WHERE Col1 >= $1 AND Col1 < $2", 10, 30)
+							rows, err := conn.Query(ctx, "SELECT (* except _tp_time) FROM test_column_interface WHERE _tp_time > earliest_ts() AND Col1 >= $1 AND Col1 < $2 LIMIT 20", 10, 30)
 							if assert.NoError(t, err) {
 								var (
 									row   uint8 = 10
@@ -114,10 +114,11 @@ func TestColumnarInterface(t *testing.T) {
 }
 
 func TestNullableColumnarInterface(t *testing.T) {
+	t.Skip("TRUNCATE unable to delete data in logstore")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -135,13 +136,13 @@ func TestNullableColumnarInterface(t *testing.T) {
 				  Col1 nullable(uint8)
 				, Col2 nullable(string)
 				, Col3 nullable(datetime)
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_column_interface")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data    []*uint8
 					col2Data    []*string
@@ -167,9 +168,9 @@ func TestNullableColumnarInterface(t *testing.T) {
 				}
 				if assert.NoError(t, batch.Send()) {
 					var count uint64
-					if err := conn.QueryRow(ctx, "SELECT COUNT() FROM test_column_interface").Scan(&count); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT count() FROM test_column_interface WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
 						if assert.Equal(t, uint64(150), count) {
-							rows, err := conn.Query(ctx, "SELECT * FROM test_column_interface WHERE Col1 >= $1 AND Col1 < $2", 10, 30)
+							rows, err := conn.Query(ctx, "SELECT (* except _tp_time) FROM test_column_interface WHERE _tp_time > earliest_ts() AND Col1 >= $1 AND Col1 < $2 LIMIT 20", 10, 30)
 							if assert.NoError(t, err) {
 								var (
 									row   uint8 = 10
@@ -201,7 +202,7 @@ func TestNullableColumnarInterface(t *testing.T) {
 			if err := conn.Exec(ctx, "TRUNCATE STREAM test_column_interface"); !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data    []*uint8
 					col2Data    []*string
@@ -231,9 +232,9 @@ func TestNullableColumnarInterface(t *testing.T) {
 				}
 				if assert.NoError(t, batch.Send()) {
 					var count uint64
-					if err := conn.QueryRow(ctx, "SELECT COUNT() FROM test_column_interface").Scan(&count); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT count() FROM test_column_interface WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
 						if assert.Equal(t, uint64(150), count) {
-							rows, err := conn.Query(ctx, "SELECT * FROM test_column_interface WHERE Col1 >= $1 AND Col1 < $2", 10, 30)
+							rows, err := conn.Query(ctx, "SELECT (* except _tp_time) FROM test_column_interface WHERE _tp_time > earliest_ts() AND Col1 >= $1 AND Col1 < $2 LIMIT 20", 10, 30)
 							if assert.NoError(t, err) {
 								var (
 									row   uint8 = 10

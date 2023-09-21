@@ -26,12 +26,12 @@ import (
 )
 
 func TestIssue164(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
 		CREATE STREAM issue_164 (
 			  Col1 int32
 			, Col2 array(int8)
-		) Engine Memory
+		)
 		`
 		defer func() {
 			conn.Exec("DROP STREAM issue_164")
@@ -41,7 +41,7 @@ func TestIssue164(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO issue_164"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO issue_164 (* except _tp_time)"); assert.NoError(t, err) {
 				stmtParams := make([]interface{}, 0)
 				stmtParams = append(stmtParams, sql.NamedArg{Name: "id", Value: int32(10)})
 				stmtParams = append(stmtParams, sql.NamedArg{Name: "anything", Value: nil})

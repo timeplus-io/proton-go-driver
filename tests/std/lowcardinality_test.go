@@ -32,11 +32,11 @@ func TestStdLowCardinality(t *testing.T) {
 	ctx := proton.Context(context.Background(), proton.WithSettings(proton.Settings{
 		"allow_suspicious_low_cardinality_types": 1,
 	}))
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 19, 11); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
+		//if err := checkMinServerVersion(conn, 19, 11); err != nil {
+		//	t.Skip(err.Error())
+		//	return
+		//}
 		const ddl = `
 		CREATE STREAM test_lowcardinality (
 			  Col1 low_cardinality(string)
@@ -44,10 +44,10 @@ func TestStdLowCardinality(t *testing.T) {
 			, Col3 low_cardinality(datetime)
 			, Col4 low_cardinality(int32)
 			, Col5 array(low_cardinality(string))
-			, Col6 array(Array(LowCardinality(string)))
+			, Col6 array(array(low_cardinality(string)))
 			, Col7 low_cardinality(nullable(string))
 			, Col8 array(array(low_cardinality(nullable(string))))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec("DROP STREAM test_lowcardinality")
@@ -57,7 +57,7 @@ func TestStdLowCardinality(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_lowcardinality"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_lowcardinality (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					rnd       = rand.Int31()
 					timestamp = time.Now()
@@ -91,7 +91,7 @@ func TestStdLowCardinality(t *testing.T) {
 				}
 				if assert.NoError(t, scope.Commit()) {
 					var count uint64
-					if err := conn.QueryRow("SELECT COUNT() FROM test_lowcardinality").Scan(&count); assert.NoError(t, err) {
+					if err := conn.QueryRow("SELECT count() FROM test_lowcardinality WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
 						assert.Equal(t, uint64(10), count)
 					}
 					for i := 0; i < 10; i++ {
@@ -105,7 +105,7 @@ func TestStdLowCardinality(t *testing.T) {
 							col7 *string
 							col8 [][]*string
 						)
-						if err := conn.QueryRow("SELECT * FROM test_lowcardinality WHERE Col4 = $1", rnd+int32(i)).Scan(&col1, &col2, &col3, &col4, &col5, &col6, &col7, &col8); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_lowcardinality WHERE _tp_time > earliest_ts() AND Col4 = $1 LIMIT 1", rnd+int32(i)).Scan(&col1, &col2, &col3, &col4, &col5, &col6, &col7, &col8); assert.NoError(t, err) {
 							assert.Equal(t, timestamp.String(), col1)
 							assert.Equal(t, "RU", col2)
 							assert.Equal(t, timestamp.Add(time.Duration(i)*time.Minute).Truncate(time.Second), col3)

@@ -62,6 +62,11 @@ func (dt *Date32) ScanRow(dest interface{}, row int) error {
 	case **time.Time:
 		*d = new(time.Time)
 		**d = dt.row(row).Time
+	case *types.Date:
+		*d = dt.row(row)
+	case **types.Date:
+		*d = new(types.Date)
+		**d = dt.row(row)
 	default:
 		return &ColumnConverterError{
 			Op:   "ScanRow",
@@ -96,6 +101,28 @@ func (dt *Date32) Append(v interface{}) (nulls []uint8, err error) {
 				dt.values, nulls[i] = append(dt.values, 0), 1
 			}
 		}
+	case []types.Date:
+		in := make([]int32, 0, len(v))
+		for _, t := range v {
+			if err := dateOverflow(minDate32, maxDate32, t.Time, "2006-01-02"); err != nil {
+				return nil, err
+			}
+			in = append(in, timeToInt32(t.Time))
+		}
+		dt.values, nulls = append(dt.values, in...), make([]uint8, len(v))
+	case []*types.Date:
+		nulls = make([]uint8, len(v))
+		for i, v := range v {
+			switch {
+			case v != nil:
+				if err := dateOverflow(minDate32, maxDate32, (*v).Time, "2006-01-02"); err != nil {
+					return nil, err
+				}
+				dt.values = append(dt.values, timeToInt32((*v).Time))
+			default:
+				dt.values, nulls[i] = append(dt.values, 0), 1
+			}
+		}
 	default:
 		return nil, &ColumnConverterError{
 			Op:   "Append",
@@ -120,6 +147,18 @@ func (dt *Date32) AppendRow(v interface{}) error {
 				return err
 			}
 			date = timeToInt32(*v)
+		}
+	case types.Date:
+		if err := dateOverflow(minDate32, maxDate32, v.Time, "2006-01-02"); err != nil {
+			return err
+		}
+		date = timeToInt32(v.Time)
+	case *types.Date:
+		if v != nil {
+			if err := dateOverflow(minDate32, maxDate32, (*v).Time, "2006-01-02"); err != nil {
+				return err
+			}
+			date = timeToInt32((*v).Time)
 		}
 	case nil:
 	default:

@@ -30,7 +30,7 @@ func TestAppendStruct(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -54,13 +54,13 @@ func TestAppendStruct(t *testing.T) {
 			, Col2  string
 			, Col3  array(string)
 			, Col4  nullable(uint8)
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_append_struct")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_append_struct"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_append_struct (* except _tp_time)"); assert.NoError(t, err) {
 				type header struct {
 					Col1 uint8     `ch:"HCol1"`
 					Col2 *string   `ch:"HCol2"`
@@ -94,7 +94,7 @@ func TestAppendStruct(t *testing.T) {
 				if assert.NoError(t, batch.Send()) {
 					for i := 0; i < 100; i++ {
 						var result data
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_append_struct WHERE HCol1 = $1", i).ScanStruct(&result); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_append_struct WHERE _tp_time > earliest_ts() AND HCol1 = $1 LIMIT 1", i).ScanStruct(&result); assert.NoError(t, err) {
 							str := fmt.Sprintf("Str_%d", i)
 							h := header{
 								Col1: uint8(i),
@@ -111,7 +111,7 @@ func TestAppendStruct(t *testing.T) {
 						}
 					}
 					var results []data
-					if err := conn.Select(ctx, &results, "SELECT * FROM test_append_struct ORDER BY HCol1"); assert.NoError(t, err) {
+					if err := conn.Select(ctx, &results, "SELECT (* except _tp_time) FROM test_append_struct WHERE _tp_time > earliest_ts() ORDER BY HCol1 LIMIT 100"); assert.NoError(t, err) {
 						for i, result := range results {
 							str := fmt.Sprintf("Str_%d", i)
 							h := header{

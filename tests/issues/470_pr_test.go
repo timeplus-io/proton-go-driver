@@ -25,11 +25,11 @@ import (
 )
 
 func Test470PR(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
 		CREATE STREAM issue_470_pr (
 			Col1 array(string)
-		) Engine Memory
+		)
 		`
 		defer func() {
 			conn.Exec("DROP STREAM issue_470_pr")
@@ -39,7 +39,7 @@ func Test470PR(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO issue_470_pr"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO issue_470_pr (* except _tp_time)"); assert.NoError(t, err) {
 				if _, err := batch.Exec(nil); assert.Error(t, err) {
 					assert.Contains(t, err.Error(), "converting <nil> to array(string) is unsupported")
 				}

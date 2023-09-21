@@ -29,7 +29,7 @@ func TestIssue502(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:9000"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -49,7 +49,7 @@ func TestIssue502(t *testing.T) {
 			  Part uint8
 			, Col1 uint8
 			, Col2 uint8
-		) Engine MergeTree
+		)
 			ORDER BY Part
 			PARTITION BY (Part)
 		`
@@ -57,7 +57,7 @@ func TestIssue502(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM issue_502")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_502"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_502 (* except _tp_time)"); assert.NoError(t, err) {
 				for part := 0; part < 10; part++ {
 					if err := batch.Append(uint8(part), uint8(part)+10, uint8(part)+20); !assert.NoError(t, err) {
 						return
@@ -69,7 +69,7 @@ func TestIssue502(t *testing.T) {
 						Col1 uint8
 						Col2 uint8
 					}
-					if err := conn.Select(ctx, &result, `SELECT * FROM issue_502`); assert.NoError(t, err) {
+					if err := conn.Select(ctx, &result, `SELECT (* except _tp_time) FROM issue_502 WHERE _tp_time > earliest_ts() LIMIT 10`); assert.NoError(t, err) {
 						if assert.Len(t, result, 10) {
 							for _, v := range result {
 								assert.Equal(t, uint8(v.Part)+10, v.Col1)

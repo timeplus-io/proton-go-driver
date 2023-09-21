@@ -25,11 +25,11 @@ import (
 )
 
 func TestStdMap(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 21, 9); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
+		//if err := checkMinServerVersion(conn, 21, 9); err != nil {
+		//	t.Skip(err.Error())
+		//	return
+		//}
 		const ddl = `
 		CREATE STREAM test_map (
 			  Col1 map(string, uint64)
@@ -37,7 +37,7 @@ func TestStdMap(t *testing.T) {
 			, Col3 map(string, uint64)
 			, Col4 array(map(string, string))
 			, Col5 map(low_cardinality(string), low_cardinality(uint64))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec("DROP STREAM test_map")
@@ -47,7 +47,7 @@ func TestStdMap(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_map"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_map (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = map[string]uint64{
 						"key_col_1_1": 1,
@@ -76,7 +76,7 @@ func TestStdMap(t *testing.T) {
 							col4 []map[string]string
 							col5 map[string]uint64
 						)
-						if err := conn.QueryRow("SELECT * FROM test_map").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_map WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, col3Data, col3)

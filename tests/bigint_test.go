@@ -30,7 +30,7 @@ func TestBigInt(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -55,13 +55,13 @@ func TestBigInt(t *testing.T) {
 			, Col4 array(int256)
 			, Col5 uint256
 			, Col6 array(uint256)
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_bigint")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bigint"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bigint (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = big.NewInt(128)
 					col2Data = []*big.Int{
@@ -92,7 +92,7 @@ func TestBigInt(t *testing.T) {
 							col5 big.Int
 							col6 []*big.Int
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_bigint").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_bigint WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, *col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, *col3Data, col3)
@@ -111,7 +111,7 @@ func TestNullableBigInt(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -124,10 +124,10 @@ func TestNullableBigInt(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+		//if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		//	t.Skip(err.Error())
+		//	return
+		//}
 		const ddl = `
 		CREATE STREAM test_nullable_bigint (
 			  Col1 nullable(int128)
@@ -136,13 +136,13 @@ func TestNullableBigInt(t *testing.T) {
 			, Col4 array(nullable(int256))
 			, Col5 nullable(uint256)
 			, Col6 array(nullable(uint256))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_nullable_bigint")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nullable_bigint"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nullable_bigint (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = big.NewInt(128)
 					col2Data = []*big.Int{
@@ -173,7 +173,7 @@ func TestNullableBigInt(t *testing.T) {
 							col5 *big.Int
 							col6 []*big.Int
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_nullable_bigint").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_nullable_bigint WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, *col1Data, *col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, *col3Data, *col3)

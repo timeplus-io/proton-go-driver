@@ -27,10 +27,11 @@ import (
 )
 
 func TestGeoPoint(t *testing.T) {
+	t.Skip("Geo haven't been implemented")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -45,21 +46,21 @@ func TestGeoPoint(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 99, 99); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+		//if err := checkMinServerVersion(conn, 99, 99); err != nil {
+		//	t.Skip(err.Error())
+		//	return
+		//}
 		const ddl = `
 		CREATE STREAM test_geo_point (
 			Col1 point
 			, Col2 array(point)
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_geo_point")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_geo_point"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_geo_point (* except _tp_time)"); assert.NoError(t, err) {
 				if err := batch.Append(
 					orb.Point{11, 22},
 					[]orb.Point{
@@ -72,7 +73,7 @@ func TestGeoPoint(t *testing.T) {
 							col1 orb.Point
 							col2 []orb.Point
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_geo_point").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_geo_point WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, orb.Point{11, 22}, col1)
 							assert.Equal(t, []orb.Point{
 								{1, 2},

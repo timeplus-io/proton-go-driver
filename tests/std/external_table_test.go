@@ -50,7 +50,7 @@ func TestStdExternalTable(t *testing.T) {
 			assert.NoError(t, table2.Append(uint8(i), fmt.Sprintf("value_%d", i), time.Now()))
 		}
 	}
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		ctx := proton.Context(context.Background(),
 			proton.WithExternalTable(table1, table2),
 		)
@@ -68,13 +68,13 @@ func TestStdExternalTable(t *testing.T) {
 			rows.Close()
 		}
 		var count uint64
-		if err := conn.QueryRowContext(ctx, "SELECT COUNT(*) FROM external_table_1").Scan(&count); assert.NoError(t, err) {
+		if err := conn.QueryRowContext(ctx, "SELECT count(*) FROM external_table_1").Scan(&count); assert.NoError(t, err) {
 			assert.Equal(t, uint64(10), count)
 		}
-		if err := conn.QueryRowContext(ctx, "SELECT COUNT(*) FROM external_table_2").Scan(&count); assert.NoError(t, err) {
+		if err := conn.QueryRowContext(ctx, "SELECT count(*) FROM external_table_2").Scan(&count); assert.NoError(t, err) {
 			assert.Equal(t, uint64(10), count)
 		}
-		if err := conn.QueryRowContext(ctx, "SELECT COUNT(*) FROM (SELECT * FROM external_table_1 UNION ALL SELECT * FROM external_table_2)").Scan(&count); assert.NoError(t, err) {
+		if err := conn.QueryRowContext(ctx, "SELECT count(*) FROM (SELECT * FROM external_table_1 UNION ALL SELECT * FROM external_table_2)").Scan(&count); assert.NoError(t, err) {
 			assert.Equal(t, uint64(20), count)
 		}
 	}

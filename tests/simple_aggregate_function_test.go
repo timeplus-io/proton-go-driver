@@ -29,7 +29,7 @@ func TestSimpleAggregateFunction(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -42,22 +42,22 @@ func TestSimpleAggregateFunction(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 99, 99); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+		//if err := checkMinServerVersion(conn, 99, 99); err != nil {
+		//	t.Skip(err.Error())
+		//	return
+		//}
 		const ddl = `
 		CREATE STREAM test_simple_aggregate_function (
 			  Col1 uint64
 			, Col2 simple_aggregate_function(sum, double)
 			, Col3 simple_aggregate_function(sum_map, tuple(array(int16), array(uint64)))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_simple_aggregate_function")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_simple_aggregate_function"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_simple_aggregate_function (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = uint64(42)
 					col2Data = float64(256.1)
@@ -75,7 +75,7 @@ func TestSimpleAggregateFunction(t *testing.T) {
 						Col2 float64
 						Col3 []interface{}
 					}
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_simple_aggregate_function").ScanStruct(&result); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_simple_aggregate_function WHERE _tp_time > earliest_ts() LIMIT 1").ScanStruct(&result); assert.NoError(t, err) {
 						assert.Equal(t, col1Data, result.Col1)
 						assert.Equal(t, col2Data, result.Col2)
 						assert.Equal(t, col3Data, result.Col3)

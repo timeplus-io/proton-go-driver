@@ -19,6 +19,7 @@ package std
 
 import (
 	"database/sql"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
 
@@ -26,11 +27,11 @@ import (
 )
 
 func TestStdDate32(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 21, 9); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
+		//if err := checkMinServerVersion(conn, 21, 9); err != nil {
+		//	t.Skip(err.Error())
+		//	return
+		//}
 		const ddl = `
 			CREATE STREAM test_date32 (
 				  ID   uint8
@@ -38,32 +39,34 @@ func TestStdDate32(t *testing.T) {
 				, Col2 nullable(date32)
 				, Col3 array(date32)
 				, Col4 array(nullable(date32))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec("DROP STREAM test_date32")
 		}()
 		type result struct {
 			ColID uint8 `ch:"ID"`
-			Col1  time.Time
-			Col2  *time.Time
-			Col3  []time.Time
-			Col4  []*time.Time
+			Col1  types.Date
+			Col2  *types.Date
+			Col3  []types.Date
+			Col4  []*types.Date
 		}
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_date32"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_date32 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
-					date1, _ = time.Parse("2006-01-02 15:04:05", "2283-11-11 00:00:00")
-					date2, _ = time.Parse("2006-01-02 15:04:05", "1925-01-01 00:00:00")
+					time1, _ = time.Parse("2006-01-02 15:04:05", "2283-11-11 00:00:00")
+					time2, _ = time.Parse("2006-01-02 15:04:05", "1925-01-01 00:00:00")
+					date1    = types.Date{time1}
+					date2    = types.Date{time2}
 				)
-				if _, err := batch.Exec(uint8(1), date1, &date2, []time.Time{date2}, []*time.Time{&date2, nil, &date1}); !assert.NoError(t, err) {
+				if _, err := batch.Exec(uint8(1), date1, &date2, []types.Date{date2}, []*types.Date{&date2, nil, &date1}); !assert.NoError(t, err) {
 					return
 				}
-				if _, err := batch.Exec(uint8(2), date2, nil, []time.Time{date1}, []*time.Time{nil, nil, &date2}); !assert.NoError(t, err) {
+				if _, err := batch.Exec(uint8(2), date2, nil, []types.Date{date1}, []*types.Date{nil, nil, &date2}); !assert.NoError(t, err) {
 					return
 				}
 				if err := scope.Commit(); assert.NoError(t, err) {
@@ -71,7 +74,7 @@ func TestStdDate32(t *testing.T) {
 						result1 result
 						result2 result
 					)
-					if err := conn.QueryRow("SELECT * FROM test_date32 WHERE ID = $1", 1).Scan(
+					if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_date32 WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 1).Scan(
 						&result1.ColID,
 						&result1.Col1,
 						&result1.Col2,
@@ -81,11 +84,11 @@ func TestStdDate32(t *testing.T) {
 						if assert.Equal(t, date1, result1.Col1) {
 							assert.Equal(t, "UTC", result1.Col1.Location().String())
 							assert.Equal(t, date2, *result1.Col2)
-							assert.Equal(t, []time.Time{date2}, result1.Col3)
-							assert.Equal(t, []*time.Time{&date2, nil, &date1}, result1.Col4)
+							assert.Equal(t, []types.Date{date2}, result1.Col3)
+							assert.Equal(t, []*types.Date{&date2, nil, &date1}, result1.Col4)
 						}
 					}
-					if err := conn.QueryRow("SELECT * FROM test_date32 WHERE ID = $1", 2).Scan(
+					if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_date32 WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 2).Scan(
 						&result2.ColID,
 						&result2.Col1,
 						&result2.Col2,
@@ -95,8 +98,8 @@ func TestStdDate32(t *testing.T) {
 						if assert.Equal(t, date2, result2.Col1) {
 							assert.Equal(t, "UTC", result2.Col1.Location().String())
 							if assert.Nil(t, result2.Col2) {
-								assert.Equal(t, []time.Time{date1}, result2.Col3)
-								assert.Equal(t, []*time.Time{nil, nil, &date2}, result2.Col4)
+								assert.Equal(t, []types.Date{date1}, result2.Col3)
+								assert.Equal(t, []*types.Date{nil, nil, &date2}, result2.Col4)
 							}
 						}
 					}

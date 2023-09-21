@@ -30,7 +30,7 @@ func TestUUID(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -50,13 +50,14 @@ func TestUUID(t *testing.T) {
 				, Col3 array(uuid)
 				, Col4 nullable(uuid)
 				, Col5 array(nullable(uuid))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_uuid")
 		}()
+		conn.Exec(ctx, "DROP STREAM IF EXISTS test_uuid")
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = uuid.New()
 					col2Data = uuid.New()
@@ -72,7 +73,7 @@ func TestUUID(t *testing.T) {
 							col4 *uuid.UUID
 							col5 []*uuid.UUID
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_uuid").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_uuid WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 							if assert.Nil(t, col4) {
@@ -90,10 +91,11 @@ func TestUUID(t *testing.T) {
 }
 
 func TestNullableUUID(t *testing.T) {
+	t.Skip("TRUNCATE unable to delete data in logstore")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -110,13 +112,13 @@ func TestNullableUUID(t *testing.T) {
 			CREATE STREAM test_uuid (
 				  Col1 nullable(uuid)
 				, Col2 nullable(uuid)
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_uuid")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = uuid.New()
 					col2Data = uuid.New()
@@ -127,7 +129,7 @@ func TestNullableUUID(t *testing.T) {
 							col1 *uuid.UUID
 							col2 *uuid.UUID
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_uuid").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_uuid WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, *col1)
 							assert.Equal(t, col2Data, *col2)
 						}
@@ -140,7 +142,7 @@ func TestNullableUUID(t *testing.T) {
 			return
 		}
 
-		if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid"); assert.NoError(t, err) {
+		if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid (* except _tp_time)"); assert.NoError(t, err) {
 			var col1Data = uuid.New()
 
 			if err := batch.Append(col1Data, nil); assert.NoError(t, err) {
@@ -149,7 +151,7 @@ func TestNullableUUID(t *testing.T) {
 						col1 *uuid.UUID
 						col2 *uuid.UUID
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_uuid").Scan(&col1, &col2); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_uuid WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 						if assert.Nil(t, col2) {
 							assert.Equal(t, col1Data, *col1)
 						}
@@ -164,7 +166,7 @@ func TestColumnarUUID(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -184,13 +186,13 @@ func TestColumnarUUID(t *testing.T) {
 				, Col3 nullable(uuid)
 				, Col4 array(uuid)
 				, Col5 array(nullable(uuid))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_uuid")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data []uuid.UUID
 					col2Data []uuid.UUID
@@ -229,7 +231,7 @@ func TestColumnarUUID(t *testing.T) {
 						col4 []uuid.UUID
 						col5 []*uuid.UUID
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_uuid LIMIT $1", 1).Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_uuid WHERE _tp_time > earliest_ts() LIMIT $1", 1).Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 						assert.Equal(t, v1, col1)
 						assert.Equal(t, v2, col2)
 						if assert.Nil(t, col3) {
@@ -246,7 +248,7 @@ func BenchmarkUUID(b *testing.B) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -262,14 +264,14 @@ func BenchmarkUUID(b *testing.B) {
 		conn.Exec(ctx, "DROP STREAM benchmark_uuid")
 	}()
 
-	if err = conn.Exec(ctx, `CREATE STREAM benchmark_uuid (Col1 uint64, Col2 uuid) ENGINE = Null`); err != nil {
+	if err = conn.Exec(ctx, `CREATE STREAM benchmark_uuid (Col1 uint64, Col2 uuid)`); err != nil {
 		b.Fatal(err)
 	}
 
 	const rowsInBlock = 10_000_000
 	value := uuid.New()
 	for n := 0; n < b.N; n++ {
-		batch, err := conn.PrepareBatch(ctx, "INSERT INTO benchmark_uuid VALUES")
+		batch, err := conn.PrepareBatch(ctx, "INSERT INTO benchmark_uuid VALUES (* except _tp_time)")
 		if err != nil {
 			b.Fatal(err)
 		}

@@ -31,7 +31,7 @@ func TestAbort(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -47,23 +47,23 @@ func TestAbort(t *testing.T) {
 		const ddl = `
 		CREATE STREAM test_abort (
 			Col1 uint8
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_abort")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort (* except _tp_time)"); assert.NoError(t, err) {
 				if assert.NoError(t, batch.Abort()) {
 					if err := batch.Abort(); assert.Error(t, err) {
 						assert.Equal(t, proton.ErrBatchAlreadySent, err)
 					}
 				}
 			}
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort (* except _tp_time)"); assert.NoError(t, err) {
 				if assert.NoError(t, batch.Append(uint8(1))) && assert.NoError(t, batch.Send()) {
 					var col1 uint8
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_abort SETTINGS query_mode='table'").Scan(&col1); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_abort WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1); assert.NoError(t, err) {
 						assert.Equal(t, uint8(1), col1)
 					}
 				}

@@ -28,19 +28,20 @@ import (
 )
 
 func TestStdGeoPolygon(t *testing.T) {
+	t.Skip("Geo haven't been implemented")
 	ctx := proton.Context(context.Background(), proton.WithSettings(proton.Settings{
 		"allow_experimental_geo_types": 1,
 	}))
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 21, 12); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
+		//if err := checkMinServerVersion(conn, 21, 12); err != nil {
+		//	t.Skip(err.Error())
+		//	return
+		//}
 		const ddl = `
 		CREATE STREAM test_geo_polygon (
 			  Col1 polygon
 			, Col2 array(polygon)
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec("DROP STREAM test_geo_polygon")
@@ -50,7 +51,7 @@ func TestStdGeoPolygon(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_geo_polygon"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_geo_polygon (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = orb.Polygon{
 						orb.Ring{
@@ -91,7 +92,7 @@ func TestStdGeoPolygon(t *testing.T) {
 							col1 orb.Polygon
 							col2 []orb.Polygon
 						)
-						if err := conn.QueryRow("SELECT * FROM test_geo_polygon").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_geo_polygon WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 						}

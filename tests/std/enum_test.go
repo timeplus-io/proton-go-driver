@@ -25,7 +25,7 @@ import (
 )
 
 func TestStdEnum(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
 			CREATE STREAM test_enum (
 				  Col1 enum  ('hello'   = 1,  'world' = 2)
@@ -35,7 +35,7 @@ func TestStdEnum(t *testing.T) {
 				, Col5 array(enum16 ('click' = 1, 'house' = 2))
 				, Col6 array(nullable(enum8  ('click' = 1, 'house' = 2)))
 				, Col7 array(nullable(enum16 ('click' = 1, 'house' = 2)))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec("DROP STREAM test_enum")
@@ -45,7 +45,7 @@ func TestStdEnum(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_enum"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_enum (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = "hello"
 					col2Data = "click"
@@ -74,7 +74,7 @@ func TestStdEnum(t *testing.T) {
 							col6 []*string
 							col7 []*string
 						)
-						if err := conn.QueryRow("SELECT * FROM test_enum").Scan(
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_enum WHERE _tp_time > earliest_ts() LIMIT 1").Scan(
 							&col1, &col2, &col3, &col4,
 							&col5, &col6, &col7,
 						); assert.NoError(t, err) {

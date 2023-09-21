@@ -29,7 +29,7 @@ func TestIssue483(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:9000"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -57,7 +57,7 @@ func TestIssue483(t *testing.T) {
 				  keyword string
 				),
 			status uint8
-		) Engine Memory
+		)
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM issue_483")
@@ -75,7 +75,7 @@ func TestIssue483(t *testing.T) {
 						col4 []string          //  steps.keyword
 						col5 uint8
 					)
-					if err := conn.QueryRow(ctx, `SELECT * FROM issue_483`).Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, `SELECT (* except _tp_time) FROM issue_483 WHERE _tp_time > earliest_ts() LIMIT 1`).Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 						assert.Equal(t, uint8(1), col1)
 						assert.Equal(t, []uint8{}, col2)
 					}
