@@ -26,10 +26,6 @@ import (
 
 func TestStdBool(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 21, 12); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 			CREATE STREAM test_bool (
 				    Col1 bool

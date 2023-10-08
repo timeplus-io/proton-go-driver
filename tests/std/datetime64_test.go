@@ -27,10 +27,6 @@ import (
 
 func TestStdDateTime64(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 20, 3); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 			CREATE STREAM test_datetime64 (
 				  Col1 datetime64(3)

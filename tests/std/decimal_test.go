@@ -27,10 +27,6 @@ import (
 
 func TestStdDecimal(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 21, 1); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 			CREATE STREAM test_decimal (
 				Col1 decimal32(5)

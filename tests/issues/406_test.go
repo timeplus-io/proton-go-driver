@@ -42,10 +42,6 @@ func TestIssue406(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 21, 9); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 			CREATE STREAM issue_406 (
 				Col1 tuple(array(int32), array(int32))

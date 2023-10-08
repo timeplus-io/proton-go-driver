@@ -107,7 +107,7 @@ func TestDate(t *testing.T) {
 }
 
 func TestNullableDate(t *testing.T) {
-	t.Skip("TRUNCATE unable to delete data in logstore")
+	t.Skip("Proton doesn't support TRUNCATE operation for streaming query")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{

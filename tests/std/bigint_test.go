@@ -27,10 +27,6 @@ import (
 
 func TestStdBigInt(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 21, 12); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 		CREATE STREAM test_bigint (
 			  Col1 int128
@@ -97,10 +93,6 @@ func TestStdBigInt(t *testing.T) {
 
 func TestStdNullableBigInt(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 21, 12); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 		CREATE STREAM test_nullable_bigint (
 			  Col1 nullable(int128)

@@ -102,10 +102,6 @@ func TestNullableJson(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 99, 99); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 		CREATE STREAM test_json (
 			  Col1 json

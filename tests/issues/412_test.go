@@ -43,10 +43,6 @@ func TestIssue412(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 21, 9); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 			CREATE STREAM issue_412 (
 				Col1 simple_aggregate_function(max, datetime64(3, 'UTC'))

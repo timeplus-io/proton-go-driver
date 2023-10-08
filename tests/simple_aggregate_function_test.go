@@ -42,10 +42,6 @@ func TestSimpleAggregateFunction(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 99, 99); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 		CREATE STREAM test_simple_aggregate_function (
 			  Col1 uint64

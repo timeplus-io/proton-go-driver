@@ -124,10 +124,6 @@ func TestNullableBigInt(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 1, 0); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 		CREATE STREAM test_nullable_bigint (
 			  Col1 nullable(int128)

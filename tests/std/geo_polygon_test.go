@@ -33,10 +33,6 @@ func TestStdGeoPolygon(t *testing.T) {
 		"allow_experimental_geo_types": 1,
 	}))
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 21, 12); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 		CREATE STREAM test_geo_polygon (
 			  Col1 polygon

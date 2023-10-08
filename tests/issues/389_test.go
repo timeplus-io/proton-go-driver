@@ -43,10 +43,6 @@ func TestIssue389(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		//if err := checkMinServerVersion(conn, 20, 3); err != nil {
-		//	t.Skip(err.Error())
-		//	return
-		//}
 		const ddl = `
 			CREATE STREAM issue_389 (
 				    Col1 datetime64(3, 'America/New_York')
