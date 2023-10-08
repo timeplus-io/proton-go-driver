@@ -34,7 +34,6 @@ jobs:
           - 5432:5432 # Postgres Snapshot
           - 7587:7587 # TCP Snapshot
         env:
-          STREAM_STORAGE_BROKERS: stream-store:19092
           MAX_CONCURRENT_QUERIES: 100               # Default: 100
           MAX_CONCURRENT_SELECT_QUERIES: 100        # Default: 100
           MAX_CONCURRENT_INSERT_QUERIES: 100        # Default: 100
