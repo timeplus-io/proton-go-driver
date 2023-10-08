@@ -28,12 +28,12 @@ func TestStdWithTotals(t *testing.T) {
 	const query = `
 	SELECT
 		number AS n
-		, COUNT()
+		, count()
 	FROM (
 		SELECT number FROM system.numbers LIMIT 100
 	) GROUP BY n WITH TOTALS
 	`
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		if rows, err := conn.Query(query); assert.NoError(t, err) {
 			var count int
 			for rows.Next() {

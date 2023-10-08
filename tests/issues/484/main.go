@@ -26,7 +26,7 @@ import (
 
 func main() {
 	conn := proton.OpenDB(&proton.Options{
-		Addr: []string{"127.0.0.1:9000"},
+		Addr: []string{"127.0.0.1:8463"},
 		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",

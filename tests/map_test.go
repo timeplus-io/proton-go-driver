@@ -30,7 +30,7 @@ func TestMap(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -54,13 +54,13 @@ func TestMap(t *testing.T) {
 			, Col3 map(string, uint64)
 			, Col4 array(map(string, string))
 			, Col5 map(low_cardinality(string), low_cardinality(uint64))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_map")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = map[string]uint64{
 						"key_col_1_1": 1,
@@ -89,7 +89,7 @@ func TestMap(t *testing.T) {
 							col4 []map[string]string
 							col5 map[string]uint64
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_map").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_map WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, col3Data, col3)
@@ -107,7 +107,7 @@ func TestColmnarMap(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -129,13 +129,13 @@ func TestColmnarMap(t *testing.T) {
 			  Col1 map(string, uint64)
 			, Col2 map(string, uint64)
 			, Col3 map(string, uint64)
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_map")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = []map[string]uint64{}
 					col2Data = []map[string]uint64{}
@@ -177,7 +177,7 @@ func TestColmnarMap(t *testing.T) {
 						}
 						col3Data = map[string]uint64{}
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_map WHERE Col1['key_col_1_10_1'] = $1", 10).Scan(&col1, &col2, &col3); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_map WHERE _tp_time > earliest_ts() AND Col1['key_col_1_10_1'] = $1 LIMIT 1", 10).Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 						assert.Equal(t, col1Data, col1)
 						assert.Equal(t, col2Data, col2)
 						assert.Equal(t, col3Data, col3)

@@ -19,6 +19,7 @@ package std
 
 import (
 	"database/sql"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
 
@@ -26,7 +27,7 @@ import (
 )
 
 func TestStdDate(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
 			CREATE STREAM test_date (
 				  ID   uint8
@@ -34,32 +35,33 @@ func TestStdDate(t *testing.T) {
 				, Col2 nullable(date)
 				, Col3 array(date)
 				, Col4 array(nullable(date))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec("DROP STREAM test_date")
 		}()
 		type result struct {
 			ColID uint8 `ch:"ID"`
-			Col1  time.Time
-			Col2  *time.Time
-			Col3  []time.Time
-			Col4  []*time.Time
+			Col1  types.Date
+			Col2  *types.Date
+			Col3  []types.Date
+			Col4  []*types.Date
 		}
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_date"); assert.NoError(t, err) {
-				date, err := time.Parse("2006-01-02 15:04:05", "2022-01-12 00:00:00")
+			if batch, err := scope.Prepare("INSERT INTO test_date (* except _tp_time)"); assert.NoError(t, err) {
+				tim, err := time.Parse("2006-01-02 15:04:05", "2022-01-12 00:00:00")
+				date := types.Date{tim}
 				if !assert.NoError(t, err) {
 					return
 				}
-				if _, err := batch.Exec(uint8(1), date, &date, []time.Time{date}, []*time.Time{&date, nil, &date}); !assert.NoError(t, err) {
+				if _, err := batch.Exec(uint8(1), date, &date, []types.Date{date}, []*types.Date{&date, nil, &date}); !assert.NoError(t, err) {
 					return
 				}
-				if _, err := batch.Exec(uint8(2), date, nil, []time.Time{date}, []*time.Time{nil, nil, &date}); !assert.NoError(t, err) {
+				if _, err := batch.Exec(uint8(2), date, nil, []types.Date{date}, []*types.Date{nil, nil, &date}); !assert.NoError(t, err) {
 					return
 				}
 				if err := scope.Commit(); assert.NoError(t, err) {
@@ -67,7 +69,7 @@ func TestStdDate(t *testing.T) {
 						result1 result
 						result2 result
 					)
-					if err := conn.QueryRow("SELECT * FROM test_date WHERE ID = $1", 1).Scan(
+					if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_date WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 1).Scan(
 						&result1.ColID,
 						&result1.Col1,
 						&result1.Col2,
@@ -77,11 +79,11 @@ func TestStdDate(t *testing.T) {
 						if assert.Equal(t, date, result1.Col1) {
 							assert.Equal(t, "UTC", result1.Col1.Location().String())
 							assert.Equal(t, date, *result1.Col2)
-							assert.Equal(t, []time.Time{date}, result1.Col3)
-							assert.Equal(t, []*time.Time{&date, nil, &date}, result1.Col4)
+							assert.Equal(t, []types.Date{date}, result1.Col3)
+							assert.Equal(t, []*types.Date{&date, nil, &date}, result1.Col4)
 						}
 					}
-					if err := conn.QueryRow("SELECT * FROM test_date WHERE ID = $1", 2).Scan(
+					if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_date WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 2).Scan(
 						&result2.ColID,
 						&result2.Col1,
 						&result2.Col2,
@@ -91,8 +93,8 @@ func TestStdDate(t *testing.T) {
 						if assert.Equal(t, date, result2.Col1) {
 							assert.Equal(t, "UTC", result2.Col1.Location().String())
 							if assert.Nil(t, result2.Col2) {
-								assert.Equal(t, []time.Time{date}, result2.Col3)
-								assert.Equal(t, []*time.Time{nil, nil, &date}, result2.Col4)
+								assert.Equal(t, []types.Date{date}, result2.Col3)
+								assert.Equal(t, []*types.Date{nil, nil, &date}, result2.Col4)
 							}
 						}
 					}

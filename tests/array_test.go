@@ -30,7 +30,7 @@ func TestArray(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -48,13 +48,13 @@ func TestArray(t *testing.T) {
 			  Col1 array(string)
 			, Col2 array(array(uint32))
 			, Col3 array(array(array(datetime)))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_array")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_array"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_array (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					timestamp = time.Now().Truncate(time.Second)
 					col1Data  = []string{"A", "b", "c"}
@@ -91,7 +91,7 @@ func TestArray(t *testing.T) {
 					}
 				}
 				if assert.NoError(t, batch.Send()) {
-					if rows, err := conn.Query(ctx, "SELECT * FROM test_array"); assert.NoError(t, err) {
+					if rows, err := conn.Query(ctx, "SELECT (* except _tp_time) FROM test_array WHERE _tp_time > earliest_ts() LIMIT 1"); assert.NoError(t, err) {
 						for rows.Next() {
 							var (
 								col1 []string
@@ -118,7 +118,7 @@ func TestColumnarArray(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -136,7 +136,7 @@ func TestColumnarArray(t *testing.T) {
 			  Col1 array(string)
 			, Col2 array(array(uint32))
 			, Col3 array(array(array(datetime)))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_array")
@@ -183,7 +183,7 @@ func TestColumnarArray(t *testing.T) {
 				col3DataColArr = append(col3DataColArr, col3Data)
 			}
 
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_array"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_array (* except _tp_time)"); assert.NoError(t, err) {
 				if err := batch.Column(0).Append(col1DataColArr); !assert.NoError(t, err) {
 					return
 				}
@@ -194,7 +194,7 @@ func TestColumnarArray(t *testing.T) {
 					return
 				}
 				if assert.NoError(t, batch.Send()) {
-					if rows, err := conn.Query(ctx, "SELECT * FROM test_array"); assert.NoError(t, err) {
+					if rows, err := conn.Query(ctx, "SELECT (* except _tp_time) FROM test_array WHERE _tp_time > earliest_ts() LIMIT 1"); assert.NoError(t, err) {
 						for rows.Next() {
 							var (
 								col1 []string

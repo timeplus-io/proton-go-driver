@@ -30,10 +30,10 @@ func TestStdTemporaryTable(t *testing.T) {
 		ddl = `
 			CREATE TEMPORARY STREAM clickhouse_test_temporary_table (
 				ID uint64
-			) Engine = Memory;
+			)Engine Memory;
 		`
 	)
-	if connect, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if connect, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		if tx, err := connect.Begin(); assert.NoError(t, err) {
 			if _, err := tx.Exec(ddl); assert.NoError(t, err) {
 				if _, err := tx.Exec("INSERT INTO clickhouse_test_temporary_table (ID) SELECT number AS ID FROM system.numbers LIMIT 10"); assert.NoError(t, err) {

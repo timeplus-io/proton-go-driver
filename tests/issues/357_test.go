@@ -26,12 +26,12 @@ import (
 )
 
 func TestIssue357(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = ` -- foo.bar DDL comment
-		CREATE TEMPORARY STREAM issue_357 (
+		CREATE STREAM issue_357 (
 			  Col1 int32
 			, Col2 datetime
-		) ENGINE = Memory
+		)
 		`
 		defer func() {
 			conn.Exec("DROP STREAM issue_357")
@@ -42,7 +42,7 @@ func TestIssue357(t *testing.T) {
 				return
 			}
 			const query = ` -- foo.bar Insert comment
-				INSERT INTO issue_357
+				INSERT INTO issue_357 (* except _tp_time)
 				`
 			if batch, err := scope.Prepare(query); assert.NoError(t, err) {
 				if _, err := batch.Exec(int32(42), time.Now()); assert.NoError(t, err) {
@@ -51,7 +51,7 @@ func TestIssue357(t *testing.T) {
 							col1 int32
 							col2 time.Time
 						)
-						if err := conn.QueryRow("SELECT * FROM issue_357").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT  (* except _tp_time) FROM issue_357 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, int32(42), col1)
 						}
 					}

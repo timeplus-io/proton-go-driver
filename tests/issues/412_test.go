@@ -30,7 +30,7 @@ func TestIssue412(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:9000"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -43,27 +43,23 @@ func TestIssue412(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 21, 9); err != nil {
-			t.Skip(err.Error())
-			return
-		}
 		const ddl = `
 			CREATE STREAM issue_412 (
 				Col1 simple_aggregate_function(max, datetime64(3, 'UTC'))
-			) Engine Memory
+			)
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM issue_412")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_412"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_412 (* except _tp_time)"); assert.NoError(t, err) {
 				datetime := time.Now().Truncate(time.Millisecond)
 				if err := batch.Append(datetime); !assert.NoError(t, err) {
 					return
 				}
 				if err := batch.Send(); assert.NoError(t, err) {
 					var col1 time.Time
-					if err := conn.QueryRow(ctx, "SELECT * FROM issue_412").Scan(&col1); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM issue_412 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1); assert.NoError(t, err) {
 						assert.Equal(t, datetime.UnixNano(), col1.UnixNano())
 					}
 				}

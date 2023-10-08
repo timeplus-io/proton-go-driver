@@ -43,7 +43,7 @@ func TestFixedString(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -63,13 +63,13 @@ func TestFixedString(t *testing.T) {
 				, Col3 nullable(fixed_string(10))
 				, Col4 array(fixed_string(10))
 				, Col5 array(nullable(fixed_string(10)))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_fixed_string")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = "ClickHouse"
 					col2Data = &BinFixedString{}
@@ -87,7 +87,7 @@ func TestFixedString(t *testing.T) {
 								col4 []string
 								col5 []*string
 							)
-							if err := conn.QueryRow(ctx, "SELECT * FROM test_fixed_string").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+							if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_fixed_string WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 								assert.Equal(t, col1Data, col1)
 								assert.Equal(t, col2Data.data, col2.data)
 								assert.Equal(t, col3Data, col3)
@@ -117,10 +117,11 @@ func TestFixedString(t *testing.T) {
 }
 
 func TestNullableFixedString(t *testing.T) {
+	t.Skip("Proton doesn't support TRUNCATE operation for streaming query")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -137,13 +138,13 @@ func TestNullableFixedString(t *testing.T) {
 		CREATE STREAM test_fixed_string (
 			  Col1 nullable(fixed_string(10))
 			, Col2 nullable(fixed_string(10))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_fixed_string")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = "ClickHouse"
 					col2Data = &BinFixedString{}
@@ -155,7 +156,7 @@ func TestNullableFixedString(t *testing.T) {
 								col1 string
 								col2 BinFixedString
 							)
-							if err := conn.QueryRow(ctx, "SELECT * FROM test_fixed_string").Scan(&col1, &col2); assert.NoError(t, err) {
+							if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_fixed_string WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 								assert.Equal(t, col1Data, col1)
 								assert.Equal(t, col2Data.data, col2.data)
 							}
@@ -166,7 +167,7 @@ func TestNullableFixedString(t *testing.T) {
 			if err := conn.Exec(ctx, "TRUNCATE STREAM test_fixed_string"); !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string (* except _tp_time)"); assert.NoError(t, err) {
 				var col1Data = "ClickHouse"
 				if err := batch.Append(col1Data, nil); assert.NoError(t, err) {
 					if assert.NoError(t, batch.Send()) {
@@ -174,7 +175,7 @@ func TestNullableFixedString(t *testing.T) {
 							col1 *string
 							col2 *string
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_fixed_string").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_fixed_string WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							if assert.Nil(t, col2) {
 								assert.Equal(t, col1Data, *col1)
 							}
@@ -190,7 +191,7 @@ func TestColumnarFixedString(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -210,13 +211,13 @@ func TestColumnarFixedString(t *testing.T) {
 			, Col3 nullable(fixed_string(10))
 			, Col4 array(fixed_string(10))
 			, Col5 array(nullable(fixed_string(10)))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_fixed_string")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = "ClickHouse"
 					col2Data = "XXXXXXXXXX"
@@ -257,7 +258,7 @@ func TestColumnarFixedString(t *testing.T) {
 						col4 []string
 						col5 []*string
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_fixed_string LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_fixed_string WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 						assert.Equal(t, col1Data, col1)
 						assert.Equal(t, col2Data, col2)
 						assert.Equal(t, col3Data, col3)
@@ -274,7 +275,7 @@ func BenchmarkFixedString(b *testing.B) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -291,14 +292,14 @@ func BenchmarkFixedString(b *testing.B) {
 	if err = conn.Exec(ctx, `DROP STREAM IF EXISTS benchmark_fixed_string`); err != nil {
 		b.Fatal(err)
 	}
-	if err = conn.Exec(ctx, `CREATE STREAM benchmark_fixed_string (Col1 uint64, Col2 fixed_string(4)) ENGINE = Null`); err != nil {
+	if err = conn.Exec(ctx, `CREATE STREAM benchmark_fixed_string (Col1 uint64, Col2 fixed_string(4))`); err != nil {
 		b.Fatal(err)
 	}
 
 	const rowsInBlock = 10_000_000
 
 	for n := 0; n < b.N; n++ {
-		batch, err := conn.PrepareBatch(ctx, "INSERT INTO benchmark_fixed_string VALUES")
+		batch, err := conn.PrepareBatch(ctx, "INSERT INTO benchmark_fixed_string VALUES (* except _tp_time)")
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -317,7 +318,7 @@ func BenchmarkColumnarFixedString(b *testing.B) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -332,7 +333,7 @@ func BenchmarkColumnarFixedString(b *testing.B) {
 	defer func() {
 		conn.Exec(ctx, "DROP STREAM benchmark_fixed_string")
 	}()
-	if err = conn.Exec(ctx, `CREATE STREAM benchmark_fixed_string (Col1 uint64, Col2 fixed_string(4)) ENGINE = Null`); err != nil {
+	if err = conn.Exec(ctx, `CREATE STREAM benchmark_fixed_string (Col1 uint64, Col2 fixed_string(4))`); err != nil {
 		b.Fatal(err)
 	}
 
@@ -343,7 +344,7 @@ func BenchmarkColumnarFixedString(b *testing.B) {
 		col2 []string
 	)
 	for n := 0; n < b.N; n++ {
-		batch, err := conn.PrepareBatch(ctx, "INSERT INTO benchmark_fixed_string VALUES")
+		batch, err := conn.PrepareBatch(ctx, "INSERT INTO benchmark_fixed_string VALUES (* except _tp_time)")
 		if err != nil {
 			b.Fatal(err)
 		}

@@ -50,7 +50,7 @@ func TestExternalTable(t *testing.T) {
 		}
 	}
 	conn, err := proton.Open(&proton.Options{
-		Addr: []string{"127.0.0.1:7587"},
+		Addr: []string{"127.0.0.1:8463"},
 		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
@@ -79,13 +79,13 @@ func TestExternalTable(t *testing.T) {
 			rows.Close()
 		}
 		var count uint64
-		if err := conn.QueryRow(ctx, "SELECT COUNT(*) FROM external_table_1").Scan(&count); assert.NoError(t, err) {
+		if err := conn.QueryRow(ctx, "SELECT count(*) FROM external_table_1").Scan(&count); assert.NoError(t, err) {
 			assert.Equal(t, uint64(10), count)
 		}
-		if err := conn.QueryRow(ctx, "SELECT COUNT(*) FROM external_table_2").Scan(&count); assert.NoError(t, err) {
+		if err := conn.QueryRow(ctx, "SELECT count(*) FROM external_table_2").Scan(&count); assert.NoError(t, err) {
 			assert.Equal(t, uint64(10), count)
 		}
-		if err := conn.QueryRow(ctx, "SELECT COUNT(*) FROM (SELECT * FROM external_table_1 UNION ALL SELECT * FROM external_table_2)").Scan(&count); assert.NoError(t, err) {
+		if err := conn.QueryRow(ctx, "SELECT count(*) FROM (SELECT * FROM external_table_1 UNION ALL SELECT * FROM external_table_2)").Scan(&count); assert.NoError(t, err) {
 			assert.Equal(t, uint64(20), count)
 		}
 	}

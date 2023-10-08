@@ -31,7 +31,7 @@ func TestTuple(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -56,13 +56,13 @@ func TestTuple(t *testing.T) {
 			, Col4 array(array(tuple(string, int64) ))
 			, Col5 tuple(low_cardinality(string),           array(low_cardinality(string)))
 			, Col6 tuple(low_cardinality(nullable(string)), array(low_cardinality(nullable(string))))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_tuple")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_tuple"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_tuple (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = []interface{}{"A", int64(42)}
 					col2Data = []interface{}{"B", int8(1), time.Now().Truncate(time.Second)}
@@ -94,7 +94,7 @@ func TestTuple(t *testing.T) {
 							col5 []interface{}
 							col6 []interface{}
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_tuple").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_tuple WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, col3Data, col3)
@@ -112,7 +112,7 @@ func TestColumnarTuple(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -135,13 +135,13 @@ func TestColumnarTuple(t *testing.T) {
 			, Col1 tuple(string, int64)
 			, Col2 tuple(string, int8, datetime)
 			, Col3 tuple(DateTime, fixed_string(2), map(string, string))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_tuple")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_tuple"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_tuple (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					id        []uint64
 					col1Data  = [][]interface{}{}
@@ -193,7 +193,7 @@ func TestColumnarTuple(t *testing.T) {
 							},
 						}
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_tuple WHERE ID = $1", 542).Scan(&id, &col1, &col2, &col3); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_tuple WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 542).Scan(&id, &col1, &col2, &col3); assert.NoError(t, err) {
 						assert.Equal(t, col1Data, col1)
 						assert.Equal(t, col2Data, col2)
 						assert.Equal(t, col3Data, col3)

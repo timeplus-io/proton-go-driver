@@ -30,7 +30,7 @@ func TestDecimal(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -57,13 +57,13 @@ func TestDecimal(t *testing.T) {
 				, Col3 decimal(15,3)
 				, Col4 decimal128(5)
 				, Col5 decimal256(5)
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_decimal")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal (* except _tp_time)"); assert.NoError(t, err) {
 				if err := batch.Append(
 					decimal.New(25, 0),
 					decimal.New(30, 0),
@@ -81,7 +81,7 @@ func TestDecimal(t *testing.T) {
 						col4 decimal.Decimal
 						col5 decimal.Decimal
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_decimal").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_decimal WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 						assert.True(t, decimal.New(25, 0).Equal(col1))
 						assert.True(t, decimal.New(30, 0).Equal(col2))
 						assert.True(t, decimal.New(35, 0).Equal(col3))
@@ -95,10 +95,11 @@ func TestDecimal(t *testing.T) {
 }
 
 func TestNullableDecimal(t *testing.T) {
+	t.Skip("Proton doesn't support TRUNCATE operation for streaming query")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -123,13 +124,13 @@ func TestNullableDecimal(t *testing.T) {
 			  Col1 nullable(decimal32(5))
 			, Col2 nullable(decimal(18,5))
 			, Col3 nullable(decimal(15,3))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_decimal")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal (* except _tp_time)"); assert.NoError(t, err) {
 				if err := batch.Append(decimal.New(25, 0), decimal.New(30, 0), decimal.New(35, 0)); !assert.NoError(t, err) {
 					return
 				}
@@ -139,7 +140,7 @@ func TestNullableDecimal(t *testing.T) {
 						col2 *decimal.Decimal
 						col3 *decimal.Decimal
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_decimal").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_decimal WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 						assert.True(t, decimal.New(25, 0).Equal(*col1))
 						assert.True(t, decimal.New(30, 0).Equal(*col2))
 						assert.True(t, decimal.New(35, 0).Equal(*col3))
@@ -150,7 +151,7 @@ func TestNullableDecimal(t *testing.T) {
 			if err := conn.Exec(ctx, "TRUNCATE STREAM test_decimal"); !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal (* except _tp_time)"); assert.NoError(t, err) {
 				if err := batch.Append(decimal.New(25, 0), nil, decimal.New(35, 0)); !assert.NoError(t, err) {
 					return
 				}
@@ -160,7 +161,7 @@ func TestNullableDecimal(t *testing.T) {
 						col2 *decimal.Decimal
 						col3 *decimal.Decimal
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_decimal").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_decimal WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 						if assert.Nil(t, col2) {
 							assert.True(t, decimal.New(25, 0).Equal(*col1))
 							assert.True(t, decimal.New(35, 0).Equal(*col3))

@@ -31,12 +31,12 @@ func TestStdConnCheck(t *testing.T) {
 		ddl = `
 		CREATE STREAM clickhouse_test_conncheck (
 			Value string
-		) Engine Memory
+		) 
 		`
 		dml = `INSERT INTO clickhouse_test_conncheck VALUES `
 	)
 
-	if connect, err := sql.Open("proton", "tcp://127.0.0.1:9000?debug=false"); assert.NoError(t, err) {
+	if connect, err := sql.Open("proton", "tcp://127.0.0.1:8463?debug=false"); assert.NoError(t, err) {
 		// We can only change the settings at the connection level.
 		// If we have only one connection, we change the settings specifically for that connection.
 		connect.SetMaxOpenConns(1)

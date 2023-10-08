@@ -31,7 +31,7 @@ func TestIssue472(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:9000"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -51,13 +51,13 @@ func TestIssue472(t *testing.T) {
 				, EventType          string
 				, ControllerRevision uint8
 				, Timestamp          datetime
-			) Engine Memory
+			)
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM issue_472")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_472"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_472 (* except _tp_time)"); assert.NoError(t, err) {
 				podUID := uuid.New()
 				if err := batch.Append(
 					podUID,
@@ -75,7 +75,8 @@ func TestIssue472(t *testing.T) {
 							SELECT
 								Timestamp
 							FROM issue_472
-							WHERE PodUID = $1
+							WHERE _tp_time > earliest_ts()
+								AND PodUID = $1
 								AND (EventType = $2 or EventType = $3)
 								AND ControllerRevision = $4 LIMIT 1`
 

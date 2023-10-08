@@ -28,7 +28,7 @@ import (
 
 func TestOpenTelemetry(t *testing.T) {
 	conn, err := proton.Open(&proton.Options{
-		Addr: []string{"127.0.0.1:7587"},
+		Addr: []string{"127.0.0.1:8463"},
 		Auth: proton.Auth{
 			Database: "default",
 			Username: "default",
@@ -45,7 +45,7 @@ func TestOpenTelemetry(t *testing.T) {
 				SpanID:  trace.SpanID{1, 2, 3, 4, 5},
 				TraceID: trace.TraceID{5, 4, 3, 2, 1},
 			}),
-		)), "SELECT COUNT() FROM (SELECT number FROM system.numbers LIMIT 5)")
+		)), "SELECT count() FROM (SELECT number FROM system.numbers LIMIT 5)")
 		if err := rows.Scan(&count); assert.NoError(t, err) {
 			assert.Equal(t, uint64(5), count)
 		}

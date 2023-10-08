@@ -30,7 +30,7 @@ func TestDateTime64(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -55,13 +55,13 @@ func TestDateTime64(t *testing.T) {
 				, Col4 nullable(datetime64(3, 'Europe/Moscow'))
 				, Col5 array(datetime64(3, 'Europe/Moscow'))
 				, Col6 array(nullable(datetime64(3, 'Europe/Moscow')))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_datetime64")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					datetime1 = time.Now().Truncate(time.Millisecond)
 					datetime2 = time.Now().Truncate(time.Nanosecond)
@@ -84,7 +84,7 @@ func TestDateTime64(t *testing.T) {
 							col5 []time.Time
 							col6 []*time.Time
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_datetime64").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_datetime64 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, datetime1, col1)
 							assert.Equal(t, datetime2.UnixNano(), col2.UnixNano())
 							assert.Equal(t, datetime3.UnixNano(), col3.UnixNano())
@@ -110,10 +110,11 @@ func TestDateTime64(t *testing.T) {
 }
 
 func TestNullableDateTime64(t *testing.T) {
+	t.Skip("Proton doesn't support TRUNCATE operation for streaming query")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -138,13 +139,13 @@ func TestNullableDateTime64(t *testing.T) {
 				, Col2_Null nullable(datetime64(9, 'Europe/Moscow'))
 				, Col3      datetime64(0, 'Europe/London')
 				, Col3_Null nullable(datetime64(0, 'Europe/London'))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_datetime64")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					datetime1 = time.Now().Truncate(time.Millisecond)
 					datetime2 = time.Now().Truncate(time.Nanosecond)
@@ -160,7 +161,7 @@ func TestNullableDateTime64(t *testing.T) {
 							col3     time.Time
 							col3Null *time.Time
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_datetime64").Scan(
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_datetime64 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(
 							&col1, &col1Null,
 							&col2, &col2Null,
 							&col3, &col3Null,
@@ -178,7 +179,7 @@ func TestNullableDateTime64(t *testing.T) {
 			if err := conn.Exec(ctx, "TRUNCATE STREAM test_datetime64"); !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					datetime1 = time.Now().Truncate(time.Millisecond)
 					datetime2 = time.Now().Truncate(time.Nanosecond)
@@ -194,7 +195,7 @@ func TestNullableDateTime64(t *testing.T) {
 							col3     time.Time
 							col3Null *time.Time
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_datetime64").Scan(
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_datetime64 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(
 							&col1, &col1Null,
 							&col2, &col2Null,
 							&col3, &col3Null,
@@ -225,7 +226,7 @@ func TestColumnarDateTime64(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -249,13 +250,13 @@ func TestColumnarDateTime64(t *testing.T) {
 			, Col2 nullable(datetime64(3))
 			, Col3 array(datetime64(3))
 			, Col4 array(nullable(datetime64(3)))
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_datetime64")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					id       []uint64
 					col1Data []time.Time
@@ -306,7 +307,7 @@ func TestColumnarDateTime64(t *testing.T) {
 						Col3 []time.Time
 						Col4 []*time.Time
 					}
-					if err := conn.QueryRow(ctx, "SELECT Col1, Col2, Col3, Col4 FROM test_datetime64 WHERE ID = $1", 11).ScanStruct(&result); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT Col1, Col2, Col3, Col4 FROM test_datetime64 WHERE ID = $1 AND _tp_time > earliest_ts() LIMIT 1", 11).ScanStruct(&result); assert.NoError(t, err) {
 						if assert.Nil(t, result.Col2) {
 							assert.Equal(t, datetime1, result.Col1)
 							assert.Equal(t, []time.Time{datetime1, datetime2, datetime1}, result.Col3)

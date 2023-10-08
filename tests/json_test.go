@@ -19,6 +19,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,10 +28,11 @@ import (
 )
 
 func TestJson(t *testing.T) {
+	t.Skip("go driver of json haven't been implemented")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -39,7 +41,7 @@ func TestJson(t *testing.T) {
 			Compression: &proton.Compression{
 				Method: proton.CompressionLZ4,
 			},
-			//Debug: true,
+			Debug: true,
 		})
 	)
 	if assert.NoError(t, err) {
@@ -50,27 +52,29 @@ func TestJson(t *testing.T) {
 		const ddl = `
 		CREATE STREAM test_json (
 			  Col1 json
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_json")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_json"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_json (* except _tp_time)"); assert.NoError(t, err) {
+				fmt.Println(batch)
 				var (
 					sourceMap = map[string]interface{}{"data": int32(1), "obj.a": int64(2), "obj.b": "hhh", "arr": []string{"abc", "xyz"}, "a.b.b.c": float32(1.0), "`a.b.b`.c": float64(2.0)}
 					sourceStr = column.DumpJson(column.NestJson(sourceMap))
 				)
+
 				if err := batch.Append(sourceMap); assert.NoError(t, err) {
 					if assert.NoError(t, batch.Send()) {
 						var (
 							resultMap map[string]interface{}
 							resultStr string
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_json").Scan(&resultMap); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_json WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&resultMap); assert.NoError(t, err) {
 							assert.Equal(t, sourceMap, resultMap)
 						}
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_json").Scan(&resultStr); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_json WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&resultStr); assert.NoError(t, err) {
 							assert.Equal(t, sourceStr, resultStr)
 						}
 					}
@@ -81,10 +85,11 @@ func TestJson(t *testing.T) {
 }
 
 func TestNullableJson(t *testing.T) {
+	t.Skip("go driver of json haven't been implemented")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -97,20 +102,16 @@ func TestNullableJson(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
-			t.Skip(err.Error())
-			return
-		}
 		const ddl = `
 		CREATE STREAM test_json (
-			  Col1 nullable_json
-		) Engine Memory
+			  Col1 json
+		) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_json")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_json"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_json (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					sourceMap = map[string]interface{}{"data": nil}
 					sourceStr = "{\"data\": <nil>}"

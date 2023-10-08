@@ -28,19 +28,16 @@ import (
 )
 
 func TestStdGeoRing(t *testing.T) {
+	t.Skip("Geo haven't been implemented")
 	ctx := proton.Context(context.Background(), proton.WithSettings(proton.Settings{
 		"allow_experimental_geo_types": 1,
 	}))
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 21, 12); err != nil {
-			t.Skip(err.Error())
-			return
-		}
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
 		CREATE STREAM test_geo_ring (
 			Col1 ring
 			, Col2 array(ring)
-		) Engine Memory
+		) 
 		`
 		defer func() {
 			conn.Exec("DROP STREAM test_geo_ring")
@@ -50,7 +47,7 @@ func TestStdGeoRing(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_geo_ring"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_geo_ring (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = orb.Ring{
 						orb.Point{1, 2},
@@ -73,7 +70,7 @@ func TestStdGeoRing(t *testing.T) {
 							col1 orb.Ring
 							col2 []orb.Ring
 						)
-						if err := conn.QueryRow("SELECT * FROM test_geo_ring").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_geo_ring WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 						}

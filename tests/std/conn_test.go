@@ -28,7 +28,7 @@ import (
 )
 
 func TestStdConn(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		if assert.NoError(t, err) {
 			if err := conn.PingContext(context.Background()); assert.NoError(t, err) {
 				if assert.NoError(t, conn.Close()) {
@@ -39,14 +39,14 @@ func TestStdConn(t *testing.T) {
 	}
 }
 func TestStdConnFailover(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9001,127.0.0.1:9002,127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:9001,127.0.0.1:9002,127.0.0.1:8463"); assert.NoError(t, err) {
 		if err := conn.PingContext(context.Background()); assert.NoError(t, err) {
 			t.Log(conn.PingContext(context.Background()))
 		}
 	}
 }
 func TestStdPingDeadline(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
 		defer cancel()
 		if err := conn.PingContext(ctx); assert.Error(t, err) {

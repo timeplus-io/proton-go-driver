@@ -30,7 +30,7 @@ func TestIPv6(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -50,13 +50,13 @@ func TestIPv6(t *testing.T) {
 				, Col3 nullable(ipv6)
 				, Col4 array(ipv6)
 				, Col5 array(nullable(ipv6))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_ipv6")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = net.ParseIP("2001:44c8:129:2632:33:0:252:2")
 					col2Data = net.ParseIP("2a02:e980:1e::1")
@@ -73,7 +73,7 @@ func TestIPv6(t *testing.T) {
 							col4 []net.IP
 							col5 []*net.IP
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_ipv6").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_ipv6 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, col3Data, *col3)
@@ -96,10 +96,11 @@ func TestIPv6(t *testing.T) {
 }
 
 func TestNullableIPv6(t *testing.T) {
+	t.Skip("Proton doesn't support TRUNCATE operation for streaming query")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -116,13 +117,13 @@ func TestNullableIPv6(t *testing.T) {
 			CREATE STREAM test_ipv6 (
 				  Col1 nullable(ipv6)
 				, Col2 nullable(ipv6)
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_ipv6")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = net.ParseIP("2a02:aa08:e000:3100::2")
 					col2Data = net.ParseIP("2001:44c8:129:2632:33:0:252:2")
@@ -133,7 +134,7 @@ func TestNullableIPv6(t *testing.T) {
 							col1 *net.IP
 							col2 *net.IP
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_ipv6").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_ipv6 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, *col1)
 							assert.Equal(t, col2Data, *col2)
 						}
@@ -145,7 +146,7 @@ func TestNullableIPv6(t *testing.T) {
 		if err := conn.Exec(ctx, "TRUNCATE STREAM test_ipv6"); !assert.NoError(t, err) {
 			return
 		}
-		if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6"); assert.NoError(t, err) {
+		if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6 (* except _tp_time)"); assert.NoError(t, err) {
 			var col1Data = net.ParseIP("2001:44c8:129:2632:33:0:252:2")
 			if err := batch.Append(col1Data, nil); assert.NoError(t, err) {
 				if assert.NoError(t, batch.Send()) {
@@ -153,7 +154,7 @@ func TestNullableIPv6(t *testing.T) {
 						col1 *net.IP
 						col2 *net.IP
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_ipv6").Scan(&col1, &col2); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_ipv6 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 						if assert.Nil(t, col2) {
 							assert.Equal(t, col1Data, *col1)
 						}
@@ -168,7 +169,7 @@ func TestColumnarIPv6(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -186,13 +187,13 @@ func TestColumnarIPv6(t *testing.T) {
 				  Col1 ipv6
 				, Col2 ipv6
 				, Col3 nullable(ipv6)
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_ipv6")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data []*net.IP
 					col2Data []*net.IP
@@ -213,7 +214,7 @@ func TestColumnarIPv6(t *testing.T) {
 						col2 *net.IP
 						col3 *net.IP
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_ipv6").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_ipv6 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 						if assert.Nil(t, col3) {
 							assert.Equal(t, v1, *col1)
 							assert.Equal(t, v2, *col2)

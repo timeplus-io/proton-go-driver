@@ -29,7 +29,7 @@ func TestWithTotals(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -45,7 +45,7 @@ func TestWithTotals(t *testing.T) {
 		const query = `
 		SELECT
 			number AS n
-			, COUNT()
+			, count()
 		FROM (
 			SELECT number FROM system.numbers LIMIT 100
 		) GROUP BY n WITH TOTALS

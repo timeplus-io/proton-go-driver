@@ -30,7 +30,7 @@ func TestIssue482(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:9000"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -66,10 +66,11 @@ func TestIssue482(t *testing.T) {
 			&int32OverDate,
 		)
 		if assert.NoError(t, err) {
-			assert.Equal(t, "2061-02-01 00:00:00", myIssueDate.Format("2006-01-02 15:04:05"))
-			assert.Equal(t, "2064-01-01 00:00:00", myIssueDateTo64.Format("2006-01-02 15:04:05"))
-			assert.Equal(t, "2038-01-19 05:14:07", int32MaxDate.Format("2006-01-02 15:04:05"))
-			assert.Equal(t, "2038-01-19 05:14:08", int32OverDate.Format("2006-01-02 15:04:05"))
+			assert.Equal(t, "2061-02-01 00:00:00", myIssueDate.UTC().Format("2006-01-02 15:04:05"))
+			assert.Equal(t, "2064-01-01 00:00:00", myIssueDateTo64.UTC().Format("2006-01-02 15:04:05"))
+			assert.Equal(t, "2064-01-01 00:00:00", myIssueDateTo64.UTC().Format("2006-01-02 15:04:05"))
+			assert.Equal(t, "2038-01-19 03:14:07", int32MaxDate.UTC().Format("2006-01-02 15:04:05"))
+			assert.Equal(t, "2038-01-19 03:14:08", int32OverDate.UTC().Format("2006-01-02 15:04:05"))
 		}
 	}
 }

@@ -26,7 +26,7 @@ import (
 )
 
 func TestStdIPv4(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:9000"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
 			CREATE STREAM test_ipv4 (
 				  Col1 ipv4
@@ -34,7 +34,7 @@ func TestStdIPv4(t *testing.T) {
 				, Col3 nullable(ipv4)
 				, Col4 array(ipv4)
 				, Col5 array(nullable(ipv4))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec("DROP STREAM test_ipv4")
@@ -44,7 +44,7 @@ func TestStdIPv4(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_ipv4"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_ipv4 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = net.ParseIP("127.0.0.1")
 					col2Data = net.ParseIP("8.8.8.8")
@@ -61,7 +61,7 @@ func TestStdIPv4(t *testing.T) {
 							col4 []net.IP
 							col5 []*net.IP
 						)
-						if err := conn.QueryRow("SELECT * FROM test_ipv4").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_ipv4 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 							assert.Equal(t, col1Data.To4(), col1)
 							assert.Equal(t, col2Data.To4(), col2)
 							assert.Equal(t, col3Data.To4(), *col3)

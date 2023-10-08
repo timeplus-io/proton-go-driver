@@ -29,7 +29,7 @@ func TestEnum(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -51,13 +51,13 @@ func TestEnum(t *testing.T) {
 				, Col5 array(enum16 ('click' = 1, 'house' = 2))
 				, Col6 array(nullable(enum8  ('click' = 1, 'house' = 2)))
 				, Col7 array(nullable(enum16 ('click' = 1, 'house' = 2)))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_enum")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = "hello"
 					col2Data = "click"
@@ -86,7 +86,7 @@ func TestEnum(t *testing.T) {
 							col6 []*string
 							col7 []*string
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_enum").Scan(
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_enum WHERE _tp_time > earliest_ts() LIMIT 1").Scan(
 							&col1, &col2, &col3, &col4,
 							&col5, &col6, &col7,
 						); assert.NoError(t, err) {
@@ -106,10 +106,11 @@ func TestEnum(t *testing.T) {
 }
 
 func TestNullableEnum(t *testing.T) {
+	t.Skip("Proton doesn't support TRUNCATE operation for streaming query")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -127,13 +128,13 @@ func TestNullableEnum(t *testing.T) {
 				  Col1 nullable(enum  ('hello'   = 1,  'world' = 2))
 				, Col2 nullable(enum8 ('click'   = 5,  'house' = 25))
 				, Col3 nullable(enum16('default' = 10, 'value' = 50))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_enum")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum (* except _tp_time)"); assert.NoError(t, err) {
 				if err := batch.Append("hello", "click", "value"); assert.NoError(t, err) {
 					if err := batch.Send(); assert.NoError(t, err) {
 						var (
@@ -141,7 +142,7 @@ func TestNullableEnum(t *testing.T) {
 							col2 string
 							col3 string
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_enum").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_enum WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 							assert.Equal(t, "hello", col1)
 							assert.Equal(t, "click", col2)
 							assert.Equal(t, "value", col3)
@@ -152,7 +153,7 @@ func TestNullableEnum(t *testing.T) {
 			if err := conn.Exec(ctx, "TRUNCATE STREAM test_enum"); !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum (* except _tp_time)"); assert.NoError(t, err) {
 				if err := batch.Append("hello", nil, "value"); assert.NoError(t, err) {
 					if err := batch.Send(); assert.NoError(t, err) {
 						var (
@@ -160,7 +161,7 @@ func TestNullableEnum(t *testing.T) {
 							col2 *string
 							col3 *string
 						)
-						if err := conn.QueryRow(ctx, "SELECT * FROM test_enum").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_enum WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 							if assert.Nil(t, col2) {
 								assert.Equal(t, "hello", *col1)
 								assert.Equal(t, "value", *col3)
@@ -177,7 +178,7 @@ func TestColumnarEnum(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
-			Addr: []string{"127.0.0.1:7587"},
+			Addr: []string{"127.0.0.1:8463"},
 			Auth: proton.Auth{
 				Database: "default",
 				Username: "default",
@@ -199,13 +200,13 @@ func TestColumnarEnum(t *testing.T) {
 				, Col5 array(enum16 ('click' = 1, 'house' = 2))
 				, Col6 array(nullable(enum8  ('click' = 1, 'house' = 2)))
 				, Col7 array(nullable(enum16 ('click' = 1, 'house' = 2)))
-			) Engine Memory
+			) 
 		`
 		defer func() {
 			conn.Exec(ctx, "DROP STREAM test_enum")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = "hello"
 					col2Data = "click"
@@ -261,7 +262,7 @@ func TestColumnarEnum(t *testing.T) {
 						col6 []*string
 						col7 []*string
 					)
-					if err := conn.QueryRow(ctx, "SELECT * FROM test_enum LIMIT 1").Scan(
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_enum WHERE _tp_time > earliest_ts() LIMIT 1").Scan(
 						&col1, &col2, &col3, &col4,
 						&col5, &col6, &col7,
 					); assert.NoError(t, err) {
