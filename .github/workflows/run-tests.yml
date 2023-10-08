@@ -1,16 +1,12 @@
 name: run-tests
 
 on:
-  push:
-    branches:
-      - v1
-      - v2
+  workflow_dispatch:
   pull_request:
     branches:
-      - v1
-      - v2    
-  schedule:
-    - cron: "0 9 1 * *"
+      - develop
+    paths-ignore:
+      - '**.md'
 
 jobs:
   run:
@@ -19,22 +15,32 @@ jobs:
       fail-fast: true
       matrix:
         go:
-          - 1.16
-          - 1.17
-          - 1.18.0-beta2
-        clickhouse:
-          - 19.11
-          - 20.1
-          - 21.11
-          - 22.1
+          - '1.16'
+          - '1.17'
+          - '1.18'
+          - '1.19'
+          - '1.20'
+          - '1.21'
+        proton:
           - latest
 
     services:
-      clickhouse:
-        image: yandex/clickhouse-server:${{ matrix.clickhouse }}
+      proton:
+        image: ghcr.io/timeplus-io/proton:${{ matrix.proton }}
         ports:
-          - 9000:9000
-        options: --ulimit nofile=262144:262144
+          - 3218:3218 # HTTP Streaming
+          - 8123:8123 # HTTP Snapshot
+          - 8463:8463 # TCP Streaming
+          - 5432:5432 # Postgres Snapshot
+          - 7587:7587 # TCP Snapshot
+        env:
+          STREAM_STORAGE_BROKERS: stream-store:19092
+          MAX_CONCURRENT_QUERIES: 100               # Default: 100
+          MAX_CONCURRENT_SELECT_QUERIES: 100        # Default: 100
+          MAX_CONCURRENT_INSERT_QUERIES: 100        # Default: 100
+          MAX_CONCURRENT_STREAMING_QUERIES: 100     # Default: 100
+          MAX_SERVER_MEMORY_USAGE_TO_RAM_RATIO: 0.9 # Default: 0.9
+          MAX_SERVER_MEMORY_CACHE_TO_RAM_RATIO: 0.5 # Default: 0.5
 
     steps:
       - uses: actions/checkout@v2
