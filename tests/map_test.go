@@ -54,6 +54,7 @@ func TestMap(t *testing.T) {
 			, Col3 map(string, uint64)
 			, Col4 array(map(string, string))
 			, Col5 map(low_cardinality(string), low_cardinality(uint64))
+			, Col6 map(string, array(map(string, float64)))
 		) 
 		`
 		defer func() {
@@ -79,8 +80,12 @@ func TestMap(t *testing.T) {
 						"key_col_5_1": 100,
 						"key_col_5_2": 200,
 					}
+					col6Data = map[string][]map[string]float64{
+						"key1": {{"key1-1-1": 11.1, "key1-1-2": 11.2}, {"key1-2-1": 12.1}},
+						"key2": {{"key2-1-1": 21.1}, {"key2-2-1": 22.1}, {"key2-3-1": 23.1, "key2-3-2": 23.2, "key2-3-3": 23.3}},
+					}
 				)
-				if err := batch.Append(col1Data, col2Data, col3Data, col4Data, col5Data); assert.NoError(t, err) {
+				if err := batch.Append(col1Data, col2Data, col3Data, col4Data, col5Data, col6Data); assert.NoError(t, err) {
 					if assert.NoError(t, batch.Send()) {
 						var (
 							col1 map[string]uint64
@@ -88,13 +93,15 @@ func TestMap(t *testing.T) {
 							col3 map[string]uint64
 							col4 []map[string]string
 							col5 map[string]uint64
+							col6 map[string][]map[string]float64
 						)
-						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_map WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_map WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, col3Data, col3)
 							assert.Equal(t, col4Data, col4)
 							assert.Equal(t, col5Data, col5)
+							assert.Equal(t, col6Data, col6)
 						}
 					}
 				}
