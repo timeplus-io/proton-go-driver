@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 	"time"
@@ -145,7 +144,7 @@ func (b *streamingBuffer) Send() (err error) {
 	b.once.Do(func() {
 		go func() {
 			if err = b.conn.process(b.ctx, b.onProcess); err != nil {
-				log.Fatal(err)
+				b.err = err
 			}
 			b.done <- struct{}{}
 		}()
@@ -157,6 +156,12 @@ func (b *streamingBuffer) Send() (err error) {
 }
 
 func (b *streamingBuffer) ReplaceBy(cols ...column.Interface) (err error) {
+	if b.sent {
+		return ErrStreamingBufferClosed
+	}
+	if b.err != nil {
+		return b.err
+	}
 	if len(b.block.Columns) != len(cols) {
 		return errors.New(fmt.Sprintf("colomn number is %d, not %d", len(b.block.Columns), len(cols)))
 	}
