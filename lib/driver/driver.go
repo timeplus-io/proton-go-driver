@@ -19,6 +19,7 @@ package driver
 
 import (
 	"context"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/column"
 	"reflect"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/proto"
@@ -47,6 +48,7 @@ type (
 		Query(ctx context.Context, query string, args ...interface{}) (Rows, error)
 		QueryRow(ctx context.Context, query string, args ...interface{}) Row
 		PrepareBatch(ctx context.Context, query string) (Batch, error)
+		PrepareStreamingBuffer(ctx context.Context, query string) (StreamingBuffer, error)
 		Exec(ctx context.Context, query string, args ...interface{}) error
 		AsyncInsert(ctx context.Context, query string, wait bool) error
 		Ping(context.Context) error
@@ -74,6 +76,18 @@ type (
 		AppendStruct(v interface{}) error
 		Column(int) BatchColumn
 		Send() error
+	}
+	StreamingBuffer interface {
+		Append(v ...interface{}) error
+		AppendStruct(v interface{}) error
+		Column(int) StreamingBufferColumn
+		Clear() error
+		Send() error
+		Close() error
+		ReplaceBy(cols ...column.Interface) error
+	}
+	StreamingBufferColumn interface {
+		Append(interface{}) error
 	}
 	BatchColumn interface {
 		Append(interface{}) error
