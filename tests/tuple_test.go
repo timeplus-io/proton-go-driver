@@ -20,6 +20,7 @@ package tests
 import (
 	"context"
 	"fmt"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
 
@@ -65,8 +66,8 @@ func TestTuple(t *testing.T) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_tuple (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = []interface{}{"A", int64(42)}
-					col2Data = []interface{}{"B", int8(1), time.Now().Truncate(time.Second)}
-					col3Data = []interface{}{time.Now().Truncate(time.Second), "CH", map[string]string{
+					col2Data = []interface{}{"B", int8(1), types.Datetime{Time: time.Now().Truncate(time.Second)}}
+					col3Data = []interface{}{types.Datetime{Time: time.Now().Truncate(time.Second)}, "CH", map[string]string{
 						"key": "value",
 					}}
 					col4Data = [][][]interface{}{
@@ -147,7 +148,7 @@ func TestColumnarTuple(t *testing.T) {
 					col1Data  = [][]interface{}{}
 					col2Data  = [][]interface{}{}
 					col3Data  = [][]interface{}{}
-					timestamp = time.Now().Truncate(time.Second)
+					timestamp = types.Datetime{time.Now().Truncate(time.Second)}
 				)
 				for i := 0; i < 1000; i++ {
 					id = append(id, uint64(i))

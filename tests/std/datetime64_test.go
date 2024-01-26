@@ -19,6 +19,7 @@ package std
 
 import (
 	"database/sql"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
 
@@ -47,26 +48,26 @@ func TestStdDateTime64(t *testing.T) {
 			}
 			if batch, err := scope.Prepare("INSERT INTO test_datetime64 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
-					datetime1 = time.Now().Truncate(time.Millisecond)
-					datetime2 = time.Now().Truncate(time.Nanosecond)
-					datetime3 = time.Now().Truncate(time.Second)
+					datetime1 = types.Datetime{time.Now().Truncate(time.Millisecond)}
+					datetime2 = types.Datetime{time.Now().Truncate(time.Nanosecond)}
+					datetime3 = types.Datetime{time.Now().Truncate(time.Second)}
 				)
 				if _, err := batch.Exec(
 					datetime1,
 					datetime2,
 					datetime3,
 					&datetime1,
-					[]time.Time{datetime1, datetime1},
-					[]*time.Time{&datetime3, nil, &datetime3},
+					[]types.Datetime{datetime1, datetime1},
+					[]*types.Datetime{&datetime3, nil, &datetime3},
 				); assert.NoError(t, err) {
 					if err := scope.Commit(); assert.NoError(t, err) {
 						var (
-							col1 time.Time
-							col2 time.Time
-							col3 time.Time
-							col4 *time.Time
-							col5 []time.Time
-							col6 []*time.Time
+							col1 types.Datetime
+							col2 types.Datetime
+							col3 types.Datetime
+							col4 *types.Datetime
+							col5 []types.Datetime
+							col6 []*types.Datetime
 						)
 						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_datetime64 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, datetime1, col1)
