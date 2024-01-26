@@ -19,6 +19,7 @@ package tests
 
 import (
 	"context"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
 
@@ -56,14 +57,14 @@ func TestArray(t *testing.T) {
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_array (* except _tp_time)"); assert.NoError(t, err) {
 				var (
-					timestamp = time.Now().Truncate(time.Second)
+					timestamp = types.Datetime{Time: time.Now().Truncate(time.Second)}
 					col1Data  = []string{"A", "b", "c"}
 					col2Data  = [][]uint32{
 						{1, 2},
 						{3, 87},
 						{33, 3, 847},
 					}
-					col3Data = [][][]time.Time{
+					col3Data = [][][]types.Datetime{
 						{
 							{
 								timestamp,
@@ -96,7 +97,7 @@ func TestArray(t *testing.T) {
 							var (
 								col1 []string
 								col2 [][]uint32
-								col3 [][][]time.Time
+								col3 [][][]types.Datetime
 							)
 							if err := rows.Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 								assert.Equal(t, col1Data, col1)
@@ -143,14 +144,14 @@ func TestColumnarArray(t *testing.T) {
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			var (
-				timestamp = time.Now().Truncate(time.Second)
+				timestamp = types.Datetime{Time: time.Now().Truncate(time.Second)}
 				col1Data  = []string{"A", "b", "c"}
 				col2Data  = [][]uint32{
 					{1, 2},
 					{3, 87},
 					{33, 3, 847},
 				}
-				col3Data = [][][]time.Time{
+				col3Data = [][][]types.Datetime{
 					{
 						{
 							timestamp,
@@ -174,7 +175,7 @@ func TestColumnarArray(t *testing.T) {
 
 				col1DataColArr [][]string
 				col2DataColArr [][][]uint32
-				col3DataColArr [][][][]time.Time
+				col3DataColArr [][][][]types.Datetime
 			)
 
 			for i := 0; i < 10; i++ {
@@ -199,7 +200,7 @@ func TestColumnarArray(t *testing.T) {
 							var (
 								col1 []string
 								col2 [][]uint32
-								col3 [][][]time.Time
+								col3 [][][]types.Datetime
 							)
 							if err := rows.Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 								assert.Equal(t, col1Data, col1)

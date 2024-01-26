@@ -73,15 +73,15 @@ func (dt *DateTime) Row(i int, ptr bool) interface{} {
 func (dt *DateTime) ScanRow(dest interface{}, row int) error {
 	switch d := dest.(type) {
 	case *time.Time:
-		*d = dt.row(row)
+		*d = dt.row(row).Time
 	case **time.Time:
 		*d = new(time.Time)
-		**d = dt.row(row)
+		**d = dt.row(row).Time
 	case *types.Datetime:
-		*d = types.Datetime{dt.row(row)}
+		*d = dt.row(row)
 	case **types.Datetime:
 		*d = new(types.Datetime)
-		**d = types.Datetime{dt.row(row)}
+		**d = dt.row(row)
 	default:
 		return &ColumnConverterError{
 			Op:   "ScanRow",
@@ -195,12 +195,12 @@ func (dt *DateTime) Encode(encoder *binary.Encoder) error {
 	return dt.values.Encode(encoder)
 }
 
-func (dt *DateTime) row(i int) time.Time {
+func (dt *DateTime) row(i int) types.Datetime {
 	v := time.Unix(int64(dt.values[i]), 0)
 	if dt.timezone != nil {
 		v = v.In(dt.timezone)
 	}
-	return v
+	return types.Datetime{Time: v}
 }
 
 var _ Interface = (*DateTime)(nil)
