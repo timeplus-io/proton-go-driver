@@ -183,9 +183,17 @@ func (c *connect) sendData(block *proto.Block, name string) error {
 	return block.Encode(c.encoder, c.revision)
 }
 
-func (c *connect) readData(packet byte, compressible bool) (*proto.Block, error) {
+func (c *connect) readData(packet byte, compressible bool) (*proto.Block, string, error) {
 	if _, err := c.decoder.String(); err != nil {
-		return nil, err
+		return nil, "", err
+	}
+
+	var queryID string
+	var err error
+	if packet == proto.ServerData && c.revision >= proto.DBMS_MIN_PROTOCOL_VERSION_WITH_SERVER_GENERATE_UUID {
+		if queryID, err = c.decoder.String(); err != nil {
+			return nil, queryID, err
+		}
 	}
 	if compressible && c.compression {
 		c.stream.Compress(true)
@@ -193,9 +201,9 @@ func (c *connect) readData(packet byte, compressible bool) (*proto.Block, error)
 	}
 	var block proto.Block
 	if err := block.Decode(c.decoder, c.revision); err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	block.Packet = packet
 	c.debugf("[read data] compression=%t. block: columns=%d, rows=%d", c.compression, len(block.Columns), block.Rows())
-	return &block, nil
+	return &block, queryID, nil
 }

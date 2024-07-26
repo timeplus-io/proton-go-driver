@@ -35,7 +35,7 @@ type Log struct {
 }
 
 func (c *connect) logs() ([]Log, error) {
-	block, err := c.readData(proto.ServerLog, false)
+	block, _, err := c.readData(proto.ServerLog, false)
 	if err != nil {
 		return nil, err
 	}

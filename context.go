@@ -44,10 +44,11 @@ type (
 		queryID  string
 		quotaKey string
 		events   struct {
-			logs          func(*Log)
-			progress      func(*Progress)
-			profileInfo   func(*ProfileInfo)
-			profileEvents func([]ProfileEvent)
+			logs           func(*Log)
+			progress       func(*Progress)
+			profileInfo    func(*ProfileInfo)
+			profileEvents  func([]ProfileEvent)
+			receiveQueryID func(string)
 		}
 		settings   Settings
 		parameters Parameters
@@ -118,6 +119,13 @@ func WithProfileEvents(fn func([]ProfileEvent)) QueryOption {
 	}
 }
 
+func WithReceiveQueryID(fn func(string)) QueryOption {
+	return func(o *QueryOptions) error {
+		o.events.receiveQueryID = fn
+		return nil
+	}
+}
+
 func WithExternalTable(t ...*external.Table) QueryOption {
 	return func(o *QueryOptions) error {
 		o.external = append(o.external, t...)
@@ -178,6 +186,11 @@ func (q *QueryOptions) onProcess() *onProcess {
 		profileEvents: func(events []ProfileEvent) {
 			if q.events.profileEvents != nil {
 				q.events.profileEvents(events)
+			}
+		},
+		receiveQueryID: func(queryID string) {
+			if q.events.receiveQueryID != nil {
+				q.events.receiveQueryID(queryID)
 			}
 		},
 	}

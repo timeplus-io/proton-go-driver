@@ -27,11 +27,12 @@ import (
 )
 
 type onProcess struct {
-	data          func(*proto.Block)
-	logs          func([]Log)
-	progress      func(*Progress)
-	profileInfo   func(*ProfileInfo)
-	profileEvents func([]ProfileEvent)
+	data           func(*proto.Block)
+	logs           func([]Log)
+	progress       func(*Progress)
+	profileInfo    func(*ProfileInfo)
+	profileEvents  func([]ProfileEvent)
+	receiveQueryID func(string)
 }
 
 func (c *connect) firstBlock(ctx context.Context, on *onProcess) (*proto.Block, error) {
@@ -48,7 +49,11 @@ func (c *connect) firstBlock(ctx context.Context, on *onProcess) (*proto.Block, 
 		}
 		switch packet {
 		case proto.ServerData:
-			return c.readData(packet, true)
+			block, queryID, err := c.readData(packet, true)
+			if err == nil {
+				on.receiveQueryID(queryID)
+			}
+			return block, err
 		case proto.ServerEndOfStream:
 			c.debugf("[end of stream]")
 			return nil, io.EOF
@@ -86,7 +91,7 @@ func (c *connect) process(ctx context.Context, on *onProcess) error {
 func (c *connect) handle(packet byte, on *onProcess) error {
 	switch packet {
 	case proto.ServerData, proto.ServerTotals, proto.ServerExtremes:
-		block, err := c.readData(packet, true)
+		block, _, err := c.readData(packet, true)
 		if err != nil {
 			return err
 		}
