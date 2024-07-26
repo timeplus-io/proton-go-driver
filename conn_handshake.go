@@ -77,3 +77,13 @@ func (c *connect) handshake(database, username, password string) error {
 	c.debugf("[handshake] <- %s", c.server)
 	return nil
 }
+
+func (c *connect) sendAddendum() error {
+	if c.revision >= proto.DBMS_MIN_PROTOCOL_VERSION_WITH_QUOTA_KEY {
+		if err := c.encoder.String(""); err != nil {
+			return err
+		}
+	}
+
+	return c.encoder.Flush()
+}

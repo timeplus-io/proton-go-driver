@@ -102,6 +102,11 @@ func (b *Block) Encode(encoder *binary.Encoder, revision uint64) error {
 		if err := encoder.String(string(c.Type())); err != nil {
 			return err
 		}
+
+		// if revision >= DBMS_MIN_REVISION_WITH_CUSTOM_SERIALIZATION {
+		// 	encoder.Bool(false)
+		// }
+
 		if serialize, ok := c.(column.CustomSerialization); ok {
 			if err := serialize.WriteStatePrefix(encoder); err != nil {
 				return &BlockError{
@@ -160,6 +165,21 @@ func (b *Block) Decode(decoder *binary.Decoder, revision uint64) (err error) {
 		if err != nil {
 			return err
 		}
+
+		// proton server will not send custom
+		// if revision >= DBMS_MIN_REVISION_WITH_CUSTOM_SERIALIZATION {
+		// 	hasCustom, err := decoder.Bool()
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	if hasCustom {
+		// 		return &BlockError{
+		// 			Op:  "Decode",
+		// 			Err: errors.New(fmt.Sprintf("custom serialization for column %s. not supported", columnName)),
+		// 		}
+		// 	}
+		// }
+
 		if numRows != 0 {
 			if serialize, ok := c.(column.CustomSerialization); ok {
 				if err := serialize.ReadStatePrefix(decoder); err != nil {
