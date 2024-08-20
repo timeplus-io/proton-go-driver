@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/timeplus-io/proton-go-driver/v2"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/proto"
 )
 
 func TestServerGenerateQueryID(t *testing.T) {
@@ -23,9 +24,6 @@ func TestServerGenerateQueryID(t *testing.T) {
 				Username: "default",
 				Password: "",
 			},
-			/*Compression: &proton.Compression{
-				Method: proton.CompressionLZ4,
-			},*/
 			MaxOpenConns: 1,
 		})
 	)
@@ -33,8 +31,10 @@ func TestServerGenerateQueryID(t *testing.T) {
 	assert.NoError(t, err)
 	if _, err := conn.Query(ctx, "SELECT 123"); assert.NoError(t, err) {
 		received := <-idCh
-		assert.NotEmpty(t, received)
-		assert.Equal(t, 36, len(received))
+		sv, _ := conn.ServerVersion()
+		if sv.Revision >= proto.DBMS_MIN_PROTOCOL_VERSION_WITH_SERVER_GENERATE_UUID {
+			assert.Equal(t, 36, len(received))
+		}
 	}
 }
 
@@ -55,9 +55,6 @@ func TestClientGenerateQueryID(t *testing.T) {
 				Username: "default",
 				Password: "",
 			},
-			/*Compression: &proton.Compression{
-				Method: proton.CompressionLZ4,
-			},*/
 			MaxOpenConns: 1,
 		})
 	)
@@ -65,6 +62,9 @@ func TestClientGenerateQueryID(t *testing.T) {
 	assert.NoError(t, err)
 	if _, err := conn.Query(ctx, "SELECT 123"); assert.NoError(t, err) {
 		received := <-idCh
-		assert.Equal(t, id, received)
+		sv, _ := conn.ServerVersion()
+		if sv.Revision >= proto.DBMS_MIN_PROTOCOL_VERSION_WITH_SERVER_GENERATE_UUID {
+			assert.Equal(t, id, received)
+		}
 	}
 }

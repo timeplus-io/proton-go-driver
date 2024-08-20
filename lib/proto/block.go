@@ -103,6 +103,7 @@ func (b *Block) Encode(encoder *binary.Encoder, revision uint64) error {
 			return err
 		}
 
+		// proton not use custom serialization
 		// if revision >= DBMS_MIN_REVISION_WITH_CUSTOM_SERIALIZATION {
 		// 	encoder.Bool(false)
 		// }
