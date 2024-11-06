@@ -165,6 +165,8 @@ func (s *Setting) encode(encoder *binary.Encoder, revision uint64) error {
 			if value = 0; v {
 				value = 1
 			}
+		case string:
+			return encoder.String(v)
 		default:
 			return fmt.Errorf("query setting %s has unsupported data type", s.Key)
 		}
