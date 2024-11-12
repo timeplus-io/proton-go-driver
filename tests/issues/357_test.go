@@ -19,6 +19,7 @@ package issues
 
 import (
 	"database/sql"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
 
@@ -49,7 +50,7 @@ func TestIssue357(t *testing.T) {
 					if err := scope.Commit(); assert.NoError(t, err) {
 						var (
 							col1 int32
-							col2 time.Time
+							col2 types.Datetime
 						)
 						if err := conn.QueryRow("SELECT  (* except _tp_time) FROM issue_357 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, int32(42), col1)

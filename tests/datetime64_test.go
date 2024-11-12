@@ -19,6 +19,7 @@ package tests
 
 import (
 	"context"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
 
@@ -63,26 +64,26 @@ func TestDateTime64(t *testing.T) {
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
-					datetime1 = time.Now().Truncate(time.Millisecond)
-					datetime2 = time.Now().Truncate(time.Nanosecond)
-					datetime3 = time.Now().Truncate(time.Second)
+					datetime1 = types.Datetime{time.Now().Truncate(time.Millisecond)}
+					datetime2 = types.Datetime{time.Now().Truncate(time.Nanosecond)}
+					datetime3 = types.Datetime{time.Now().Truncate(time.Second)}
 				)
 				if err := batch.Append(
 					datetime1,
 					datetime2,
 					datetime3,
 					&datetime1,
-					[]time.Time{datetime1, datetime1},
-					[]*time.Time{&datetime3, nil, &datetime3},
+					[]types.Datetime{datetime1, datetime1},
+					[]*types.Datetime{&datetime3, nil, &datetime3},
 				); assert.NoError(t, err) {
 					if err := batch.Send(); assert.NoError(t, err) {
 						var (
-							col1 time.Time
-							col2 time.Time
-							col3 time.Time
-							col4 *time.Time
-							col5 []time.Time
-							col6 []*time.Time
+							col1 types.Datetime
+							col2 types.Datetime
+							col3 types.Datetime
+							col4 *types.Datetime
+							col5 []types.Datetime
+							col6 []*types.Datetime
 						)
 						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_datetime64 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, datetime1, col1)
@@ -154,12 +155,12 @@ func TestNullableDateTime64(t *testing.T) {
 				if err := batch.Append(datetime1, datetime1, datetime2, datetime2, datetime3, datetime3); assert.NoError(t, err) {
 					if err := batch.Send(); assert.NoError(t, err) {
 						var (
-							col1     time.Time
-							col1Null *time.Time
-							col2     time.Time
-							col2Null *time.Time
-							col3     time.Time
-							col3Null *time.Time
+							col1     types.Datetime
+							col1Null *types.Datetime
+							col2     types.Datetime
+							col2Null *types.Datetime
+							col3     types.Datetime
+							col3Null *types.Datetime
 						)
 						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_datetime64 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(
 							&col1, &col1Null,
@@ -188,12 +189,12 @@ func TestNullableDateTime64(t *testing.T) {
 				if err := batch.Append(datetime1, nil, datetime2, nil, datetime3, nil); assert.NoError(t, err) {
 					if err := batch.Send(); assert.NoError(t, err) {
 						var (
-							col1     time.Time
-							col1Null *time.Time
-							col2     time.Time
-							col2Null *time.Time
-							col3     time.Time
-							col3Null *time.Time
+							col1     types.Datetime
+							col1Null *types.Datetime
+							col2     types.Datetime
+							col2Null *types.Datetime
+							col3     types.Datetime
+							col3Null *types.Datetime
 						)
 						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_datetime64 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(
 							&col1, &col1Null,
@@ -259,14 +260,14 @@ func TestColumnarDateTime64(t *testing.T) {
 			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64 (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					id       []uint64
-					col1Data []time.Time
-					col2Data []*time.Time
-					col3Data [][]time.Time
-					col4Data [][]*time.Time
+					col1Data []types.Datetime
+					col2Data []*types.Datetime
+					col3Data [][]types.Datetime
+					col4Data [][]*types.Datetime
 				)
 				var (
-					datetime1 = time.Now().Truncate(time.Millisecond)
-					datetime2 = time.Now().Truncate(time.Second)
+					datetime1 = types.Datetime{Time: time.Now().Truncate(time.Millisecond)}
+					datetime2 = types.Datetime{Time: time.Now().Truncate(time.Second)}
 				)
 				for i := 0; i < 1000; i++ {
 					id = append(id, uint64(i))
@@ -276,10 +277,10 @@ func TestColumnarDateTime64(t *testing.T) {
 					} else {
 						col2Data = append(col2Data, nil)
 					}
-					col3Data = append(col3Data, []time.Time{
+					col3Data = append(col3Data, []types.Datetime{
 						datetime1, datetime2, datetime1,
 					})
-					col4Data = append(col4Data, []*time.Time{
+					col4Data = append(col4Data, []*types.Datetime{
 						&datetime2, nil, &datetime1,
 					})
 				}
@@ -302,16 +303,16 @@ func TestColumnarDateTime64(t *testing.T) {
 				}
 				if assert.NoError(t, batch.Send()) {
 					var result struct {
-						Col1 time.Time
-						Col2 *time.Time
-						Col3 []time.Time
-						Col4 []*time.Time
+						Col1 types.Datetime
+						Col2 *types.Datetime
+						Col3 []types.Datetime
+						Col4 []*types.Datetime
 					}
 					if err := conn.QueryRow(ctx, "SELECT Col1, Col2, Col3, Col4 FROM test_datetime64 WHERE ID = $1 AND _tp_time > earliest_ts() LIMIT 1", 11).ScanStruct(&result); assert.NoError(t, err) {
 						if assert.Nil(t, result.Col2) {
 							assert.Equal(t, datetime1, result.Col1)
-							assert.Equal(t, []time.Time{datetime1, datetime2, datetime1}, result.Col3)
-							assert.Equal(t, []*time.Time{&datetime2, nil, &datetime1}, result.Col4)
+							assert.Equal(t, []types.Datetime{datetime1, datetime2, datetime1}, result.Col3)
+							assert.Equal(t, []*types.Datetime{&datetime2, nil, &datetime1}, result.Col4)
 						}
 					}
 				}

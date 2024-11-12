@@ -21,6 +21,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
 
@@ -59,7 +60,7 @@ func TestStdExternalTable(t *testing.T) {
 				var (
 					col1 uint8
 					col2 string
-					col3 time.Time
+					col3 types.Datetime
 				)
 				if err := rows.Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 					t.Logf("row: col1=%d, col2=%s, col3=%s\n", col1, col2, col3)

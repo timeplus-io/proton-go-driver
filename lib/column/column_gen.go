@@ -29,7 +29,6 @@ import (
 	"net"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/timeplus-io/proton-go-driver/v2/types"
 )
@@ -120,9 +119,9 @@ func (t Type) Column() (Interface, error) {
 	case "string":
 		return &String{}, nil
 	case "json":
-        return (&Json{}).parse(false)
-    case "nullable_json":
-        return (&Json{}).parse(true)
+		return (&Json{}).parse(false)
+	case "nullable_json":
+		return (&Json{}).parse(true)
 	}
 
 	switch strType := string(t); {
@@ -200,7 +199,7 @@ var (
 	scanTypeByte         = reflect.TypeOf([]byte{})
 	scanTypeUUID         = reflect.TypeOf(uuid.UUID{})
 	scanTypeDate         = reflect.TypeOf(types.Date{})
-	scanTypeTime         = reflect.TypeOf(time.Time{})
+	scanTypeTime         = reflect.TypeOf(types.Datetime{})
 	scanTypeRing         = reflect.TypeOf(orb.Ring{})
 	scanTypePoint        = reflect.TypeOf(orb.Point{})
 	scanTypeSlice        = reflect.TypeOf([]interface{}{})

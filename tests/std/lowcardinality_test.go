@@ -20,6 +20,7 @@ package std
 import (
 	"context"
 	"database/sql"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"math/rand"
 	"testing"
 	"time"
@@ -56,7 +57,7 @@ func TestStdLowCardinality(t *testing.T) {
 			if batch, err := scope.Prepare("INSERT INTO test_lowcardinality (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					rnd       = rand.Int31()
-					timestamp = time.Now()
+					timestamp = types.Datetime{Time: time.Now()}
 				)
 				for i := 0; i < 10; i++ {
 					var (
@@ -94,7 +95,7 @@ func TestStdLowCardinality(t *testing.T) {
 						var (
 							col1 string
 							col2 string
-							col3 time.Time
+							col3 types.Datetime
 							col4 int32
 							col5 []string
 							col6 [][]string
@@ -104,7 +105,7 @@ func TestStdLowCardinality(t *testing.T) {
 						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_lowcardinality WHERE _tp_time > earliest_ts() AND Col4 = $1 LIMIT 1", rnd+int32(i)).Scan(&col1, &col2, &col3, &col4, &col5, &col6, &col7, &col8); assert.NoError(t, err) {
 							assert.Equal(t, timestamp.String(), col1)
 							assert.Equal(t, "RU", col2)
-							assert.Equal(t, timestamp.Add(time.Duration(i)*time.Minute).Truncate(time.Second), col3)
+							assert.Equal(t, types.Datetime{Time: timestamp.Add(time.Duration(i) * time.Minute).Truncate(time.Second)}, col3)
 							assert.Equal(t, rnd+int32(i), col4)
 							assert.Equal(t, []string{"A", "B", "C"}, col5)
 							assert.Equal(t, [][]string{

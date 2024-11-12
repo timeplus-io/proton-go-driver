@@ -19,6 +19,7 @@ package std
 
 import (
 	"database/sql"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
 
@@ -46,23 +47,23 @@ func TestStdDateTime(t *testing.T) {
 				return
 			}
 			if batch, err := scope.Prepare("INSERT INTO test_datetime (* except _tp_time)"); assert.NoError(t, err) {
-				datetime := time.Now().Truncate(time.Second)
+				datetime := types.Datetime{time.Now().Truncate(time.Second)}
 				if _, err := batch.Exec(
 					datetime,
 					datetime,
 					datetime,
 					&datetime,
-					[]time.Time{datetime, datetime},
-					[]*time.Time{&datetime, nil, &datetime},
+					[]types.Datetime{datetime, datetime},
+					[]*types.Datetime{&datetime, nil, &datetime},
 				); assert.NoError(t, err) {
 					if err := scope.Commit(); assert.NoError(t, err) {
 						var (
-							col1 time.Time
-							col2 time.Time
-							col3 time.Time
-							col4 *time.Time
-							col5 []time.Time
-							col6 []*time.Time
+							col1 types.Datetime
+							col2 types.Datetime
+							col3 types.Datetime
+							col4 *types.Datetime
+							col5 []types.Datetime
+							col6 []*types.Datetime
 						)
 						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_datetime WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, datetime, col1)

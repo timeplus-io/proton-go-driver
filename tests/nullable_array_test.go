@@ -81,7 +81,7 @@ func TestNullableArray(t *testing.T) {
 					boolTrue     = true
 					boolFalse    = false
 					decimalVal   = decimal.New(25, 0)
-					datetime     = time.Now().Truncate(time.Second)
+					datetime     = types.Datetime{Time: time.Now().Truncate(time.Second)}
 					enum1Val     = "click"
 					enum2Val     = "house"
 					fixed1Val    = "Click"
@@ -101,8 +101,8 @@ func TestNullableArray(t *testing.T) {
 					[]*uint8{&uint8Val, nil, &uint8Val},
 					[]*types.Date{&dateVal, nil, &dateVal},
 					[]*types.Date{&dateVal, nil, &dateVal},
-					[]*time.Time{&datetime, nil, &datetime},
-					[]*time.Time{&datetime, nil, &datetime},
+					[]*types.Datetime{&datetime, nil, &datetime},
+					[]*types.Datetime{&datetime, nil, &datetime},
 					[]*decimal.Decimal{&decimalVal, nil, &decimalVal},
 					[]*string{&enum1Val, nil, &enum2Val},
 					[]*string{&enum1Val, nil, &enum2Val},
@@ -121,8 +121,8 @@ func TestNullableArray(t *testing.T) {
 						Col2  []*uint8
 						Col3  []*types.Date
 						Col4  []*types.Date
-						Col5  []*time.Time
-						Col6  []*time.Time
+						Col5  []*types.Datetime
+						Col6  []*types.Datetime
 						Col7  []*decimal.Decimal
 						Col8  []*string
 						Col9  []*string
@@ -137,8 +137,8 @@ func TestNullableArray(t *testing.T) {
 						assert.Equal(t, []*uint8{&uint8Val, nil, &uint8Val}, result.Col2)
 						assert.Equal(t, []*types.Date{&dateVal, nil, &dateVal}, result.Col3)
 						assert.Equal(t, []*types.Date{&dateVal, nil, &dateVal}, result.Col4)
-						assert.Equal(t, []*time.Time{&datetime, nil, &datetime}, result.Col5)
-						assert.Equal(t, []*time.Time{&datetime, nil, &datetime}, result.Col6)
+						assert.Equal(t, []*types.Datetime{&datetime, nil, &datetime}, result.Col5)
+						assert.Equal(t, []*types.Datetime{&datetime, nil, &datetime}, result.Col6)
 						if assert.Nil(t, result.Col7[1]) {
 							assert.True(t, decimalVal.Equal(*result.Col7[0]))
 							assert.True(t, decimalVal.Equal(*result.Col7[2]))
