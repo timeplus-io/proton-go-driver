@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/timeplus-io/proton-go-driver/v2"
@@ -28,7 +29,6 @@ import (
 )
 
 func TestJson(t *testing.T) {
-	t.Skip("go driver of json haven't been implemented")
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
@@ -41,7 +41,7 @@ func TestJson(t *testing.T) {
 			Compression: &proton.Compression{
 				Method: proton.CompressionLZ4,
 			},
-			Debug: true,
+			// Debug: true,
 		})
 	)
 	if assert.NoError(t, err) {
@@ -58,7 +58,7 @@ func TestJson(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_json")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_json (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_json (Col1)"); assert.NoError(t, err) {
 				fmt.Println(batch)
 				var (
 					sourceMap = map[string]interface{}{"data": int32(1), "obj.a": int64(2), "obj.b": "hhh", "arr": []string{"abc", "xyz"}, "a.b.b.c": float32(1.0), "`a.b.b`.c": float64(2.0)}
@@ -71,10 +71,11 @@ func TestJson(t *testing.T) {
 							resultMap map[string]interface{}
 							resultStr string
 						)
-						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_json WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&resultMap); assert.NoError(t, err) {
+						time.Sleep(3 * time.Second)
+						if err := conn.QueryRow(ctx, "SELECT Col1::json FROM table(test_json)").Scan(&resultMap); assert.NoError(t, err) {
 							assert.Equal(t, sourceMap, resultMap)
 						}
-						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_json WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&resultStr); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT Col1::json FROM table(test_json)").Scan(&resultStr); assert.NoError(t, err) {
 							assert.Equal(t, sourceStr, resultStr)
 						}
 					}
