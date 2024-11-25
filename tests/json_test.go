@@ -72,10 +72,10 @@ func TestJson(t *testing.T) {
 							resultStr string
 						)
 						time.Sleep(3 * time.Second)
-						if err := conn.QueryRow(ctx, "SELECT Col1::json FROM table(test_json)").Scan(&resultMap); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT Col1::json FROM test_json WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&resultMap); assert.NoError(t, err) {
 							assert.Equal(t, sourceMap, resultMap)
 						}
-						if err := conn.QueryRow(ctx, "SELECT Col1::json FROM table(test_json)").Scan(&resultStr); assert.NoError(t, err) {
+						if err := conn.QueryRow(ctx, "SELECT Col1::json FROM test_json WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&resultStr); assert.NoError(t, err) {
 							assert.Equal(t, sourceStr, resultStr)
 						}
 					}
@@ -83,6 +83,88 @@ func TestJson(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestComplexJson(t *testing.T) {
+	var (
+		ctx       = context.Background()
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:8463"},
+			Auth: proton.Auth{
+				Database: "default",
+				Username: "default",
+				Password: "",
+			},
+			Compression: &proton.Compression{
+				Method: proton.CompressionLZ4,
+			},
+			// Debug: true,
+		})
+	)
+	if !assert.NoError(t, err) {
+		return
+	}
+	if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		t.Skip(err.Error())
+		return
+	}
+	const ddl = `
+	CREATE STREAM test_json (
+		  Col1 json
+	) 
+	`
+	defer func() {
+		conn.Exec(ctx, "DROP STREAM test_json")
+	}()
+
+	if err := conn.Exec(ctx, ddl); !assert.NoError(t, err) {
+		return
+	}
+	json1 := map[string]interface{}{
+		"obj.a":     uint32(1),
+		"obj.b":     []string{"abc", "xyz"},
+		"obj.c.e":   []uint32{123544, 123546},
+		"obj.c.f":   []string{"stream sql", "timeplus"},
+		"a.b.b.c":   float32(1.1),
+		"`a.b.b`.c": float64(23.1),
+	}
+	json2 := map[string]interface{}{
+		"obj.a":     uint32((1 << 10) + (1 << 5)),
+		"obj.b":     []string{"xxcccccc", "abcdefghijklmnopqrstuvwxyz", "2333556"},
+		"obj.c.e":   []uint32{20030705, 987765},
+		"obj.c.f":   []string{"stream sql", "proton+++"},
+		"a.b.b.c":   float32(2.144623),
+		"`a.b.b`.c": float64(123453.2),
+	}
+
+	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_json (Col1)")
+	if !assert.NoError(t, err) {
+		return
+	}
+	if err := batch.Append(json1); !assert.NoError(t, err) {
+		return
+	}
+	if err := batch.Append(json2); !assert.NoError(t, err) {
+		return
+	}
+	if !assert.NoError(t, batch.Send()) {
+		return
+	}
+
+	var (
+		result1 map[string]interface{}
+		result2 map[string]interface{}
+	)
+	time.Sleep(3 * time.Second)
+	rows := conn.QueryRow(ctx, "SELECT Col1::json FROM test_json WHERE _tp_time > earliest_ts() LIMIT 2")
+	if err := rows.Scan(&result1); !assert.NoError(t, err) {
+		return
+	}
+	if err := rows.Scan(&result2); !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, json1, result1)
+	assert.Equal(t, json2, result2)
 }
 
 func TestNullableJson(t *testing.T) {
