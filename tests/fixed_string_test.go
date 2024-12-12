@@ -271,6 +271,74 @@ func TestColumnarFixedString(t *testing.T) {
 	}
 }
 
+func TestFixedStringShorterThanN(t *testing.T) {
+	var (
+		ctx       = context.Background()
+		conn, err = proton.Open(&proton.Options{
+			Addr: []string{"127.0.0.1:8463"},
+			Auth: proton.Auth{
+				Database: "default",
+				Username: "default",
+				Password: "",
+			},
+			Compression: &proton.Compression{
+				Method: proton.CompressionLZ4,
+			},
+			//Debug: true,
+		})
+	)
+	if !assert.NoError(t, err) {
+		return
+	}
+	const ddl = `
+	CREATE STREAM IF NOT EXISTS test_fixed_string (
+		Col1 fixed_string(10)
+		, Col2 fixed_string(10)
+		, Col3 nullable(fixed_string(10))
+		, Col4 array(fixed_string(10))
+		, Col5 array(nullable(fixed_string(10)))
+	) 
+`
+	defer func() {
+		conn.Exec(ctx, "DROP STREAM test_fixed_string")
+	}()
+	err = conn.Exec(ctx, ddl)
+	if !assert.NoError(t, err) {
+		return
+	}
+	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_fixed_string (* except _tp_time)")
+	if !assert.NoError(t, err) {
+		return
+	}
+	var (
+		col1Data = "stream"
+		col2Data = &BinFixedString{}
+		col3Data = &col1Data
+		col4Data = []string{"SQL", "timeplus", "database"}
+		col5Data = []*string{&col1Data, nil, &col1Data}
+	)
+	col2Data.UnmarshalBinary([]byte("DBMS"))
+
+	if err := batch.Append(col1Data, col2Data, col3Data, col4Data, col5Data); assert.NoError(t, err) {
+		if assert.NoError(t, batch.Send()) {
+			var (
+				col1 string
+				col2 BinFixedString
+				col3 *string
+				col4 []string
+				col5 []*string
+			)
+			if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_fixed_string WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+				assert.Equal(t, col1Data, col1)
+				assert.Equal(t, col2Data.data, col2.data)
+				assert.Equal(t, col3Data, col3)
+				assert.Equal(t, col4Data, col4)
+				assert.Equal(t, col5Data, col5)
+			}
+		}
+	}
+}
+
 func BenchmarkFixedString(b *testing.B) {
 	var (
 		ctx       = context.Background()

@@ -119,16 +119,18 @@ func (col *FixedString) AppendRow(v interface{}) (err error) {
 	data := make([]byte, col.size)
 	switch v := v.(type) {
 	case string:
-		data = binary.Str2Bytes(v)
+		copy(data, v)
 	case *string:
 		if v != nil {
-			data = binary.Str2Bytes(*v)
+			copy(data, *v)
 		}
 	case nil:
 	case encoding.BinaryMarshaler:
-		if data, err = v.MarshalBinary(); err != nil {
+		bs, err := v.MarshalBinary()
+		if err != nil {
 			return err
 		}
+		copy(data, bs)
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",
@@ -156,10 +158,15 @@ func (col *FixedString) Encode(encoder *binary.Encoder) error {
 }
 
 func (col *FixedString) row(i int) string {
-	return string(col.data[i*col.size : (i+1)*col.size])
+	return string(col.rowBytes(i))
 }
 
 func (col *FixedString) rowBytes(i int) []byte {
+	for j := i * col.size; j < (i+1)*col.size; j++ {
+		if col.data[j] == 0 {
+			return col.data[i*col.size : j]
+		}
+	}
 	return col.data[i*col.size : (i+1)*col.size]
 }
 
