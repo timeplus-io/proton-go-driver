@@ -20,7 +20,6 @@ package proto
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 	"go.opentelemetry.io/otel/trace"
@@ -37,7 +36,6 @@ type Query struct {
 	Body           string
 	QuotaKey       string
 	Settings       Settings
-	Parameters     Parameters
 	Compression    bool
 	InitialUser    string
 	InitialAddress string
@@ -64,23 +62,7 @@ func (q *Query) Encode(encoder *binary.Encoder, revision uint64) error {
 		encoder.Byte(StateComplete)
 		encoder.Bool(q.Compression)
 	}
-
-	if err := encoder.String(q.Body); err != nil {
-		return err
-	}
-
-	if revision >= DBMS_MIN_PROTOCOL_VERSION_WITH_PARAMETERS {
-		if err := q.Parameters.Encode(encoder, revision); err != nil {
-			return err
-		}
-
-		/* empty string is a marker of the end of parameters */
-		if err := encoder.String(""); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return encoder.String(q.Body)
 }
 
 func (q *Query) encodeClientInfo(encoder *binary.Encoder, revision uint64) error {
@@ -176,36 +158,4 @@ func (s *Setting) encode(encoder *binary.Encoder, revision uint64) error {
 		return err
 	}
 	return encoder.String(fmt.Sprint(s.Value))
-}
-
-type Parameters []Parameter
-
-type Parameter struct {
-	Key   string
-	Value string
-}
-
-func (s Parameters) Encode(encoder *binary.Encoder, revision uint64) error {
-	for _, s := range s {
-		if err := s.encode(encoder, revision); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (s *Parameter) encode(encoder *binary.Encoder, revision uint64) error {
-	if err := encoder.String(s.Key); err != nil {
-		return err
-	}
-
-	if err := encoder.Uvarint(uint64(0x02)); err != nil {
-		return err
-	}
-
-	if err := encoder.String(fmt.Sprintf("'%v'", strings.ReplaceAll(s.Value, "'", "\\'"))); err != nil {
-		return err
-	}
-
-	return nil
 }

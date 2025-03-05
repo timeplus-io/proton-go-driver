@@ -79,11 +79,6 @@ func dial(ctx context.Context, addr string, num int, opt *Options) (*connect, er
 	if err := connect.handshake(opt.Auth.Database, opt.Auth.Username, opt.Auth.Password); err != nil {
 		return nil, err
 	}
-	if connect.revision >= proto.DBMS_MIN_PROTOCOL_VERSION_WITH_ADDENDUM {
-		if err := connect.sendAddendum(); err != nil {
-			return nil, err
-		}
-	}
 	return connect, nil
 }
 
@@ -183,17 +178,9 @@ func (c *connect) sendData(block *proto.Block, name string) error {
 	return block.Encode(c.encoder, c.revision)
 }
 
-func (c *connect) readData(packet byte, compressible bool) (*proto.Block, string, error) {
+func (c *connect) readData(packet byte, compressible bool) (*proto.Block, error) {
 	if _, err := c.decoder.String(); err != nil {
-		return nil, "", err
-	}
-
-	var queryID string
-	var err error
-	if packet == proto.ServerData && c.revision >= proto.DBMS_MIN_PROTOCOL_VERSION_WITH_SERVER_GENERATE_UUID {
-		if queryID, err = c.decoder.String(); err != nil {
-			return nil, queryID, err
-		}
+		return nil, err
 	}
 	if compressible && c.compression {
 		c.stream.Compress(true)
@@ -201,9 +188,9 @@ func (c *connect) readData(packet byte, compressible bool) (*proto.Block, string
 	}
 	var block proto.Block
 	if err := block.Decode(c.decoder, c.revision); err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	block.Packet = packet
 	c.debugf("[read data] compression=%t. block: columns=%d, rows=%d", c.compression, len(block.Columns), block.Rows())
-	return &block, queryID, nil
+	return &block, nil
 }

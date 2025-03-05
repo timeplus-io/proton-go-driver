@@ -34,7 +34,7 @@ type ProfileEvent struct {
 }
 
 func (c *connect) profileEvents() ([]ProfileEvent, error) {
-	block, _, err := c.readData(proto.ServerProfileEvents, false)
+	block, err := c.readData(proto.ServerProfileEvents, false)
 	if err != nil {
 		return nil, err
 	}

@@ -26,10 +26,9 @@ import (
 
 func (c *connect) query(ctx context.Context, release func(*connect, error), query string, args ...interface{}) (*rows, error) {
 	var (
-		options                    = queryOptions(ctx)
-		onProcess                  = options.onProcess()
-		queryParamsProtocolSupport = c.revision >= proto.DBMS_MIN_PROTOCOL_VERSION_WITH_PARAMETERS
-		body, err                  = bindQueryOrAppendParameters(queryParamsProtocolSupport, &options, query, c.server.Timezone, args...)
+		options   = queryOptions(ctx)
+		onProcess = options.onProcess()
+		body, err = bind(c.server.Timezone, query, args...)
 	)
 
 	if err != nil {
