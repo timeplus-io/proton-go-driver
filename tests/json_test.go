@@ -45,7 +45,7 @@ func TestJson(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		if err := CheckMinServerVersion(conn, 1, 0); err != nil {
 			t.Skip(err.Error())
 			return
 		}
@@ -104,7 +104,7 @@ func TestComplexJson(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	if err := checkMinServerVersion(conn, 1, 0); err != nil {
+	if err := CheckMinServerVersion(conn, 1, 0); err != nil {
 		t.Skip(err.Error())
 		return
 	}

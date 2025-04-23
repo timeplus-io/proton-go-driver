@@ -25,13 +25,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/paulmach/orb"
 	"github.com/shopspring/decimal"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/chcol"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"math/big"
 	"net"
 	"reflect"
 	"strings"
 	"time"
-
-	"github.com/timeplus-io/proton-go-driver/v2/types"
 )
 
 func (t Type) Column() (Interface, error) {
@@ -119,8 +119,6 @@ func (t Type) Column() (Interface, error) {
 		return &Point{}, nil
 	case "string":
 		return &String{}, nil
-	case "json":
-        return (&Json{}).parse()
 	}
 
 	switch strType := string(t); {
@@ -128,6 +126,12 @@ func (t Type) Column() (Interface, error) {
 		return (&Map{}).parse(t)
 	case strings.HasPrefix(string(t), "tuple("):
 		return (&Tuple{}).parse(t)
+	case strings.HasPrefix(string(t), "variant("):
+		return (&Variant{}).parse(t)
+	case strings.HasPrefix(string(t), "dynamic"):
+		return (&Dynamic{}).parse(t)
+	case strings.HasPrefix(string(t), "json"):
+		return (&JSON{}).parse(t)
 	case strings.HasPrefix(string(t), "decimal("):
 		return (&Decimal{}).parse(t)
 	case strings.HasPrefix(strType, "nested("):
@@ -207,6 +211,9 @@ var (
 	scanTypePolygon      = reflect.TypeOf(orb.Polygon{})
 	scanTypeDecimal      = reflect.TypeOf(decimal.Decimal{})
 	scanTypeMultiPolygon = reflect.TypeOf(orb.MultiPolygon{})
+	scanTypeVariant      = reflect.TypeOf(chcol.Variant{})
+	scanTypeDynamic      = reflect.TypeOf(chcol.Dynamic{})
+	scanTypeJSON         = reflect.TypeOf(chcol.JSON{})
 )
 
 func (col *Float32) Type() Type {

@@ -13,6 +13,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/paulmach/orb"
 	"github.com/shopspring/decimal"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/chcol"
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 )
 
 func (t Type) Column() (Interface, error) {
@@ -91,6 +93,12 @@ func (t Type) Column() (Interface, error) {
 		return (&Map{}).parse(t)
 	case strings.HasPrefix(string(t), "tuple("):
 		return (&Tuple{}).parse(t)
+	case strings.HasPrefix(string(t), "variant("):
+		return (&Variant{}).parse(t)
+	case strings.HasPrefix(string(t), "dynamic"):
+		return (&Dynamic{}).parse(t)
+	case strings.HasPrefix(string(t), "json"):
+		return (&JSON{}).parse(t)
 	case strings.HasPrefix(string(t), "decimal("):
 		return (&Decimal{}).parse(t)
 	case strings.HasPrefix(strType, "nested("):
@@ -139,6 +147,7 @@ var (
 		scanTypeBool    = reflect.TypeOf(true)
 		scanTypeByte    = reflect.TypeOf([]byte{})
 		scanTypeUUID    = reflect.TypeOf(uuid.UUID{})
+		scanTypeDate    = reflect.TypeOf(types.Date{})
 		scanTypeTime    = reflect.TypeOf(time.Time{})
 		scanTypeRing    = reflect.TypeOf(orb.Ring{})
 		scanTypePoint   = reflect.TypeOf(orb.Point{})
@@ -148,6 +157,9 @@ var (
 		scanTypePolygon = reflect.TypeOf(orb.Polygon{})
 		scanTypeDecimal = reflect.TypeOf(decimal.Decimal{})
 		scanTypeMultiPolygon = reflect.TypeOf(orb.MultiPolygon{})
+		scanTypeVariant = reflect.TypeOf(chcol.Variant{})
+		scanTypeDynamic = reflect.TypeOf(chcol.Dynamic{})
+        scanTypeJSON    = reflect.TypeOf(chcol.JSON{})
 	)
 
 {{- range . }}

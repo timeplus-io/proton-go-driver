@@ -117,7 +117,6 @@ func (r *rows) Close() error {
 			}
 		}
 	}
-	return r.err
 }
 
 func (r *rows) Err() error {

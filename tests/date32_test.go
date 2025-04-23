@@ -19,9 +19,10 @@ package tests
 
 import (
 	"context"
-	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
+
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/timeplus-io/proton-go-driver/v2"
@@ -44,7 +45,7 @@ func TestDate32(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		if err := CheckMinServerVersion(conn, 1, 0); err != nil {
 			t.Skip(err.Error())
 			return
 		}
@@ -151,7 +152,7 @@ func TestNullableDate32(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		if err := CheckMinServerVersion(conn, 1, 0); err != nil {
 			t.Skip(err.Error())
 			return
 		}
@@ -227,7 +228,7 @@ func TestColumnarDate32(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		if err := CheckMinServerVersion(conn, 1, 0); err != nil {
 			t.Skip(err.Error())
 			return
 		}

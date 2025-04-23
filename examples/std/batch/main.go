@@ -33,9 +33,6 @@ func example() error {
 		return err
 	}
 	conn.SetMaxIdleConns(5)
-	if err != nil {
-		return err
-	}
 	if _, err := conn.Exec(`DROP STREAM IF EXISTS example`); err != nil {
 		return err
 	}

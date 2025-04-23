@@ -43,7 +43,7 @@ func TestMap(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		if err := CheckMinServerVersion(conn, 1, 0); err != nil {
 			t.Skip(err.Error())
 			return
 		}
@@ -127,7 +127,7 @@ func TestColmnarMap(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		if err := CheckMinServerVersion(conn, 1, 0); err != nil {
 			t.Skip(err.Error())
 			return
 		}

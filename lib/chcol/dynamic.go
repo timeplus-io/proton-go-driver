@@ -15,27 +15,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package tests
+package chcol
 
-import (
-	"fmt"
-	"math/rand"
-	"time"
+type Dynamic = Variant
 
-	"github.com/timeplus-io/proton-go-driver/v2/lib/driver"
-)
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
+// NewDynamic creates a new Dynamic with the given value
+func NewDynamic(v interface{}) Dynamic {
+	return Dynamic{value: v}
 }
 
-func CheckMinServerVersion(conn driver.Conn, major, minor uint64) error {
-	v, err := conn.ServerVersion()
-	if err != nil {
-		panic(err)
+// NewDynamicWithType creates a new Dynamic with the given value and ClickHouse type
+func NewDynamicWithType(v interface{}, chType string) Dynamic {
+	return Dynamic{
+		value:  v,
+		chType: chType,
 	}
-	if v.Version.Major < major || (v.Version.Major == major && v.Version.Minor < minor) {
-		return fmt.Errorf("unsupported server version %d.%d < %d.%d", v.Version.Major, v.Version.Minor, major, minor)
-	}
-	return nil
 }
