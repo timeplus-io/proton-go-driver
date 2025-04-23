@@ -101,7 +101,7 @@ func TestLowCardinality(t *testing.T) {
 				}
 				if assert.NoError(t, batch.Send()) {
 					var count uint64
-					if err := conn.QueryRow(ctx, "SELECT count() FROM test_lowcardinality").Scan(&count); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT count() FROM test_lowcardinality WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
 						assert.Equal(t, uint64(10), count)
 					}
 					for i := 0; i < 10; i++ {

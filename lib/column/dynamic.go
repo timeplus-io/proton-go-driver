@@ -50,21 +50,21 @@ func (c *Dynamic) parse(t Type) (_ *Dynamic, err error) {
 	// SharedVariant is special, and does not count against totalTypes
 	c.typeNamesIndex = make(map[string]int)
 	c.variant.columnTypeIndex = make(map[string]uint8)
-	sv, _ := Type("SharedVariant").Column()
+	sv, _ := Type("shared_variant").Column()
 	c.addColumn(sv)
 
 	c.maxTypes = DefaultMaxDynamicTypes
 	c.totalTypes = 0 // Reset to 0 after adding SharedVariant
 
-	if tStr == "Dynamic" {
+	if tStr == "dynamic" {
 		return c, nil
 	}
 
-	if !strings.HasPrefix(tStr, "Dynamic(") || !strings.HasSuffix(tStr, ")") {
+	if !strings.HasPrefix(tStr, "dynamic(") || !strings.HasSuffix(tStr, ")") {
 		return nil, &UnsupportedColumnTypeError{t: t}
 	}
 
-	typeParamsStr := strings.TrimPrefix(tStr, "Dynamic(")
+	typeParamsStr := strings.TrimPrefix(tStr, "dynamic(")
 	typeParamsStr = strings.TrimSuffix(typeParamsStr, ")")
 
 	if strings.HasPrefix(typeParamsStr, "max_types=") {
@@ -232,7 +232,7 @@ func (c *Dynamic) AppendRow(v interface{}) error {
 
 	// If preferred type wasn't provided, try each column
 	for i, col := range c.variant.columns {
-		if c.typeNames[i] == "SharedVariant" {
+		if c.typeNames[i] == "shared_variant" {
 			// Do not try to fit into SharedVariant
 			continue
 		}
@@ -244,7 +244,7 @@ func (c *Dynamic) AppendRow(v interface{}) error {
 	}
 
 	// If no existing columns match, try matching a ClickHouse type from common Go types
-	inferredTypeName := inferClickHouseTypeFromGoType(v)
+	inferredTypeName := inferProtonTypeFromGoType(v)
 	if inferredTypeName != "" {
 		return c.AppendRow(chcol.NewDynamicWithType(v, inferredTypeName))
 	}
@@ -297,7 +297,7 @@ func (c *Dynamic) encodeHeader(encoder *binary.Encoder) error {
 	}
 
 	for _, typeName := range c.typeNames {
-		if typeName == "SharedVariant" {
+		if typeName == "shared_variant" {
 			// SharedVariant is implicitly present in Dynamic, do not append to type names
 			continue
 		}
@@ -361,7 +361,7 @@ func (c *Dynamic) decodeHeader(decoder *binary.Decoder) error {
 		sortedTypeNames = append(sortedTypeNames, typeName)
 	}
 
-	sortedTypeNames = append(sortedTypeNames, "SharedVariant")
+	sortedTypeNames = append(sortedTypeNames, "shared_variant")
 	sort.Strings(sortedTypeNames) // Re-sort after adding SharedVariant
 
 	c.typeNames = make([]string, 0, len(sortedTypeNames))

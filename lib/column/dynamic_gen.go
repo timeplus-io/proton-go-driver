@@ -27,190 +27,190 @@ import (
 	"time"
 )
 
-// inferClickHouseTypeFromGoType takes a Go interface{} and converts it to a ClickHouse type.
+// inferProtonTypeFromGoType takes a Go interface{} and converts it to a Proton type.
 // Returns empty string if type was not matched.
 // This is best effort and does not work for all types.
 // Optimally, users should provide a type using DynamicWithType.
-func inferClickHouseTypeFromGoType(v interface{}) string {
+func inferProtonTypeFromGoType(v interface{}) string {
 	switch v.(type) {
 	case float32:
-		return "Float32"
+		return "float32"
 	case *float32:
-		return "Float32"
+		return "float32"
 	case float64:
-		return "Float64"
+		return "float64"
 	case *float64:
-		return "Float64"
+		return "float64"
 	case int8:
-		return "Int8"
+		return "int8"
 	case *int8:
-		return "Int8"
+		return "int8"
 	case int16:
-		return "Int16"
+		return "int16"
 	case *int16:
-		return "Int16"
+		return "int16"
 	case int32:
-		return "Int32"
+		return "int32"
 	case *int32:
-		return "Int32"
+		return "int32"
 	case int64:
-		return "Int64"
+		return "int64"
 	case *int64:
-		return "Int64"
+		return "int64"
 	case uint8:
-		return "UInt8"
+		return "uint8"
 	case *uint8:
-		return "UInt8"
+		return "uint8"
 	case uint16:
-		return "UInt16"
+		return "uint16"
 	case *uint16:
-		return "UInt16"
+		return "uint16"
 	case uint32:
-		return "UInt32"
+		return "uint32"
 	case *uint32:
-		return "UInt32"
+		return "uint32"
 	case uint64:
-		return "UInt64"
+		return "uint64"
 	case *uint64:
-		return "UInt64"
+		return "uint64"
 	case string:
-		return "String"
+		return "string"
 	case *string:
-		return "String"
+		return "string"
 	case json.RawMessage:
-		return "String"
+		return "string"
 	case *json.RawMessage:
-		return "String"
+		return "string"
 	case sql.NullString:
-		return "String"
+		return "string"
 	case *sql.NullString:
-		return "String"
+		return "string"
 	case bool:
-		return "Bool"
+		return "bool"
 	case *bool:
-		return "Bool"
+		return "bool"
 	case sql.NullBool:
-		return "Bool"
+		return "bool"
 	case *sql.NullBool:
-		return "Bool"
+		return "bool"
 	case time.Time:
-		return "DateTime64(3)"
+		return "datetime64(3)"
 	case *time.Time:
-		return "DateTime64(3)"
+		return "datetime64(3)"
 	case sql.NullTime:
-		return "DateTime64(3)"
+		return "datetime64(3)"
 	case *sql.NullTime:
-		return "DateTime64(3)"
+		return "datetime64(3)"
 	case uuid.UUID:
-		return "UUID"
+		return "uuid"
 	case *uuid.UUID:
-		return "UUID"
+		return "uuid"
 	case []float32:
-		return "array(Float32)"
+		return "array(float32)"
 	case []*float32:
-		return "array(Float32)"
+		return "array(float32)"
 	case []float64:
-		return "array(Float64)"
+		return "array(float64)"
 	case []*float64:
-		return "array(Float64)"
+		return "array(float64)"
 	case []int8:
-		return "array(Int8)"
+		return "array(int8)"
 	case []*int8:
-		return "array(Int8)"
+		return "array(int8)"
 	case []int16:
-		return "array(Int16)"
+		return "array(int16)"
 	case []*int16:
-		return "array(Int16)"
+		return "array(int16)"
 	case []int32:
-		return "array(Int32)"
+		return "array(int32)"
 	case []*int32:
-		return "array(Int32)"
+		return "array(int32)"
 	case []int64:
-		return "array(Int64)"
+		return "array(int64)"
 	case []*int64:
-		return "array(Int64)"
+		return "array(int64)"
 	case []*uint8:
-		return "array(UInt8)"
+		return "array(uint8)"
 	case []uint16:
-		return "array(UInt16)"
+		return "array(uint16)"
 	case []*uint16:
-		return "array(UInt16)"
+		return "array(uint16)"
 	case []uint32:
-		return "array(UInt32)"
+		return "array(uint32)"
 	case []*uint32:
-		return "array(UInt32)"
+		return "array(uint32)"
 	case []uint64:
-		return "array(UInt64)"
+		return "array(uint64)"
 	case []*uint64:
-		return "array(UInt64)"
+		return "array(uint64)"
 	case []string:
-		return "array(String)"
+		return "array(string)"
 	case []*string:
-		return "array(String)"
+		return "array(string)"
 	case []json.RawMessage:
-		return "array(String)"
+		return "array(string)"
 	case []*json.RawMessage:
-		return "array(String)"
+		return "array(string)"
 	case []sql.NullString:
-		return "array(String)"
+		return "array(string)"
 	case []*sql.NullString:
-		return "array(String)"
+		return "array(string)"
 	case []bool:
-		return "array(Bool)"
+		return "array(bool)"
 	case []*bool:
-		return "array(Bool)"
+		return "array(bool)"
 	case []sql.NullBool:
-		return "array(Bool)"
+		return "array(bool)"
 	case []*sql.NullBool:
-		return "array(Bool)"
+		return "array(bool)"
 	case []time.Time:
-		return "array(DateTime64(3))"
+		return "array(datetime64(3))"
 	case []*time.Time:
-		return "array(DateTime64(3))"
+		return "array(datetime64(3))"
 	case []sql.NullTime:
-		return "array(DateTime64(3))"
+		return "array(datetime64(3))"
 	case []*sql.NullTime:
-		return "array(DateTime64(3))"
+		return "array(datetime64(3))"
 	case []uuid.UUID:
-		return "array(UUID)"
+		return "array(uuid)"
 	case []*uuid.UUID:
-		return "array(UUID)"
+		return "array(uuid)"
 	case map[string]float32:
-		return "map(string, Float32)"
+		return "map(string, float32)"
 	case map[string]float64:
-		return "map(string, Float64)"
+		return "map(string, float64)"
 	case map[string]int8:
-		return "map(string, Int8)"
+		return "map(string, int8)"
 	case map[string]int16:
-		return "map(string, Int16)"
+		return "map(string, int16)"
 	case map[string]int32:
-		return "map(string, Int32)"
+		return "map(string, int32)"
 	case map[string]int64:
-		return "map(string, Int64)"
+		return "map(string, int64)"
 	case map[string]uint8:
-		return "map(string, UInt8)"
+		return "map(string, uint8)"
 	case map[string]uint16:
-		return "map(string, UInt16)"
+		return "map(string, uint16)"
 	case map[string]uint32:
-		return "map(string, UInt32)"
+		return "map(string, uint32)"
 	case map[string]uint64:
-		return "map(string, UInt64)"
+		return "map(string, uint64)"
 	case map[string]string:
-		return "map(string, String)"
+		return "map(string, string)"
 	case map[string]json.RawMessage:
-		return "map(string, String)"
+		return "map(string, string)"
 	case map[string]sql.NullString:
-		return "map(string, String)"
+		return "map(string, string)"
 	case map[string]bool:
-		return "map(string, Bool)"
+		return "map(string, bool)"
 	case map[string]sql.NullBool:
-		return "map(string, Bool)"
+		return "map(string, bool)"
 	case map[string]time.Time:
-		return "map(string, DateTime64(3))"
+		return "map(string, datetime64(3))"
 	case map[string]sql.NullTime:
-		return "map(string, DateTime64(3))"
+		return "map(string, datetime64(3))"
 	case map[string]uuid.UUID:
-		return "map(string, UUID)"
+		return "map(string, uuid)"
 	default:
 		return ""
 	}

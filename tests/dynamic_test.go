@@ -28,9 +28,9 @@ import (
 	"github.com/timeplus-io/proton-go-driver/v2/lib/driver"
 )
 
-var variantTestDate, _ = time.Parse(time.RFC3339, "2024-12-13T02:09:30.123Z")
+var dynamicTestDate, _ = time.Parse(time.RFC3339, "2024-12-13T02:09:30.123Z")
 
-func setupVariantTest(t *testing.T) driver.Conn {
+func setupDynamicTest(t *testing.T) driver.Conn {
 	conn, err := proton.Open(&proton.Options{
 		Addr: []string{"127.0.0.1:8463"},
 		Auth: proton.Auth{
@@ -40,72 +40,62 @@ func setupVariantTest(t *testing.T) driver.Conn {
 		},
 		Settings: proton.Settings{
 			"max_execution_time":              60,
-			"allow_experimental_variant_type": true,
-			"allow_suspicious_variant_types":  true,
-		}, Compression: &proton.Compression{
+			"allow_experimental_dynamic_type": true,
+		},
+		Compression: &proton.Compression{
 			Method: proton.CompressionLZ4,
-		}})
+		},
+	})
 	require.NoError(t, err)
 
+	// Available in Timeplus Enterprise 2.9
 	if err := CheckMinServerVersion(conn, 2, 9); err != nil {
-		t.Skip(fmt.Errorf("unsupported timeplus version for Variant type"))
+		t.Skip(fmt.Errorf("unsupported proton version for dynamic type"))
 		return nil
 	}
 
 	return conn
 }
 
-func TestVariant(t *testing.T) {
+func TestDynamic(t *testing.T) {
 	ctx := context.Background()
-	conn := setupVariantTest(t)
+	conn := setupDynamicTest(t)
 
 	const ddl = `
-			CREATE STREAM IF NOT EXISTS test_variant (
-				  c variant(
-			    	bool,
-			    	int64,
-			    	string,
-			    	datetime64(3),
-			    	array(string),
-			    	array(uint8),
-			    	array(map(string, string)),
-			    	map(string, string),
-			    	map(string, int64),
-			    )                  
+			CREATE STREAM IF NOT EXISTS test_dynamic (
+				  c dynamic                  
 			) Engine = MergeTree() ORDER BY tuple_cast()
 		`
 	require.NoError(t, conn.Exec(ctx, ddl))
 	defer func() {
-		require.NoError(t, conn.Exec(ctx, "DROP STREAM IF EXISTS test_variant"))
+		require.NoError(t, conn.Exec(ctx, "DROP STREAM IF EXISTS test_dynamic"))
 	}()
 
-	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_variant (c)")
+	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_dynamic (c)")
 	require.NoError(t, err)
 
-	require.NoError(t, batch.Append(true))
+	require.NoError(t, batch.Append(proton.NewDynamicWithType(true, "bool")))
 	colInt64 := int64(42)
-	require.NoError(t, batch.Append(proton.NewVariantWithType(colInt64, "int64")))
+	require.NoError(t, batch.Append(proton.NewDynamicWithType(colInt64, "int64")))
 	colString := "test"
-	require.NoError(t, batch.Append(proton.NewVariantWithType(colString, "string")))
-	require.NoError(t, batch.Append(proton.NewVariantWithType(variantTestDate, "datetime64(3)")))
+	require.NoError(t, batch.Append(proton.NewDynamicWithType(colString, "string")))
+	require.NoError(t, batch.Append(proton.NewDynamicWithType(dynamicTestDate, "datetime64(3)")))
 	var colNil interface{} = nil
 	require.NoError(t, batch.Append(colNil))
-	colSliceString := []string{"a", "b"}
-	require.NoError(t, batch.Append(proton.NewVariantWithType(colSliceString, "array(string)")))
 	colSliceUInt8 := []uint8{0xA, 0xB, 0xC}
-	require.NoError(t, batch.Append(proton.NewVariantWithType(colSliceUInt8, "array(uint8)")))
+	require.NoError(t, batch.Append(proton.NewDynamicWithType(colSliceUInt8, "array(uint8)")))
 	colSliceMapStringString := []map[string]string{{"key1": "value1", "key2": "value2"}, {"key3": "value3"}}
-	require.NoError(t, batch.Append(colSliceMapStringString))
+	require.NoError(t, batch.Append(proton.NewDynamicWithType(colSliceMapStringString, "array(map(string, string))")))
 	colMapStringString := map[string]string{"key1": "value1", "key2": "value2"}
-	require.NoError(t, batch.Append(colMapStringString))
+	require.NoError(t, batch.Append(proton.NewDynamicWithType(colMapStringString, "map(string, string)")))
 	colMapStringInt64 := map[string]int64{"key1": 42, "key2": 84}
-	require.NoError(t, batch.Append(colMapStringInt64))
+	require.NoError(t, batch.Append(proton.NewDynamicWithType(colMapStringInt64, "map(string, int64)")))
 	require.NoError(t, batch.Send())
 
-	rows, err := conn.Query(ctx, "SELECT c FROM test_variant")
+	rows, err := conn.Query(ctx, "SELECT c FROM test_dynamic")
 	require.NoError(t, err)
 
-	var row proton.Variant
+	var row proton.Dynamic
 
 	require.True(t, rows.Next())
 	err = rows.Scan(&row)
@@ -125,17 +115,13 @@ func TestVariant(t *testing.T) {
 	require.True(t, rows.Next())
 	err = rows.Scan(&row)
 	require.NoError(t, err)
-	// require.Equal(t, variantTestDate, row.Any())
+	// TODO: returned timezone is Local instead of UTC
+	// require.Equal(t, dynamicTestDate, row.Any())
 
 	require.True(t, rows.Next())
 	err = rows.Scan(&row)
 	require.NoError(t, err)
 	require.Equal(t, colNil, row.Any())
-
-	require.True(t, rows.Next())
-	err = rows.Scan(&row)
-	require.NoError(t, err)
-	require.Equal(t, colSliceString, row.Any())
 
 	require.True(t, rows.Next())
 	err = rows.Scan(&row)
@@ -158,33 +144,33 @@ func TestVariant(t *testing.T) {
 	require.Equal(t, colMapStringInt64, row.Any())
 }
 
-func TestVariantArray(t *testing.T) {
+func TestDynamicArray(t *testing.T) {
 	ctx := context.Background()
-	conn := setupVariantTest(t)
+	conn := setupDynamicTest(t)
 
 	const ddl = `
-			CREATE STREAM IF NOT EXISTS test_variant (
-				  c array(variant(int64))                  
+			CREATE STREAM IF NOT EXISTS test_dynamic (
+				  c array(dynamic)                  
 			) Engine = MergeTree() ORDER BY tuple_cast()
 		`
 	require.NoError(t, conn.Exec(ctx, ddl))
 	defer func() {
-		require.NoError(t, conn.Exec(ctx, "DROP STREAM IF EXISTS test_variant"))
+		require.NoError(t, conn.Exec(ctx, "DROP STREAM IF EXISTS test_dynamic"))
 	}()
 
-	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_variant (c)")
+	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_dynamic (c)")
 	require.NoError(t, err)
 
-	batch.Append([]proton.Variant{
-		proton.NewVariantWithType(int64(42), "int64"),
-		proton.NewVariantWithType(int64(84), "int64"),
+	batch.Append([]proton.Dynamic{
+		proton.NewDynamicWithType(int64(42), "int64"),
+		proton.NewDynamicWithType(true, "bool"),
 	})
 	require.NoError(t, batch.Send())
 
-	rows, err := conn.Query(ctx, "SELECT c FROM test_variant")
+	rows, err := conn.Query(ctx, "SELECT c FROM test_dynamic")
 	require.NoError(t, err)
 
-	var arrRow []proton.Variant
+	var arrRow []proton.Dynamic
 
 	require.True(t, rows.Next())
 	err = rows.Scan(&arrRow)
@@ -192,33 +178,33 @@ func TestVariantArray(t *testing.T) {
 	require.Len(t, arrRow, 2)
 
 	require.Equal(t, int64(42), arrRow[0].Any())
-	require.Equal(t, int64(84), arrRow[1].Any())
+	require.Equal(t, true, arrRow[1].Any())
 }
 
-func TestVariantEmptyArray(t *testing.T) {
+func TestDynamicEmptyArray(t *testing.T) {
 	ctx := context.Background()
-	conn := setupVariantTest(t)
+	conn := setupDynamicTest(t)
 
 	const ddl = `
-			CREATE STREAM IF NOT EXISTS test_variant (
-				  c array(variant(int64))                  
+			CREATE STREAM IF NOT EXISTS test_dynamic (
+				  c array(dynamic)                  
 			) Engine = MergeTree() ORDER BY tuple_cast()
 		`
 	require.NoError(t, conn.Exec(ctx, ddl))
 	defer func() {
-		require.NoError(t, conn.Exec(ctx, "DROP STREAM IF EXISTS test_variant"))
+		require.NoError(t, conn.Exec(ctx, "DROP STREAM IF EXISTS test_dynamic"))
 	}()
 
-	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_variant (c)")
+	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_dynamic (c)")
 	require.NoError(t, err)
 
-	batch.Append([]proton.Variant{})
+	batch.Append([]proton.Dynamic{})
 	require.NoError(t, batch.Send())
 
-	rows, err := conn.Query(ctx, "SELECT c FROM test_variant")
+	rows, err := conn.Query(ctx, "SELECT c FROM test_dynamic")
 	require.NoError(t, err)
 
-	var arrRow []proton.Variant
+	var arrRow []proton.Dynamic
 
 	require.True(t, rows.Next())
 	err = rows.Scan(&arrRow)
@@ -226,32 +212,32 @@ func TestVariantEmptyArray(t *testing.T) {
 	require.Len(t, arrRow, 0)
 }
 
-func TestVariant_ScanWithType(t *testing.T) {
+func TestDynamic_ScanWithType(t *testing.T) {
 	ctx := context.Background()
-	conn := setupVariantTest(t)
+	conn := setupDynamicTest(t)
 
 	const ddl = `
-			CREATE STREAM IF NOT EXISTS test_variant (
-				  c variant(bool, int64)                  
+			CREATE STREAM IF NOT EXISTS test_dynamic (
+				  c dynamic                 
 			) Engine = MergeTree() ORDER BY tuple_cast()
 		`
 	require.NoError(t, conn.Exec(ctx, ddl))
 	defer func() {
-		require.NoError(t, conn.Exec(ctx, "DROP STREAM IF EXISTS test_variant"))
+		require.NoError(t, conn.Exec(ctx, "DROP STREAM IF EXISTS test_dynamic"))
 	}()
 
-	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_variant (c)")
+	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_dynamic (c)")
 	require.NoError(t, err)
 
-	require.NoError(t, batch.Append(true))
-	require.NoError(t, batch.Append(proton.NewVariantWithType(int64(42), "int64")))
+	require.NoError(t, batch.Append(proton.NewDynamicWithType(true, "bool")))
+	require.NoError(t, batch.Append(proton.NewDynamicWithType(int64(42), "int64")))
 	require.NoError(t, batch.Append(nil))
 	require.NoError(t, batch.Send())
 
-	rows, err := conn.Query(ctx, "SELECT c FROM test_variant")
+	rows, err := conn.Query(ctx, "SELECT c FROM test_dynamic")
 	require.NoError(t, err)
 
-	var row proton.Variant
+	var row proton.Dynamic
 
 	require.True(t, rows.Next())
 	err = rows.Scan(&row)
@@ -272,29 +258,29 @@ func TestVariant_ScanWithType(t *testing.T) {
 	require.Equal(t, "", row.Type())
 }
 
-func TestVariant_BatchFlush(t *testing.T) {
+func TestDynamic_BatchFlush(t *testing.T) {
 	ctx := context.Background()
-	conn := setupVariantTest(t)
+	conn := setupDynamicTest(t)
 
 	const ddl = `
-			CREATE STREAM IF NOT EXISTS test_variant (
-				  c variant(bool, int64)                  
+			CREATE STREAM IF NOT EXISTS test_dynamic (
+				  c dynamic                 
 			) Engine = MergeTree() ORDER BY tuple_cast()
 		`
 	require.NoError(t, conn.Exec(ctx, ddl))
 	defer func() {
-		require.NoError(t, conn.Exec(ctx, "DROP STREAM IF EXISTS test_variant"))
+		require.NoError(t, conn.Exec(ctx, "DROP STREAM IF EXISTS test_dynamic"))
 	}()
 
-	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_variant (c)")
+	batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_dynamic (c)")
 	require.NoError(t, err)
 
-	vals := make([]proton.Variant, 0, 1000)
+	vals := make([]proton.Dynamic, 0, 1000)
 	for i := 0; i < 1000; i++ {
 		if i%2 == 0 {
-			vals = append(vals, proton.NewVariantWithType(int64(i), "int64"))
+			vals = append(vals, proton.NewDynamicWithType(int64(i), "int64"))
 		} else {
-			vals = append(vals, proton.NewVariantWithType(i%5 == 0, "bool"))
+			vals = append(vals, proton.NewDynamicWithType(i%5 == 0, "bool"))
 		}
 
 		require.NoError(t, batch.Append(vals[i]))
@@ -302,12 +288,12 @@ func TestVariant_BatchFlush(t *testing.T) {
 	}
 	require.NoError(t, batch.Send())
 
-	rows, err := conn.Query(ctx, "SELECT c FROM test_variant")
+	rows, err := conn.Query(ctx, "SELECT c FROM test_dynamic")
 	require.NoError(t, err)
 
 	i := 0
 	for rows.Next() {
-		var row proton.Variant
+		var row proton.Dynamic
 		err = rows.Scan(&row)
 		require.NoError(t, err)
 

@@ -119,6 +119,8 @@ func (t Type) Column() (Interface, error) {
 		return &Point{}, nil
 	case "string":
 		return &String{}, nil
+	case "shared_variant":
+		return &SharedVariant{}, nil
 	}
 
 	switch strType := string(t); {

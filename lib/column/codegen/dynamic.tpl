@@ -27,30 +27,30 @@ import (
 	"time"
 )
 
-// inferClickHouseTypeFromGoType takes a Go interface{} and converts it to a ClickHouse type.
+// inferProtonTypeFromGoType takes a Go interface{} and converts it to a Proton type.
 // Returns empty string if type was not matched.
 // This is best effort and does not work for all types.
 // Optimally, users should provide a type using DynamicWithType.
-func inferClickHouseTypeFromGoType(v interface{}) string {
+func inferProtonTypeFromGoType(v interface{}) string {
     switch v.(type) {
     {{- range . }}
     case {{ .GoType }}:
-        return "{{ .ChType }}"
+        return "{{ .ChTypeName }}"
     case *{{ .GoType }}:
-        return "{{ .ChType }}"
+        return "{{ .ChTypeName }}"
     {{- end }}
     {{- range . }}
     {{- if .SkipArray }}
     {{- else}}
     case []{{ .GoType }}:
-        return "array({{ .ChType }})"
+        return "array({{ .ChTypeName }})"
     {{- end}}
     case []*{{ .GoType }}:
-        return "array({{ .ChType }})"
+        return "array({{ .ChTypeName }})"
     {{- end }}
     {{- range . }}
     case map[string]{{ .GoType }}:
-        return "map(string, {{ .ChType }})"
+        return "map(string, {{ .ChTypeName }})"
     {{- end }}
     default:
         return ""
