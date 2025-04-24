@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 	"github.com/timeplus-io/proton-go-driver/v2/lib/chcol"
@@ -32,6 +33,7 @@ const NullVariantDiscriminator uint8 = 255
 
 type Variant struct {
 	chType Type
+	name   string
 
 	discriminators []uint8
 	offsets        []int
@@ -40,7 +42,7 @@ type Variant struct {
 	columnTypeIndex map[string]uint8
 }
 
-func (c *Variant) parse(t Type) (_ *Variant, err error) {
+func (c *Variant) parse(t Type, tz *time.Location) (_ *Variant, err error) {
 	c.chType = t
 	var (
 		element       []rune
@@ -80,7 +82,7 @@ func (c *Variant) parse(t Type) (_ *Variant, err error) {
 
 	c.columnTypeIndex = make(map[string]uint8, len(elements))
 	for _, columnType := range elements {
-		column, err := columnType.Column()
+		column, err := columnType.Column("", tz)
 		if err != nil {
 			return nil, err
 		}
@@ -108,6 +110,10 @@ func (c *Variant) appendDiscriminatorRow(d uint8) {
 
 func (c *Variant) appendNullRow() {
 	c.appendDiscriminatorRow(NullVariantDiscriminator)
+}
+
+func (c *Variant) Name() string {
+	return c.name
 }
 
 func (c *Variant) Type() Type {

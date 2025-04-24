@@ -54,7 +54,7 @@ func TestArray(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_array")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_array (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_array (Col1, Col2, Col3)"); assert.NoError(t, err) {
 				var (
 					timestamp = time.Now().Truncate(time.Second)
 					col1Data  = []string{"A", "b", "c"}

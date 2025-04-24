@@ -24,7 +24,12 @@ import (
 )
 
 type SharedVariant struct {
+	name       string
 	stringData String
+}
+
+func (c *SharedVariant) Name() string {
+	return c.name
 }
 
 func (c *SharedVariant) Type() Type {

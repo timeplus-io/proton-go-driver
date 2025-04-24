@@ -19,12 +19,13 @@ package column
 
 import (
 	"fmt"
-	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"math"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 	"github.com/timeplus-io/proton-go-driver/v2/lib/timezone"
@@ -39,10 +40,15 @@ type DateTime64 struct {
 	chType    Type
 	values    Int64
 	timezone  *time.Location
+	name      string
 	precision int
 }
 
-func (dt *DateTime64) parse(t Type) (_ Interface, err error) {
+func (col *DateTime64) Name() string {
+	return col.name
+}
+
+func (dt *DateTime64) parse(t Type, tz *time.Location) (_ Interface, err error) {
 	dt.chType = t
 	switch params := strings.Split(t.params(), ","); len(params) {
 	case 2:
@@ -56,6 +62,7 @@ func (dt *DateTime64) parse(t Type) (_ Interface, err error) {
 		if dt.precision, err = strconv.Atoi(params[0]); err != nil {
 			return nil, err
 		}
+		dt.timezone = tz
 	default:
 		return nil, &UnsupportedColumnTypeError{
 			t: t,
@@ -73,7 +80,7 @@ func (col *DateTime64) ScanType() reflect.Type {
 }
 
 func (dt *DateTime64) Rows() int {
-	return len(dt.values)
+	return len(dt.values.col)
 }
 
 func (dt *DateTime64) Row(i int, ptr bool) interface{} {
@@ -109,7 +116,7 @@ func (dt *DateTime64) ScanRow(dest interface{}, row int) error {
 func (dt *DateTime64) Append(v interface{}) (nulls []uint8, err error) {
 	switch v := v.(type) {
 	case []int64:
-		dt.values, nulls = append(dt.values, v...), make([]uint8, len(v))
+		dt.values.col, nulls = append(dt.values.col, v...), make([]uint8, len(v))
 	case []time.Time:
 		in := make([]int64, 0, len(v))
 		for _, t := range v {
@@ -118,7 +125,7 @@ func (dt *DateTime64) Append(v interface{}) (nulls []uint8, err error) {
 			}
 			in = append(in, dt.timeToInt64(t))
 		}
-		dt.values, nulls = append(dt.values, in...), make([]uint8, len(v))
+		dt.values.col, nulls = append(dt.values.col, in...), make([]uint8, len(v))
 	case []*time.Time:
 		nulls = make([]uint8, len(v))
 		for i, v := range v {
@@ -127,9 +134,9 @@ func (dt *DateTime64) Append(v interface{}) (nulls []uint8, err error) {
 				if err := dateOverflow(minDateTime64, maxDateTime64, *v, "2006-01-02 15:04:05"); err != nil {
 					return nil, err
 				}
-				dt.values = append(dt.values, dt.timeToInt64(*v))
+				dt.values.col = append(dt.values.col, dt.timeToInt64(*v))
 			default:
-				dt.values, nulls[i] = append(dt.values, 0), 1
+				dt.values.col, nulls[i] = append(dt.values.col, 0), 1
 			}
 		}
 	case []types.Datetime:
@@ -140,7 +147,7 @@ func (dt *DateTime64) Append(v interface{}) (nulls []uint8, err error) {
 			}
 			in = append(in, dt.timeToInt64(t.Time))
 		}
-		dt.values, nulls = append(dt.values, in...), make([]uint8, len(v))
+		dt.values.col, nulls = append(dt.values.col, in...), make([]uint8, len(v))
 	case []*types.Datetime:
 		nulls = make([]uint8, len(v))
 		for i, v := range v {
@@ -149,9 +156,9 @@ func (dt *DateTime64) Append(v interface{}) (nulls []uint8, err error) {
 				if err := dateOverflow(minDateTime64, maxDateTime64, (*v).Time, "2006-01-02 15:04:05"); err != nil {
 					return nil, err
 				}
-				dt.values = append(dt.values, dt.timeToInt64((*v).Time))
+				dt.values.col = append(dt.values.col, dt.timeToInt64((*v).Time))
 			default:
-				dt.values, nulls[i] = append(dt.values, 0), 1
+				dt.values.col, nulls[i] = append(dt.values.col, 0), 1
 			}
 		}
 	default:
@@ -201,7 +208,7 @@ func (dt *DateTime64) AppendRow(v interface{}) error {
 			From: fmt.Sprintf("%T", v),
 		}
 	}
-	dt.values = append(dt.values, datetime)
+	dt.values.col = append(dt.values.col, datetime)
 	return nil
 }
 
@@ -216,7 +223,7 @@ func (dt *DateTime64) Encode(encoder *binary.Encoder) error {
 func (dt *DateTime64) row(i int) time.Time {
 	var nano int64
 	if dt.precision < 19 {
-		nano = dt.values[i] * int64(math.Pow10(9-dt.precision))
+		nano = dt.values.col[i] * int64(math.Pow10(9-dt.precision))
 	}
 	var (
 		sec  = nano / int64(10e8)

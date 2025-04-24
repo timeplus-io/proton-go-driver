@@ -24,6 +24,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 	"github.com/timeplus-io/proton-go-driver/v2/lib/chcol"
@@ -34,6 +35,9 @@ const DefaultMaxDynamicTypes = 32
 
 type Dynamic struct {
 	chType Type
+	tz     *time.Location
+
+	name string
 
 	maxTypes       uint8
 	totalTypes     uint8
@@ -43,14 +47,15 @@ type Dynamic struct {
 	variant Variant
 }
 
-func (c *Dynamic) parse(t Type) (_ *Dynamic, err error) {
+func (c *Dynamic) parse(t Type, tz *time.Location) (_ *Dynamic, err error) {
 	c.chType = t
+	c.tz = tz
 	tStr := string(t)
 
 	// SharedVariant is special, and does not count against totalTypes
 	c.typeNamesIndex = make(map[string]int)
 	c.variant.columnTypeIndex = make(map[string]uint8)
-	sv, _ := Type("shared_variant").Column()
+	sv, _ := Type("shared_variant").Column("", tz)
 	c.addColumn(sv)
 
 	c.maxTypes = DefaultMaxDynamicTypes
@@ -83,6 +88,10 @@ func (c *Dynamic) addColumn(col Interface) {
 	c.typeNamesIndex[typeName] = len(c.typeNames) - 1
 	c.totalTypes++
 	c.variant.addColumn(col)
+}
+
+func (c *Dynamic) Name() string {
+	return c.name
 }
 
 func (c *Dynamic) Type() Type {
@@ -212,7 +221,7 @@ func (c *Dynamic) AppendRow(v interface{}) error {
 		if ok {
 			col = c.variant.columns[colIndex]
 		} else {
-			newCol, err := Type(requestedType).Column()
+			newCol, err := Type(requestedType).Column("", c.tz)
 			if err != nil {
 				return fmt.Errorf("value \"%v\" cannot be stored in dynamic column %s with requested type %s: unable to append type: %w", v, c.chType, requestedType, err)
 			}
@@ -249,7 +258,7 @@ func (c *Dynamic) AppendRow(v interface{}) error {
 		return c.AppendRow(chcol.NewDynamicWithType(v, inferredTypeName))
 	}
 
-	return fmt.Errorf("value \"%v\" cannot be stored in dynamic column: no compatible types. hint: use clickhouse.DynamicWithType to wrap the value", v)
+	return fmt.Errorf("value \"%v\" cannot be stored in dynamic column: no compatible types. hint: use proton.DynamicWithType to wrap the value", v)
 }
 
 func (c *Dynamic) sortColumnsForEncoding() {
@@ -370,7 +379,7 @@ func (c *Dynamic) decodeHeader(decoder *binary.Decoder) error {
 	c.variant.columnTypeIndex = make(map[string]uint8, len(sortedTypeNames))
 
 	for _, typeName := range sortedTypeNames {
-		col, err := Type(typeName).Column()
+		col, err := Type(typeName).Column("", c.tz)
 		if err != nil {
 			return fmt.Errorf("failed to add dynamic column with type %s: %w", typeName, err)
 		}

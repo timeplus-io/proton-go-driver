@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 	"github.com/timeplus-io/proton-go-driver/v2/lib/chcol"
@@ -35,6 +36,8 @@ const DefaultMaxDynamicPaths = 1024
 
 type JSON struct {
 	chType Type
+	tz     *time.Location
+	name   string
 	rows   int
 
 	serializationVersion uint64
@@ -57,8 +60,9 @@ type JSON struct {
 	totalDynamicPaths int
 }
 
-func (c *JSON) parse(t Type) (_ *JSON, err error) {
+func (c *JSON) parse(t Type, tz *time.Location) (_ *JSON, err error) {
 	c.chType = t
+	c.tz = tz
 	tStr := string(t)
 
 	c.serializationVersion = JSONUnsetSerializationVersion
@@ -68,15 +72,15 @@ func (c *JSON) parse(t Type) (_ *JSON, err error) {
 	c.maxDynamicPaths = DefaultMaxDynamicPaths
 	c.maxDynamicTypes = DefaultMaxDynamicTypes
 
-	if tStr == "JSON" {
+	if tStr == "json" {
 		return c, nil
 	}
 
-	if !strings.HasPrefix(tStr, "JSON(") || !strings.HasSuffix(tStr, ")") {
+	if !strings.HasPrefix(tStr, "json(") || !strings.HasSuffix(tStr, ")") {
 		return nil, &UnsupportedColumnTypeError{t: t}
 	}
 
-	typePartsStr := strings.TrimPrefix(tStr, "JSON(")
+	typePartsStr := strings.TrimPrefix(tStr, "json(")
 	typePartsStr = strings.TrimSuffix(typePartsStr, ")")
 
 	typeParts := splitWithDelimiters(typePartsStr)
@@ -130,7 +134,7 @@ func (c *JSON) parse(t Type) (_ *JSON, err error) {
 		c.typedPaths = append(c.typedPaths, typedPath)
 		c.typedPathsIndex[typedPath] = len(c.typedPaths) - 1
 
-		col, err := Type(typeName).Column()
+		col, err := Type(typeName).Column("", tz)
 		if err != nil {
 			return nil, fmt.Errorf("failed to init column of type \"%s\" at path \"%s\": %w", typeName, typedPath, err)
 		}
@@ -234,6 +238,10 @@ func (c *JSON) rowAsJSON(row int) *chcol.JSON {
 	return obj
 }
 
+func (c *JSON) Name() string {
+	return c.name
+}
+
 func (c *JSON) Type() Type {
 	return c.chType
 }
@@ -276,9 +284,9 @@ func (c *JSON) scanRowObject(dest interface{}, row int) error {
 		return nil
 	case chcol.JSONDeserializer:
 		obj := c.rowAsJSON(row)
-		err := v.DeserializeClickHouseJSON(obj)
+		err := v.DeserializeProtonJSON(obj)
 		if err != nil {
-			return fmt.Errorf("failed to deserialize using DeserializeClickHouseJSON: %w", err)
+			return fmt.Errorf("failed to deserialize using DeserializeProtonJSON: %w", err)
 		}
 
 		return nil
@@ -421,7 +429,7 @@ func (c *JSON) AppendRow(v interface{}) error {
 			return nil
 		}
 
-		return fmt.Errorf("unsupported type \"%s\" for JSON column, must use string, []byte, *struct, map, or *clickhouse.JSON: %w", reflect.TypeOf(v).String(), err)
+		return fmt.Errorf("unsupported type \"%s\" for JSON column, must use string, []byte, *struct, map, or *proton.JSON: %w", reflect.TypeOf(v).String(), err)
 	}
 }
 
@@ -434,9 +442,9 @@ func (c *JSON) appendRowObject(v interface{}) error {
 		obj = vv
 	case chcol.JSONSerializer:
 		var err error
-		obj, err = vv.SerializeClickHouseJSON()
+		obj, err = vv.SerializeProtonJSON()
 		if err != nil {
-			return fmt.Errorf("failed to serialize using SerializeClickHouseJSON: %w", err)
+			return fmt.Errorf("failed to serialize using SerializeProtonJSON: %w", err)
 		}
 	}
 
@@ -499,7 +507,7 @@ func (c *JSON) appendRowObject(v interface{}) error {
 			}
 		} else {
 			// Path doesn't exist, add new dynamic path + column
-			parsedColDynamic, _ := Type("Dynamic").Column()
+			parsedColDynamic, _ := Type("dynamic").Column("", c.tz)
 			colDynamic := parsedColDynamic.(*Dynamic)
 
 			// New path must back-fill nils for each row
@@ -643,7 +651,7 @@ func (c *JSON) decodeObjectHeader(decoder *binary.Decoder) error {
 
 	c.dynamicColumns = make([]*Dynamic, 0, totalDynamicPaths)
 	for _, dynamicPath := range c.dynamicPaths {
-		parsedColDynamic, _ := Type("Dynamic").Column()
+		parsedColDynamic, _ := Type("dynamic").Column("", c.tz)
 		colDynamic := parsedColDynamic.(*Dynamic)
 
 		err := colDynamic.decodeHeader(decoder)

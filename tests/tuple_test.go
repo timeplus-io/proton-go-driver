@@ -62,7 +62,7 @@ func TestTuple(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_tuple")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_tuple (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_tuple (Col1, Col2, Col3, Col4, Col5, Col6)"); assert.NoError(t, err) {
 				var (
 					col1Data = []interface{}{"A", int64(42)}
 					col2Data = []interface{}{"B", int8(1), time.Now().Truncate(time.Second)}
@@ -80,7 +80,7 @@ func TestTuple(t *testing.T) {
 					}
 					str      = "LCString"
 					col6Data = []interface{}{
-						str,
+						&str,
 						[]*string{&str, nil, &str},
 					}
 				)

@@ -20,15 +20,17 @@ package proto
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 	"github.com/timeplus-io/proton-go-driver/v2/lib/column"
 )
 
 type Block struct {
-	names   []string
-	Packet  byte
-	Columns []column.Interface
+	names    []string
+	Packet   byte
+	Columns  []column.Interface
+	Timezone *time.Location
 }
 
 func (b *Block) Rows() int {
@@ -39,7 +41,7 @@ func (b *Block) Rows() int {
 }
 
 func (b *Block) AddColumn(name string, ct column.Type) error {
-	column, err := ct.Column()
+	column, err := ct.Column(name, b.Timezone)
 	if err != nil {
 		return err
 	}
@@ -60,7 +62,7 @@ func (b *Block) Append(v ...interface{}) (err error) {
 			return &BlockError{
 				Op:         "AppendRow",
 				Err:        err,
-				ColumnName: b.names[i],
+				ColumnName: columns[i].Name(),
 			}
 		}
 	}
@@ -95,8 +97,8 @@ func (b *Block) Encode(encoder *binary.Encoder, revision uint64) error {
 	if err := encoder.Uvarint(uint64(rows)); err != nil {
 		return err
 	}
-	for i, c := range b.Columns {
-		if err := encoder.String(b.names[i]); err != nil {
+	for _, c := range b.Columns {
+		if err := encoder.String(c.Name()); err != nil {
 			return err
 		}
 		if err := encoder.String(string(c.Type())); err != nil {
@@ -107,7 +109,7 @@ func (b *Block) Encode(encoder *binary.Encoder, revision uint64) error {
 				return &BlockError{
 					Op:         "Encode",
 					Err:        err,
-					ColumnName: b.names[i],
+					ColumnName: c.Name(),
 				}
 			}
 		}
@@ -115,7 +117,7 @@ func (b *Block) Encode(encoder *binary.Encoder, revision uint64) error {
 			return &BlockError{
 				Op:         "Encode",
 				Err:        err,
-				ColumnName: b.names[i],
+				ColumnName: c.Name(),
 			}
 		}
 	}
@@ -144,7 +146,8 @@ func (b *Block) Decode(decoder *binary.Decoder, revision uint64) (err error) {
 			Err: errors.New("more than 10,000,000,000 rows in block"),
 		}
 	}
-	b.Columns = make([]column.Interface, 0, numCols)
+	b.Columns = make([]column.Interface, numCols, numCols)
+	b.names = make([]string, numCols, numCols)
 	for i := 0; i < int(numCols); i++ {
 		var (
 			columnName string
@@ -156,7 +159,7 @@ func (b *Block) Decode(decoder *binary.Decoder, revision uint64) (err error) {
 		if columnType, err = decoder.String(); err != nil {
 			return err
 		}
-		c, err := column.Type(columnType).Column()
+		c, err := column.Type(columnType).Column(columnName, b.Timezone)
 		if err != nil {
 			return err
 		}
@@ -178,7 +181,8 @@ func (b *Block) Decode(decoder *binary.Decoder, revision uint64) (err error) {
 				}
 			}
 		}
-		b.names, b.Columns = append(b.names, columnName), append(b.Columns, c)
+		b.names[i] = columnName
+		b.Columns[i] = c
 	}
 	return nil
 }

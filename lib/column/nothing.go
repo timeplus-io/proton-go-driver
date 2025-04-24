@@ -24,7 +24,13 @@ import (
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 )
 
-type Nothing struct{}
+type Nothing struct {
+	name string
+}
+
+func (col Nothing) Name() string {
+	return col.name
+}
 
 func (Nothing) Type() Type                     { return "nothing" }
 func (Nothing) ScanType() reflect.Type         { return reflect.TypeOf(nil) }

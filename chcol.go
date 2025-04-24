@@ -63,8 +63,8 @@ func NewJSON() *JSON {
 	return chcol.NewJSON()
 }
 
-// ExtractJSONPathAs is a convenience function for asserting a path to a specific type.
+// ExtractJSONPath is a convenience function for asserting a path to a specific type.
 // The underlying value is also extracted from its Dynamic wrapper if present.
-// func ExtractJSONPathAs[T any](o *JSON, path string) (valueAs T, ok bool) {
-// 	return chcol.ExtractJSONPathAs[T](o, path)
-// }
+func ExtractJSONPath(o *JSON, path string) (value interface{}, ok bool) {
+	return chcol.ExtractJSONPath(o, path)
+}

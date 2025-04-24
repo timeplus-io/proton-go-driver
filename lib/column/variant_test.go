@@ -20,9 +20,10 @@ func TestColVariant_parse(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		col, err := (&Variant{}).parse(c.typ)
+		col, err := (&Variant{name: "vt"}).parse(c.typ, nil)
 		require.NoError(t, err, "case index %d failed to parse Variant column", i)
 
+		require.Equal(t, "vt", col.Name())
 		require.Equal(t, c.typ, col.chType)
 		require.Equal(t, len(c.expectedTypes), len(col.columns))
 		require.Equal(t, len(c.expectedTypes), len(col.columnTypeIndex))
@@ -48,7 +49,7 @@ func TestColVariant_parse_invalid(t *testing.T) {
 	}
 
 	for i, typeName := range cases {
-		_, err := (&Variant{}).parse(typeName)
+		_, err := (&Variant{name: "vt"}).parse(typeName, nil)
 		require.Error(t, err, "expected error for case index %d (\"%s\"), but received nil", i, typeName)
 	}
 }

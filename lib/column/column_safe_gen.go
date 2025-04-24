@@ -7,7 +7,7 @@
 package column
 
 import (
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 )
 
 func (col *Float32) Decode(decoder *binary.Decoder, rows int) error {
@@ -16,13 +16,13 @@ func (col *Float32) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *Float32) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.Float32(v); err != nil {
 			return err
 		}
@@ -36,13 +36,13 @@ func (col *Float64) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *Float64) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.Float64(v); err != nil {
 			return err
 		}
@@ -56,13 +56,13 @@ func (col *Int8) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *Int8) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.Int8(v); err != nil {
 			return err
 		}
@@ -76,13 +76,13 @@ func (col *Int16) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *Int16) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.Int16(v); err != nil {
 			return err
 		}
@@ -96,13 +96,13 @@ func (col *Int32) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *Int32) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.Int32(v); err != nil {
 			return err
 		}
@@ -116,13 +116,13 @@ func (col *Int64) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *Int64) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.Int64(v); err != nil {
 			return err
 		}
@@ -136,13 +136,13 @@ func (col *UInt8) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *UInt8) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.UInt8(v); err != nil {
 			return err
 		}
@@ -156,13 +156,13 @@ func (col *UInt16) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *UInt16) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.UInt16(v); err != nil {
 			return err
 		}
@@ -176,13 +176,13 @@ func (col *UInt32) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *UInt32) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.UInt32(v); err != nil {
 			return err
 		}
@@ -196,13 +196,13 @@ func (col *UInt64) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *UInt64) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.UInt64(v); err != nil {
 			return err
 		}

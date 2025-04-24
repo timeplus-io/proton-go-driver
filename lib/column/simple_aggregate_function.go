@@ -20,6 +20,7 @@ package column
 import (
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 )
@@ -27,12 +28,17 @@ import (
 type SimpleAggregateFunction struct {
 	base   Interface
 	chType Type
+	name   string
 }
 
-func (col *SimpleAggregateFunction) parse(t Type) (_ Interface, err error) {
+func (col *SimpleAggregateFunction) Name() string {
+	return col.name
+}
+
+func (col *SimpleAggregateFunction) parse(t Type, tz *time.Location) (_ Interface, err error) {
 	col.chType = t
 	base := strings.TrimSpace(strings.SplitN(t.params(), ",", 2)[1])
-	if col.base, err = Type(base).Column(); err == nil {
+	if col.base, err = Type(base).Column(col.name, tz); err == nil {
 		return col, nil
 	}
 	return nil, &UnsupportedColumnTypeError{

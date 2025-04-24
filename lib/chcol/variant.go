@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 )
 
-// Variant represents a ClickHouse Variant type that can hold multiple possible types
+// Variant represents a Proton variant type that can hold multiple possible types
 type Variant struct {
 	value  interface{}
 	chType string
@@ -36,7 +36,7 @@ func NewVariant(v interface{}) Variant {
 	}
 }
 
-// NewVariantWithType creates a new Variant with the given value and ClickHouse type
+// NewVariantWithType creates a new Variant with the given value and Proton type
 func NewVariantWithType(v interface{}, chType string) Variant {
 	return Variant{
 		value:  v,
@@ -44,7 +44,7 @@ func NewVariantWithType(v interface{}, chType string) Variant {
 	}
 }
 
-// WithType creates a new Variant with the current value and given ClickHouse type
+// WithType creates a new Variant with the current value and given Proton type
 func (v Variant) WithType(chType string) Variant {
 	return Variant{
 		value:  v.value,
@@ -52,12 +52,12 @@ func (v Variant) WithType(chType string) Variant {
 	}
 }
 
-// Type returns the ClickHouse type as a string.
+// Type returns the Proton type as a string.
 func (v Variant) Type() string {
 	return v.chType
 }
 
-// HasType returns true if the value has a type ClickHouse included.
+// HasType returns true if the value has a type Proton included.
 func (v Variant) HasType() bool {
 	return v.chType == ""
 }

@@ -47,7 +47,7 @@ func DynamicExample() error {
 	}
 
 	defer func() {
-		conn.Exec("DROP TABLE go_dynamic_example")
+		conn.Exec("DROP STREAM go_dynamic_example")
 	}()
 
 	_, err = conn.ExecContext(ctx, "DROP STREAM IF EXISTS go_dynamic_example")

@@ -24,7 +24,7 @@ func NewDynamic(v interface{}) Dynamic {
 	return Dynamic{value: v}
 }
 
-// NewDynamicWithType creates a new Dynamic with the given value and ClickHouse type
+// NewDynamicWithType creates a new Dynamic with the given value and Proton type
 func NewDynamicWithType(v interface{}, chType string) Dynamic {
 	return Dynamic{
 		value:  v,

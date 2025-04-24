@@ -34,112 +34,114 @@ import (
 	"github.com/timeplus-io/proton-go-driver/v2/types"
 )
 
-func (t Type) Column() (Interface, error) {
+func (t Type) Column(name string, tz *time.Location) (Interface, error) {
 	switch t {
 {{- range . }}
 	case "{{ .ChTypeName }}":
-		return &{{ .ChType }}{}, nil
+		return &{{ .ChType }}{name: name}, nil
 {{- end }}
 	case "int128":
 		return &BigInt{
-			size: 16,
+			size:   16,
 			chType: t,
+			name:   name,
 		}, nil
 	case "int256":
 		return &BigInt{
-			size: 32,
+			size:   32,
 			chType: t,
+			name:   name,
 		}, nil
 	case "uint256":
 		return &BigInt{
-			size: 32,
+			size:   32,
 			chType: t,
+			name:   name,
 		}, nil
 	case "ipv4":
-		return &IPv4{}, nil
+		return &IPv4{name: name}, nil
 	case "ipv6":
-		return &IPv6{}, nil
+		return &IPv6{name: name}, nil
 	case "bool", "boolean":
-		return &Bool{}, nil
+		return &Bool{name: name}, nil
 	case "date":
-		return &Date{}, nil
+		return &Date{name: name, location: tz}, nil
 	case "date32":
-		return &Date32{}, nil
+		return &Date32{name: name, location: tz}, nil
 	case "uuid":
-		return &UUID{}, nil
+		return &UUID{name: name}, nil
 	case "nothing":
-		return &Nothing{}, nil
+		return &Nothing{name: name}, nil
 	case "ring":
-		v, err := (&Array{}).parse("array(point)")
-		if err != nil{
+		set, err := (&Array{name: name}).parse("array(point)", tz)
+		if err != nil {
 			return nil, err
 		}
-		set := v.(*Array)
 		set.chType = "ring"
 		return &Ring{
-			set: set,
+			set:  set,
+			name: name,
 		}, nil
 	case "polygon":
-		v, err := (&Array{}).parse("array(ring)")
-		if err != nil{
+		set, err := (&Array{name: name}).parse("array(ring)", tz)
+		if err != nil {
 			return nil, err
 		}
-		set := v.(*Array)
 		set.chType = "polygon"
 		return &Polygon{
 			set: set,
 		}, nil
 	case "multi_polygon":
-		v, err := (&Array{}).parse("array(polygon)")
-		if err != nil{
+		set, err := (&Array{name: name}).parse("array(polygon)", tz)
+		if err != nil {
 			return nil, err
 		}
-		set := v.(*Array)
 		set.chType = "multi_polygon"
 		return &MultiPolygon{
-			set: set,
+			set:  set,
+                        name: name,
 		}, nil
 	case "point":
-		return &Point{}, nil
+		return &Point{name: name}, nil
 	case "string":
-		return &String{}, nil
+		return &String{name: name}, nil
 	case "shared_variant":
-		return &SharedVariant{}, nil
+		return &SharedVariant{name: name}, nil
 	}
 
 	switch strType := string(t); {
 	case strings.HasPrefix(string(t), "map("):
-		return (&Map{}).parse(t)
+		return (&Map{name: name}).parse(t, tz)
 	case strings.HasPrefix(string(t), "tuple("):
-		return (&Tuple{}).parse(t)
+		return (&Tuple{name: name}).parse(t, tz)
 	case strings.HasPrefix(string(t), "variant("):
-		return (&Variant{}).parse(t)
+		return (&Variant{name: name}).parse(t, tz)
 	case strings.HasPrefix(string(t), "dynamic"):
-		return (&Dynamic{}).parse(t)
+		return (&Dynamic{name: name}).parse(t, tz)
 	case strings.HasPrefix(string(t), "json"):
-		return (&JSON{}).parse(t)
+		return (&JSON{name: name}).parse(t, tz)
 	case strings.HasPrefix(string(t), "decimal("):
-		return (&Decimal{}).parse(t)
+		return (&Decimal{name: name}).parse(t)
 	case strings.HasPrefix(strType, "nested("):
-		return (&Nested{}).parse(t)
+		return (&Nested{name: name}).parse(t, tz)
 	case strings.HasPrefix(string(t), "array("):
-		return (&Array{}).parse(t)
+		return (&Array{name: name}).parse(t, tz)
 	case strings.HasPrefix(string(t), "interval"):
-		return (&Interval{}).parse(t)
+		return (&Interval{name: name}).parse(t)
 	case strings.HasPrefix(string(t), "nullable"):
-		return (&Nullable{}).parse(t)
+		return (&Nullable{name: name}).parse(t, tz)
 	case strings.HasPrefix(string(t), "fixed_string"):
-		return (&FixedString{}).parse(t)
+		return (&FixedString{name: name}).parse(t)
 	case strings.HasPrefix(string(t), "low_cardinality"):
-		return (&LowCardinality{}).parse(t)
+		return (&LowCardinality{name: name}).parse(t, tz)
 	case strings.HasPrefix(string(t), "simple_aggregate_function"):
-		return (&SimpleAggregateFunction{}).parse(t)
+		return (&SimpleAggregateFunction{name: name}).parse(t, tz)
 	case strings.HasPrefix(string(t), "enum8") || strings.HasPrefix(string(t), "enum16"):
-		return Enum(t)
+		return Enum(t, name)
 	case strings.HasPrefix(string(t), "datetime64"):
-		return (&DateTime64{}).parse(t)
+		return (&DateTime64{name: name}).parse(t, tz)
 	case strings.HasPrefix(strType, "datetime") && !strings.HasPrefix(strType, "datetime64"):
-		return (&DateTime{}).parse(t)
+		return (&DateTime{name: name}).parse(t, tz)
 	}
 	return nil, &UnsupportedColumnTypeError{
 		t: t,
@@ -148,7 +150,10 @@ func (t Type) Column() (Interface, error) {
 
 type (
 {{- range . }}
-	{{ .ChType }} []{{ .GoType }}
+	{{ .ChType }} struct {
+	    name string
+	    col  []{{ .GoType }}
+	}
 {{- end }}
 )
 
@@ -171,6 +176,7 @@ var (
 		scanTypeRing    = reflect.TypeOf(orb.Ring{})
 		scanTypePoint   = reflect.TypeOf(orb.Point{})
 		scanTypeSlice   = reflect.TypeOf([]interface{}{})
+		scanTypeMap	= reflect.TypeOf(map[string]interface{}{})
 		scanTypeBigInt  = reflect.TypeOf(&big.Int{})
 		scanTypeString  = reflect.TypeOf("")
 		scanTypePolygon = reflect.TypeOf(orb.Polygon{})
@@ -183,6 +189,10 @@ var (
 
 {{- range . }}
 
+func (col *{{ .ChType }}) Name() string {
+	return col.name
+}
+
 func (col *{{ .ChType }}) Type() Type {
 	return "{{ .ChTypeName }}"
 }
@@ -192,17 +202,17 @@ func (col *{{ .ChType }}) ScanType() reflect.Type {
 }
 
 func (col *{{ .ChType }}) Rows() int {
-	return len(*col)
+	return len(col.col)
 }
 
 func (col *{{ .ChType }}) ScanRow(dest interface{}, row int) error {
-	value := *col
+	value := col.col[row]
 	switch d := dest.(type) {
 	case *{{ .GoType }}:
-		*d = value[row]
+		*d = value
 	case **{{ .GoType }}:
 		*d = new({{ .GoType }})
-		**d = value[row]
+		**d = value
 	default:
 		return &ColumnConverterError{
 			Op:   "ScanRow",
@@ -215,25 +225,27 @@ func (col *{{ .ChType }}) ScanRow(dest interface{}, row int) error {
 }
 
 func (col *{{ .ChType }}) Row(i int, ptr bool) interface{} {
-	value := *col
+	value := col.col[i]
 	if ptr {
-		return &value[i]
+		return &value
 	}
-	return value[i]
+	return value
 }
 
 func (col *{{ .ChType }}) Append(v interface{}) (nulls []uint8,err error) {
 	switch v := v.(type) {
 	case []{{ .GoType }}:
-		*col, nulls = append(*col, v...), make([]uint8, len(v))
+	        nulls = make([]uint8, len(v))
+		col.col = append(col.col, v...)
 	case []*{{ .GoType }}:
 		nulls = make([]uint8, len(v))
 		for i, v:= range v {
 			switch {
 			case v != nil:
-				*col = append(*col, *v)
+				col.col = append(col.col, *v)
 			default:
-				*col, nulls[i] = append(*col, 0), 1
+			        col.col = append(col.col, 0)
+			        nulls[i] = 1
 			}
 		}
 	default:
@@ -249,16 +261,16 @@ func (col *{{ .ChType }}) Append(v interface{}) (nulls []uint8,err error) {
 func (col *{{ .ChType }}) AppendRow(v interface{}) error {
 	switch v := v.(type) {
 	case {{ .GoType }}:
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	case *{{ .GoType }}:
 		switch {
 		case v != nil:
-			*col = append(*col, *v)
+			col.col = append(col.col, *v)
 		default:
-			*col = append(*col, 0)
+			col.col = append(col.col, 0)
 		}
 	case nil:
-		*col = append(*col, 0)
+		col.col = append(col.col, 0)
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",

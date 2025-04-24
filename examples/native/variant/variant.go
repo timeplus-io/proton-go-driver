@@ -56,7 +56,7 @@ func VariantExample() error {
 	}
 
 	if err := proton_tests.CheckMinServerVersion(conn, 2, 9); err != nil {
-		fmt.Print("unsupported timeplus version for Variant type")
+		fmt.Print("unsupported proton version for variant type")
 		return err
 	}
 

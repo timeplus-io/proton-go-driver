@@ -32,7 +32,13 @@ var (
 )
 
 type Date struct {
-	values Int16
+	values   Int16
+	name     string
+	location *time.Location
+}
+
+func (col *Date) Name() string {
+	return col.name
 }
 
 func (dt *Date) Type() Type {
@@ -44,7 +50,7 @@ func (col *Date) ScanType() reflect.Type {
 }
 
 func (dt *Date) Rows() int {
-	return len(dt.values)
+	return len(dt.values.col)
 }
 
 func (dt *Date) Row(i int, ptr bool) interface{} {
@@ -87,7 +93,7 @@ func (dt *Date) Append(v interface{}) (nulls []uint8, err error) {
 			}
 			in = append(in, int16(t.Unix()/secInDay))
 		}
-		dt.values, nulls = append(dt.values, in...), make([]uint8, len(v))
+		dt.values.col, nulls = append(dt.values.col, in...), make([]uint8, len(v))
 	case []*time.Time:
 		nulls = make([]uint8, len(v))
 		for i, v := range v {
@@ -96,9 +102,9 @@ func (dt *Date) Append(v interface{}) (nulls []uint8, err error) {
 				if err := dateOverflow(minDate, maxDate, *v, "2006-01-02"); err != nil {
 					return nil, err
 				}
-				dt.values = append(dt.values, int16(v.Unix()/secInDay))
+				dt.values.col = append(dt.values.col, int16(v.Unix()/secInDay))
 			default:
-				dt.values, nulls[i] = append(dt.values, 0), 1
+				dt.values.col, nulls[i] = append(dt.values.col, 0), 1
 			}
 		}
 	case []types.Date:
@@ -109,7 +115,7 @@ func (dt *Date) Append(v interface{}) (nulls []uint8, err error) {
 			}
 			in = append(in, int16(t.Unix()/secInDay))
 		}
-		dt.values, nulls = append(dt.values, in...), make([]uint8, len(v))
+		dt.values.col, nulls = append(dt.values.col, in...), make([]uint8, len(v))
 	case []*types.Date:
 		nulls = make([]uint8, len(v))
 		for i, v := range v {
@@ -118,9 +124,9 @@ func (dt *Date) Append(v interface{}) (nulls []uint8, err error) {
 				if err := dateOverflow(minDate, maxDate, (*v).Time, "2006-01-02"); err != nil {
 					return nil, err
 				}
-				dt.values = append(dt.values, int16(v.Unix()/secInDay))
+				dt.values.col = append(dt.values.col, int16(v.Unix()/secInDay))
 			default:
-				dt.values, nulls[i] = append(dt.values, 0), 1
+				dt.values.col, nulls[i] = append(dt.values.col, 0), 1
 			}
 		}
 	default:
@@ -168,7 +174,7 @@ func (dt *Date) AppendRow(v interface{}) error {
 			From: fmt.Sprintf("%T", v),
 		}
 	}
-	dt.values = append(dt.values, date)
+	dt.values.col = append(dt.values.col, date)
 	return nil
 }
 
@@ -181,7 +187,7 @@ func (dt *Date) Encode(encoder *binary.Encoder) error {
 }
 
 func (dt *Date) row(i int) types.Date {
-	return types.Date{Time: time.Unix(int64(dt.values[i])*secInDay, 0).UTC()}
+	return types.Date{Time: time.Unix(int64(dt.values.col[i])*secInDay, 0).UTC()}
 }
 
 var _ Interface = (*Date)(nil)

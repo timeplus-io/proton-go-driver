@@ -48,7 +48,7 @@ func setupVariantTest(t *testing.T) driver.Conn {
 	require.NoError(t, err)
 
 	if err := CheckMinServerVersion(conn, 2, 9); err != nil {
-		t.Skip(fmt.Errorf("unsupported timeplus version for Variant type"))
+		t.Skip(fmt.Errorf("unsupported proton version for variant type"))
 		return nil
 	}
 

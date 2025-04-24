@@ -29,33 +29,31 @@ import (
 // on recursive reflection.
 // Note that the struct must be a pointer in order for the interface to be matched, reflection will be used otherwise.
 type JSONSerializer interface {
-	SerializeClickHouseJSON() (*JSON, error)
+	SerializeProtonJSON() (*JSON, error)
 }
 
 // JSONDeserializer interface allows a struct to load its data from an optimized JSON structure instead of relying
 // on recursive reflection to set its fields.
 type JSONDeserializer interface {
-	DeserializeClickHouseJSON(*JSON) error
+	DeserializeProtonJSON(*JSON) error
 }
 
-// ExtractJSONPathAs is a convenience function for asserting a path to a specific type.
-// The underlying value is also extracted from its Dynamic wrapper if present.
-// func ExtractJSONPathAs(o *JSON, path string) (interface{}, bool) {
-// 	value, ok := o.valuesByPath[path]
-// 	if !ok || value == nil {
-// 		var empty interface{}
-// 		return empty, false
-// 	}
+// ExtractJSONPath is a convenience function for asserting a path to a specific type.
+// The underlying value is also extracted from its dynamic wrapper if present.
+func ExtractJSONPath(o *JSON, path string) (interface{}, bool) {
+	value, ok := o.valuesByPath[path]
+	if !ok || value == nil {
+		var empty interface{}
+		return empty, false
+	}
 
-// 	dynValue, ok := value.(Dynamic)
-// 	if !ok {
-// 		valueAs, ok := value.(T)
-// 		return valueAs, ok
-// 	}
+	dynValue, ok := value.(Dynamic)
+	if !ok {
+		return value, true
+	}
 
-// 	valueAs, ok := dynValue.value.(T)
-// 	return valueAs, ok
-// }
+	return dynValue.value, true
+}
 
 // JSON represents a ClickHouse JSON type that can hold multiple possible types
 type JSON struct {
