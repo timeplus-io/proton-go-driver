@@ -28,7 +28,12 @@ type Enum16 struct {
 	iv     map[string]uint16
 	vi     map[uint16]string
 	chType Type
+	name   string
 	values UInt16
+}
+
+func (col *Enum16) Name() string {
+	return col.name
 }
 
 func (e *Enum16) Type() Type {
@@ -40,11 +45,11 @@ func (col *Enum16) ScanType() reflect.Type {
 }
 
 func (e *Enum16) Rows() int {
-	return len(e.values)
+	return len(e.values.col)
 }
 
 func (e *Enum16) Row(i int, ptr bool) interface{} {
-	value := e.vi[e.values[i]]
+	value := e.vi[e.values.col[i]]
 	if ptr {
 		return &value
 	}
@@ -54,10 +59,10 @@ func (e *Enum16) Row(i int, ptr bool) interface{} {
 func (e *Enum16) ScanRow(dest interface{}, row int) error {
 	switch d := dest.(type) {
 	case *string:
-		*d = e.vi[e.values[row]]
+		*d = e.vi[e.values.col[row]]
 	case **string:
 		*d = new(string)
-		**d = e.vi[e.values[row]]
+		**d = e.vi[e.values.col[row]]
 	default:
 		return &ColumnConverterError{
 			Op:   "ScanRow",
@@ -80,7 +85,7 @@ func (e *Enum16) Append(v interface{}) (nulls []uint8, err error) {
 					ColumnType: string(e.chType),
 				}
 			}
-			e.values = append(e.values, v)
+			e.values.col = append(e.values.col, v)
 		}
 	case []*string:
 		nulls = make([]uint8, len(v))
@@ -94,9 +99,9 @@ func (e *Enum16) Append(v interface{}) (nulls []uint8, err error) {
 						ColumnType: string(e.chType),
 					}
 				}
-				e.values = append(e.values, v)
+				e.values.col = append(e.values.col, v)
 			default:
-				e.values, nulls[i] = append(e.values, 0), 1
+				e.values.col, nulls[i] = append(e.values.col, 0), 1
 			}
 		}
 	}
@@ -113,7 +118,7 @@ func (e *Enum16) AppendRow(elem interface{}) error {
 				ColumnType: string(e.chType),
 			}
 		}
-		e.values = append(e.values, v)
+		e.values.col = append(e.values.col, v)
 	case *string:
 		switch {
 		case elem != nil:
@@ -124,12 +129,12 @@ func (e *Enum16) AppendRow(elem interface{}) error {
 					ColumnType: string(e.chType),
 				}
 			}
-			e.values = append(e.values, v)
+			e.values.col = append(e.values.col, v)
 		default:
-			e.values = append(e.values, 0)
+			e.values.col = append(e.values.col, 0)
 		}
 	case nil:
-		e.values = append(e.values, 0)
+		e.values.col = append(e.values.col, 0)
 	default:
 		return &ColumnConverterError{
 			Op:   "AppendRow",

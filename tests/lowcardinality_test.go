@@ -27,7 +27,7 @@ import (
 	"github.com/timeplus-io/proton-go-driver/v2"
 )
 
-func Testlow_cardinality(t *testing.T) {
+func TestLowCardinality(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		conn, err = proton.Open(&proton.Options{
@@ -47,7 +47,7 @@ func Testlow_cardinality(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		if err := CheckMinServerVersion(conn, 1, 0); err != nil {
 			t.Skip(err.Error())
 			return
 		}
@@ -58,7 +58,7 @@ func Testlow_cardinality(t *testing.T) {
 			, Col3 low_cardinality(datetime)
 			, Col4 low_cardinality(int32)
 			, Col5 array(low_cardinality(string))
-			, Col6 array(Array(low_cardinality(string)))
+			, Col6 array(array(low_cardinality(string)))
 			, Col7 low_cardinality(nullable(string))
 			, Col8 array(array(low_cardinality(nullable(string))))
 		) 
@@ -101,7 +101,7 @@ func Testlow_cardinality(t *testing.T) {
 				}
 				if assert.NoError(t, batch.Send()) {
 					var count uint64
-					if err := conn.QueryRow(ctx, "SELECT count() FROM test_lowcardinality").Scan(&count); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT count() FROM test_lowcardinality WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
 						assert.Equal(t, uint64(10), count)
 					}
 					for i := 0; i < 10; i++ {
@@ -164,7 +164,7 @@ func TestColmnarlow_cardinality(t *testing.T) {
 		})
 	)
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		if err := CheckMinServerVersion(conn, 1, 0); err != nil {
 			t.Skip(err.Error())
 			return
 		}

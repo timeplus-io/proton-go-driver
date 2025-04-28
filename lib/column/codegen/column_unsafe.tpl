@@ -8,7 +8,7 @@ package column
 import (
 	"unsafe"
 	"reflect"
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 )
 
 
@@ -20,9 +20,9 @@ func (col *{{ .ChType }}) Decode(decoder *binary.Decoder, rows int) error {
 	}
 	const size = {{ .Size }} / 8
 
-	*col = append(*col, make([]{{ .GoType }}, rows)...)
+	col.col = append(col.col, make([]{{ .GoType }}, rows)...)
 
-	slice := *(*reflect.SliceHeader)(unsafe.Pointer(col))
+	slice := *(*reflect.SliceHeader)(unsafe.Pointer(&col.col))
 	slice.Len *= size
 	slice.Cap *= size
 
@@ -35,13 +35,13 @@ func (col *{{ .ChType }}) Decode(decoder *binary.Decoder, rows int) error {
 }
 
 func (col *{{ .ChType }}) Encode(encoder *binary.Encoder) error {
-	if len(*col) == 0 {
+	if len(col.col) == 0 {
 		return nil
 	}
 	const size = {{ .Size }} / 8
-	scratch := make([]byte, size*len(*col))
+	scratch := make([]byte, size*len(col.col))
 	{
-		slice := *(*reflect.SliceHeader)(unsafe.Pointer(col))
+		slice := *(*reflect.SliceHeader)(unsafe.Pointer(&col.col))
 		slice.Len *= size
 		slice.Cap *= size
 		src := *(*[]byte)(unsafe.Pointer(&slice))

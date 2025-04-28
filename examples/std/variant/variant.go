@@ -1,0 +1,168 @@
+// Licensed to ClickHouse, Inc. under one or more contributor
+// license agreements. See the NOTICE file distributed with
+// this work for additional information regarding copyright
+// ownership. ClickHouse, Inc. licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+package main
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"log"
+
+	"github.com/timeplus-io/proton-go-driver/v2"
+	proton_tests_std "github.com/timeplus-io/proton-go-driver/v2/tests/std"
+)
+
+func VariantExample() error {
+	ctx := context.Background()
+
+	conn, err := sql.Open("proton", "proton://127.0.0.1:8463")
+	if err != nil {
+		return err
+	}
+
+	if !proton_tests_std.CheckMinServerVersion(conn, 2, 9) {
+		fmt.Print("unsupported proton version for variant type")
+		return nil
+	}
+
+	_, err = conn.ExecContext(ctx, "SET allow_experimental_variant_type = 1")
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.ExecContext(ctx, "SET allow_suspicious_variant_types = 1")
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		conn.Exec("DROP STREAM go_variant_example")
+	}()
+
+	_, err = conn.ExecContext(ctx, "DROP STREAM IF EXISTS go_variant_example")
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.ExecContext(ctx, `
+		CREATE STREAM go_variant_example (
+		    c variant(bool, int64, string)
+		) ENGINE = Memory
+	`)
+	if err != nil {
+		return err
+	}
+
+	tx, err := conn.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	batch, err := tx.PrepareContext(ctx, "INSERT INTO go_variant_example (c)")
+	if err != nil {
+		return err
+	}
+
+	if _, err = batch.ExecContext(ctx, true); err != nil {
+		return err
+	}
+
+	if _, err = batch.ExecContext(ctx, int64(42)); err != nil {
+		return err
+	}
+
+	if _, err = batch.ExecContext(ctx, "example"); err != nil {
+		return err
+	}
+
+	if _, err = batch.ExecContext(ctx, proton.NewVariant("example variant")); err != nil {
+		return err
+	}
+
+	if _, err = batch.ExecContext(ctx, proton.NewVariantWithType("example variant with specific type", "string")); err != nil {
+		return err
+	}
+
+	if _, err = batch.ExecContext(ctx, nil); err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	// Switch on Go Type
+
+	rows, err := conn.QueryContext(ctx, "SELECT c FROM go_variant_example")
+	if err != nil {
+		return err
+	}
+
+	for i := 0; rows.Next(); i++ {
+		var row proton.Variant
+		err := rows.Scan(&row)
+		if err != nil {
+			return fmt.Errorf("failed to scan row index %d: %w", i, err)
+		}
+
+		switch row.Any().(type) {
+		case bool:
+			fmt.Printf("row at index %d is bool: %v\n", i, row.Any())
+		case int64:
+			fmt.Printf("row at index %d is int64: %v\n", i, row.Any())
+		case string:
+			fmt.Printf("row at index %d is string: %v\n", i, row.Any())
+		case nil:
+			fmt.Printf("row at index %d is NULL\n", i)
+		}
+	}
+
+	// Switch on Timeplus Type
+
+	rows, err = conn.QueryContext(ctx, "SELECT c FROM go_variant_example")
+	if err != nil {
+		return err
+	}
+
+	for i := 0; rows.Next(); i++ {
+		var row proton.Variant
+		err := rows.Scan(&row)
+		if err != nil {
+			return fmt.Errorf("failed to scan row index %d: %w", i, err)
+		}
+
+		switch row.Type() {
+		case "bool":
+			fmt.Printf("row at index %d is bool: %v\n", i, row.Any())
+		case "int64":
+			fmt.Printf("row at index %d is int64: %v\n", i, row.Any())
+		case "string":
+			fmt.Printf("row at index %d is string: %v\n", i, row.Any())
+		case "":
+			fmt.Printf("row at index %d is nil\n", i)
+		}
+	}
+
+	return nil
+}
+
+func main() {
+	if err := VariantExample(); err != nil {
+		log.Fatal(err)
+	}
+}

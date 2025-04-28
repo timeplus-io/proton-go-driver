@@ -19,10 +19,11 @@ package tests
 
 import (
 	"context"
-	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"net"
 	"testing"
 	"time"
+
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -68,7 +69,7 @@ func TestNullableArray(t *testing.T) {
 		conn.Exec(ctx, "DROP STREAM test_nullable_array")
 	}()
 	if assert.NoError(t, err) {
-		if err := checkMinServerVersion(conn, 1, 0); err != nil {
+		if err := CheckMinServerVersion(conn, 1, 0); err != nil {
 			t.Skip(err.Error())
 			return
 		}

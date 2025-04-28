@@ -35,9 +35,12 @@ var (
 	columnSafeSrc string
 	//go:embed column_unsafe.tpl
 	columnUnsafeSrc string
+	//go:embed dynamic.tpl
+	dynamicSrc string
 )
 var (
-	types []_type
+	types        []_type
+	dynamicTypes []_type
 )
 
 type _type struct {
@@ -45,6 +48,8 @@ type _type struct {
 	ChTypeName string
 	ChType     string
 	GoType     string
+
+	SkipArray bool
 }
 
 func init() {
@@ -72,7 +77,39 @@ func init() {
 	sort.Slice(types, func(i, j int) bool {
 		return sequenceKey(types[i].ChType) < sequenceKey(types[j].ChType)
 	})
+
+	dynamicTypes = make([]_type, 0, len(types))
+	for _, typ := range types {
+
+		if typ.GoType == "uint8" {
+			// Prevent conflict with []byte and []uint8
+			typ.SkipArray = true
+			dynamicTypes = append(dynamicTypes, typ)
+			continue
+		}
+
+		dynamicTypes = append(dynamicTypes, typ)
+	}
+
+	// Best-effort type matching for Dynamic inference
+	dynamicTypes = append(dynamicTypes, []_type{
+		{ChType: "String", ChTypeName: "string", GoType: "string"},
+		{ChType: "String", ChTypeName: "string", GoType: "json.RawMessage"},
+		{ChType: "String", ChTypeName: "string", GoType: "sql.NullString"},
+		{ChType: "Bool", ChTypeName: "bool", GoType: "bool"},
+		{ChType: "Bool", ChTypeName: "bool", GoType: "sql.NullBool"},
+		{ChType: "DateTime64(3)", ChTypeName: "datetime64(3)", GoType: "time.Time"},
+		{ChType: "DateTime64(3)", ChTypeName: "datetime64(3)", GoType: "sql.NullTime"},
+		{ChType: "UUID", ChTypeName: "uuid", GoType: "uuid.UUID"},
+		// {ChType: "IPv6", ChTypeName: "ipv6", GoType: "proto.IPv6"},
+		// {ChType: "MultiPolygon", GoType: "orb.MultiPolygon"},
+		// {ChType: "Point", GoType: "orb.Point"},
+		// {ChType: "Polygon", GoType: "orb.Polygon"},
+		// {ChType: "Ring", GoType: "orb.Ring"},
+	}...)
+
 }
+
 func write(name string, v interface{}, t *template.Template) error {
 	out := new(bytes.Buffer)
 	if err := t.Execute(out, v); err != nil {
@@ -90,12 +127,16 @@ func write(name string, v interface{}, t *template.Template) error {
 }
 
 func main() {
-	for name, tpl := range map[string]*template.Template{
-		"column_gen":        template.Must(template.New("column").Parse(columnSrc)),
-		"column_safe_gen":   template.Must(template.New("column").Parse(columnSafeSrc)),
-		"column_unsafe_gen": template.Must(template.New("column").Parse(columnUnsafeSrc)),
+	for name, tpl := range map[string]struct {
+		template *template.Template
+		args     interface{}
+	}{
+		"column_gen":        {template.Must(template.New("column").Parse(columnSrc)), types},
+		"column_safe_gen":   {template.Must(template.New("column").Parse(columnSafeSrc)), types},
+		"column_unsafe_gen": {template.Must(template.New("column").Parse(columnUnsafeSrc)), types},
+		"dynamic_gen":       {template.Must(template.New("dynamic").Parse(dynamicSrc)), dynamicTypes},
 	} {
-		if err := write(name, types, tpl); err != nil {
+		if err := write(name, tpl.args, tpl.template); err != nil {
 			log.Fatal(err)
 		}
 	}

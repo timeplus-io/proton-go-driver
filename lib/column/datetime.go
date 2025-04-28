@@ -19,10 +19,11 @@ package column
 
 import (
 	"fmt"
-	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 	"github.com/timeplus-io/proton-go-driver/v2/lib/timezone"
@@ -35,12 +36,18 @@ var (
 
 type DateTime struct {
 	chType   Type
+	name     string
 	values   UInt32
 	timezone *time.Location
 }
 
-func (dt *DateTime) parse(t Type) (_ *DateTime, err error) {
+func (col *DateTime) Name() string {
+	return col.name
+}
+
+func (dt *DateTime) parse(t Type, tz *time.Location) (_ *DateTime, err error) {
 	if dt.chType = t; dt.chType == "datetime" {
+		dt.timezone = tz
 		return dt, nil
 	}
 	var name = strings.TrimSuffix(strings.TrimPrefix(string(t), "datetime('"), "')")
@@ -59,7 +66,7 @@ func (col *DateTime) ScanType() reflect.Type {
 }
 
 func (dt *DateTime) Rows() int {
-	return len(dt.values)
+	return len(dt.values.col)
 }
 
 func (dt *DateTime) Row(i int, ptr bool) interface{} {
@@ -102,7 +109,7 @@ func (dt *DateTime) Append(v interface{}) (nulls []uint8, err error) {
 			}
 			in = append(in, uint32(t.Unix()))
 		}
-		dt.values, nulls = append(dt.values, in...), make([]uint8, len(v))
+		dt.values.col, nulls = append(dt.values.col, in...), make([]uint8, len(v))
 	case []*time.Time:
 		nulls = make([]uint8, len(v))
 		for i, v := range v {
@@ -111,9 +118,9 @@ func (dt *DateTime) Append(v interface{}) (nulls []uint8, err error) {
 				if err := dateOverflow(minDateTime, maxDateTime, *v, "2006-01-02 15:04:05"); err != nil {
 					return nil, err
 				}
-				dt.values = append(dt.values, uint32(v.Unix()))
+				dt.values.col = append(dt.values.col, uint32(v.Unix()))
 			default:
-				dt.values, nulls[i] = append(dt.values, 0), 1
+				dt.values.col, nulls[i] = append(dt.values.col, 0), 1
 			}
 		}
 	case []types.Datetime:
@@ -124,7 +131,7 @@ func (dt *DateTime) Append(v interface{}) (nulls []uint8, err error) {
 			}
 			in = append(in, uint32(t.Unix()))
 		}
-		dt.values, nulls = append(dt.values, in...), make([]uint8, len(v))
+		dt.values.col, nulls = append(dt.values.col, in...), make([]uint8, len(v))
 	case []*types.Datetime:
 		nulls = make([]uint8, len(v))
 		for i, v := range v {
@@ -133,9 +140,9 @@ func (dt *DateTime) Append(v interface{}) (nulls []uint8, err error) {
 				if err := dateOverflow(minDateTime, maxDateTime, (*v).Time, "2006-01-02 15:04:05"); err != nil {
 					return nil, err
 				}
-				dt.values = append(dt.values, uint32(v.Unix()))
+				dt.values.col = append(dt.values.col, uint32(v.Unix()))
 			default:
-				dt.values, nulls[i] = append(dt.values, 0), 1
+				dt.values.col, nulls[i] = append(dt.values.col, 0), 1
 			}
 		}
 	default:
@@ -183,7 +190,7 @@ func (dt *DateTime) AppendRow(v interface{}) error {
 			From: fmt.Sprintf("%T", v),
 		}
 	}
-	dt.values = append(dt.values, datetime)
+	dt.values.col = append(dt.values.col, datetime)
 	return nil
 }
 
@@ -196,7 +203,7 @@ func (dt *DateTime) Encode(encoder *binary.Encoder) error {
 }
 
 func (dt *DateTime) row(i int) time.Time {
-	v := time.Unix(int64(dt.values[i]), 0)
+	v := time.Unix(int64(dt.values.col[i]), 0)
 	if dt.timezone != nil {
 		v = v.In(dt.timezone)
 	}

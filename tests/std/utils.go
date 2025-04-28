@@ -19,7 +19,6 @@ package std
 
 import (
 	"database/sql"
-	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -29,7 +28,8 @@ import (
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
-func checkMinServerVersion(conn *sql.DB, major, minor uint64) error {
+
+func CheckMinServerVersion(conn *sql.DB, major, minor uint64) bool {
 	var version struct {
 		Major uint64
 		Minor uint64
@@ -47,7 +47,7 @@ func checkMinServerVersion(conn *sql.DB, major, minor uint64) error {
 		}
 	}
 	if version.Major < major || (version.Major == major && version.Minor < minor) {
-		return fmt.Errorf("unsupported server version %d.%d < %d.%d", version.Major, version.Minor, major, minor)
+		return false
 	}
-	return nil
+	return true
 }

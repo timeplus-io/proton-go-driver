@@ -20,15 +20,17 @@ package column
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type Nested struct {
 	Interface
+	name string
 }
 
-func (col *Nested) parse(t Type) (_ Interface, err error) {
+func (col *Nested) parse(t Type, tz *time.Location) (_ Interface, err error) {
 	columns := fmt.Sprintf("array(tuple(%s))", strings.Join(nestedColumns(t.params()), ", "))
-	if col.Interface, err = (&Array{}).parse(Type(columns)); err != nil {
+	if col.Interface, err = (&Array{name: col.name}).parse(Type(columns), tz); err != nil {
 		return nil, err
 	}
 	return col, nil

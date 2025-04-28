@@ -28,7 +28,8 @@ import (
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
-func checkMinServerVersion(conn driver.Conn, major, minor uint64) error {
+
+func CheckMinServerVersion(conn driver.Conn, major, minor uint64) error {
 	v, err := conn.ServerVersion()
 	if err != nil {
 		panic(err)

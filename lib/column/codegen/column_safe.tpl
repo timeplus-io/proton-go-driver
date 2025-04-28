@@ -6,7 +6,7 @@
 package column
 
 import (
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
+	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 )
 
 
@@ -18,13 +18,13 @@ func (col *{{ .ChType }}) Decode(decoder *binary.Decoder, rows int) error {
 		if err != nil {
 			return err
 		}
-		*col = append(*col, v)
+		col.col = append(col.col, v)
 	}
 	return nil
 }
 
 func (col *{{ .ChType }}) Encode(encoder *binary.Encoder) error {
-	for _, v := range *col {
+	for _, v := range col.col {
 		if err := encoder.{{ .ChType }}(v); err != nil {
 			return err
 		}

@@ -35,6 +35,7 @@ const (
 	keyUInt32 = 2
 	keyUInt64 = 3
 )
+
 const (
 	/// Need to read dictionary if it wasn't.
 	needGlobalDictionaryBit = 1 << 8
@@ -66,12 +67,17 @@ type LowCardinality struct {
 		keys  []int
 		index map[interface{}]int
 	}
+	name string
 }
 
-func (col *LowCardinality) parse(t Type) (_ *LowCardinality, err error) {
+func (col *LowCardinality) Name() string {
+	return col.name
+}
+
+func (col *LowCardinality) parse(t Type, tz *time.Location) (_ *LowCardinality, err error) {
 	col.chType = t
 	col.append.index = make(map[interface{}]int)
-	if col.index, err = Type(t.params()).Column(); err != nil {
+	if col.index, err = Type(t.params()).Column(col.name, tz); err != nil {
 		return nil, err
 	}
 	if nullable, ok := col.index.(*Nullable); ok {

@@ -25,6 +25,9 @@ import (
 	"github.com/timeplus-io/proton-go-driver/v2/lib/binary"
 )
 
+// to escape and unescape special chars
+var colUnEscape = strings.NewReplacer("\\`", "`", "\\\\", "\\")
+
 type Type string
 
 func (t Type) params() string {
@@ -68,6 +71,7 @@ func (e *UnsupportedColumnTypeError) Error() string {
 }
 
 type Interface interface {
+	Name() string
 	Type() Type
 	Rows() int
 	Row(i int, ptr bool) interface{}
