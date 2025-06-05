@@ -101,7 +101,11 @@ func (col *Array) Rows() int {
 }
 
 func (col *Array) Row(i int, ptr bool) interface{} {
-	return col.make(uint64(i), 0).Interface()
+	value, err := col.scan(col.ScanType(), i)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return value.Interface()
 }
 
 func (col *Array) Append(v interface{}) (nulls []uint8, err error) {
@@ -442,38 +446,6 @@ func (col *Array) scanSliceOfStructs(sliceType reflect.Type, row int) (reflect.V
 		return rSlice, nil
 	}
 	return reflect.MakeSlice(sliceType, 0, 0), nil
-}
-
-func (col *Array) make(row uint64, level int) reflect.Value {
-	offset := col.offsets[level]
-	var (
-		end   = offset.values.col[row]
-		start = uint64(0)
-	)
-	if row > 0 {
-		start = offset.values.col[row-1]
-	}
-	var (
-		base  = offset.scanType.Elem()
-		isPtr = base.Kind() == reflect.Ptr
-		slice = reflect.MakeSlice(offset.scanType, 0, int(end-start))
-	)
-	for i := start; i < end; i++ {
-		var value reflect.Value
-		switch {
-		case level == len(col.offsets)-1:
-			switch v := col.values.Row(int(i), isPtr); {
-			case v == nil:
-				value = reflect.Zero(base)
-			default:
-				value = reflect.ValueOf(v)
-			}
-		default:
-			value = col.make(i, level+1)
-		}
-		slice = reflect.Append(slice, value)
-	}
-	return slice
 }
 
 var (
