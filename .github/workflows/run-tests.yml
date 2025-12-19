@@ -52,6 +52,9 @@ jobs:
 
       - name: Run tests
         run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
           df -h
           go test -v .
           go test -v ./tests
