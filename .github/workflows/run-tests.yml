@@ -52,6 +52,7 @@ jobs:
 
       - name: Run tests
         run: |
+          df -h
           go test -v .
           go test -v ./tests
           go test -v ./lib/...
