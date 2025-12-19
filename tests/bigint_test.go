@@ -61,7 +61,7 @@ func TestBigInt(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_bigint")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bigint (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bigint (Col1, Col2, Col3, Col4, Col5, Col6)"); assert.NoError(t, err) {
 				var (
 					col1Data = big.NewInt(128)
 					col2Data = []*big.Int{
@@ -138,7 +138,7 @@ func TestNullableBigInt(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_nullable_bigint")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nullable_bigint (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nullable_bigint (Col1, Col2, Col3, Col4, Col5, Col6)"); assert.NoError(t, err) {
 				var (
 					col1Data = big.NewInt(128)
 					col2Data = []*big.Int{
