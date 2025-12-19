@@ -65,7 +65,7 @@ func TestNested(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_nested")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nested (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nested (Col1.Col1_N1, Col1.Col2_N1, Col2.Col1_N2, Col2.Col2_N2)"); assert.NoError(t, err) {
 				var (
 					col1Data = []uint8{1, 2, 3}
 					col2Data = []uint8{10, 20, 30}

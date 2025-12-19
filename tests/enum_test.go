@@ -57,7 +57,7 @@ func TestEnum(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_enum")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum (Col1, Col2, Col3, Col4, Col5, Col6, Col7)"); assert.NoError(t, err) {
 				var (
 					col1Data = "hello"
 					col2Data = "click"
@@ -206,7 +206,7 @@ func TestColumnarEnum(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_enum")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_enum (Col1, Col2, Col3, Col4, Col5, Col6, Col7)"); assert.NoError(t, err) {
 				var (
 					col1Data = "hello"
 					col2Data = "click"

@@ -245,7 +245,7 @@ func TestColumnarDate32(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_date32")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_date32 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_date32 (ID, Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
 				var (
 					id       []uint64
 					col1Data []types.Date

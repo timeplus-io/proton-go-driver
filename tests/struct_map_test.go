@@ -60,7 +60,7 @@ func TestAppendStruct(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_append_struct")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_append_struct (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_append_struct (HCol1, HCol2, HCol3, HCol4, Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
 				type header struct {
 					Col1 uint8     `ch:"HCol1"`
 					Col2 *string   `ch:"HCol2"`

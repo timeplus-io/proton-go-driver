@@ -53,7 +53,7 @@ func TestStdLowCardinality(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_lowcardinality (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_lowcardinality (Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8)"); assert.NoError(t, err) {
 				var (
 					rnd       = rand.Int31()
 					timestamp = time.Now()

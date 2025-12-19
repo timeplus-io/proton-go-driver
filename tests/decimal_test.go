@@ -63,7 +63,7 @@ func TestDecimal(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_decimal")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_decimal (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
 				if err := batch.Append(
 					decimal.New(25, 0),
 					decimal.New(30, 0),
