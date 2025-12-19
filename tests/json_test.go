@@ -466,3 +466,24 @@ func TestJSONArrayVariant(t *testing.T) {
 
 	require.True(t, rows.Next())
 }
+
+func TestJSONNullable(t *testing.T) {
+	ctx := context.Background()
+	conn := setupJSONTest(t)
+
+	rows, err := conn.Query(ctx, `SELECT '{"x": "test"}'::nullable(json)`)
+	require.NoError(t, err)
+
+	require.True(t, rows.Next())
+
+	var row proton.JSON
+	err = rows.Scan(&row)
+	require.NoError(t, err)
+
+	// xStr, ok := proton.ExtractJSONPathAs[string](&row, "x")
+	// require.True(t, ok)
+	// require.Equal(t, "test", xStr)
+
+	require.NoError(t, rows.Close())
+	require.NoError(t, rows.Err())
+}
