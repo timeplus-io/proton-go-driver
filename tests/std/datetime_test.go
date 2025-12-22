@@ -45,7 +45,7 @@ func TestStdDateTime(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_datetime (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_datetime (Col1, Col2, Col3, Col4, Col5, Col6)"); assert.NoError(t, err) {
 				datetime := time.Now().Truncate(time.Second)
 				if _, err := batch.Exec(
 					datetime,

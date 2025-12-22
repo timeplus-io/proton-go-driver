@@ -18,6 +18,7 @@
 package column
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 
@@ -128,6 +129,26 @@ func (col *Nullable) Encode(encoder *binary.Encoder) error {
 	if err := col.base.Encode(encoder); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (col *Nullable) ReadStatePrefix(decoder *binary.Decoder) error {
+	if serialize, ok := col.base.(CustomSerialization); ok {
+		if err := serialize.ReadStatePrefix(decoder); err != nil {
+			return fmt.Errorf("failed to read prefix for Nullable base type %s: %w", col.base.Type(), err)
+		}
+	}
+
+	return nil
+}
+
+func (col *Nullable) WriteStatePrefix(encoder *binary.Encoder) error {
+	if serialize, ok := col.base.(CustomSerialization); ok {
+		if err := serialize.WriteStatePrefix(encoder); err != nil {
+			return fmt.Errorf("failed to write prefix for Nullable base type %s: %w", col.base.Type(), err)
+		}
+	}
+
 	return nil
 }
 

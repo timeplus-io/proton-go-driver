@@ -45,7 +45,7 @@ func TestStdEnum(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_enum (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_enum (Col1, Col2, Col3, Col4, Col5, Col6, Col7)"); assert.NoError(t, err) {
 				var (
 					col1Data = "hello"
 					col2Data = "click"

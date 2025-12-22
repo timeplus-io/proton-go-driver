@@ -67,7 +67,7 @@ func TestLowCardinality(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_lowcardinality")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_lowcardinality (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_lowcardinality (Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8)"); assert.NoError(t, err) {
 				var (
 					rnd       = rand.Int31()
 					timestamp = time.Now()
@@ -180,7 +180,7 @@ func TestColmnarlow_cardinality(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_lowcardinality")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_lowcardinality (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_lowcardinality (Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
 				var (
 					rnd       = rand.Int31()
 					timestamp = time.Now()

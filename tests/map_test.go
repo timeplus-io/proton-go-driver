@@ -53,7 +53,7 @@ func TestMap(t *testing.T) {
 			, Col2 map(string, uint64)
 			, Col3 map(string, uint64)
 			, Col4 array(map(string, string))
-			, Col5 map(low_cardinality(string), low_cardinality(uint64))
+			, Col5 map(low_cardinality(string), low_cardinality(string))
 			, Col6 map(string, array(map(string, float64)))
 		) 
 		`
@@ -61,7 +61,7 @@ func TestMap(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_map")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map (Col1, Col2, Col3, Col4, Col5, Col6)"); assert.NoError(t, err) {
 				var (
 					col1Data = map[string]uint64{
 						"key_col_1_1": 1,
@@ -76,9 +76,9 @@ func TestMap(t *testing.T) {
 						{"A": "B"},
 						{"C": "D"},
 					}
-					col5Data = map[string]uint64{
-						"key_col_5_1": 100,
-						"key_col_5_2": 200,
+					col5Data = map[string]string{
+						"key_col_5_1": "100",
+						"key_col_5_2": "200",
 					}
 					col6Data = map[string][]map[string]float64{
 						"key1": {{"key1-1-1": 11.1, "key1-1-2": 11.2}, {"key1-2-1": 12.1}},
@@ -92,7 +92,7 @@ func TestMap(t *testing.T) {
 							col2 map[string]uint64
 							col3 map[string]uint64
 							col4 []map[string]string
-							col5 map[string]uint64
+							col5 map[string]string
 							col6 map[string][]map[string]float64
 						)
 						if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_map WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
@@ -142,7 +142,7 @@ func TestColmnarMap(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_map")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map (Col1, Col2, Col3)"); assert.NoError(t, err) {
 				var (
 					col1Data = []map[string]uint64{}
 					col2Data = []map[string]uint64{}

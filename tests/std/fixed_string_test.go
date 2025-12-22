@@ -61,7 +61,7 @@ func TestStdFixedString(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_fixed_string (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_fixed_string (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
 				var (
 					col1Data = "ClickHouse"
 					col2Data = &BinFixedString{}

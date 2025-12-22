@@ -75,7 +75,7 @@ func TestNullableArray(t *testing.T) {
 		}
 
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nullable_array (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_nullable_array (Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12, Col13, Col14)"); assert.NoError(t, err) {
 				var (
 					strVal       = "ClickHouse"
 					uint8Val     = uint8(42)

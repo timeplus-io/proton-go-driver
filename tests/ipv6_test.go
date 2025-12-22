@@ -56,7 +56,7 @@ func TestIPv6(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_ipv6")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6 (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
 				var (
 					col1Data = net.ParseIP("2001:44c8:129:2632:33:0:252:2")
 					col2Data = net.ParseIP("2a02:e980:1e::1")
@@ -123,7 +123,7 @@ func TestNullableIPv6(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_ipv6")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6 (Col1, Col2)"); assert.NoError(t, err) {
 				var (
 					col1Data = net.ParseIP("2a02:aa08:e000:3100::2")
 					col2Data = net.ParseIP("2001:44c8:129:2632:33:0:252:2")
@@ -193,7 +193,7 @@ func TestColumnarIPv6(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_ipv6")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv6 (Col1, Col2, Col3)"); assert.NoError(t, err) {
 				var (
 					col1Data []*net.IP
 					col2Data []*net.IP

@@ -57,7 +57,7 @@ func TestDateTime(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_datetime")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime (Col1, Col2, Col3, Col4, Col5, Col6)"); assert.NoError(t, err) {
 				datetime := time.Now().Truncate(time.Second)
 				if err := batch.Append(
 					datetime,
@@ -235,7 +235,7 @@ func TestColumnarDateTime(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_datetime")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime (ID, Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
 				var (
 					id       []uint64
 					col1Data []time.Time

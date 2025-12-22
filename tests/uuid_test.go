@@ -57,7 +57,7 @@ func TestUUID(t *testing.T) {
 		}()
 		conn.Exec(ctx, "DROP STREAM IF EXISTS test_uuid")
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
 				var (
 					col1Data = uuid.New()
 					col2Data = uuid.New()
@@ -192,7 +192,7 @@ func TestColumnarUUID(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_uuid")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uuid (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
 				var (
 					col1Data []uuid.UUID
 					col2Data []uuid.UUID

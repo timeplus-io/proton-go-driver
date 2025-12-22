@@ -59,7 +59,7 @@ func TestBool(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_bool")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bool (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bool (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
 				var val bool
 				if err := batch.Append(true, false, []bool{true, false, true}, nil, []*bool{&val, nil, &val}); assert.NoError(t, err) {
 					if err := batch.Send(); assert.NoError(t, err) {
@@ -121,7 +121,7 @@ func TestColumnarBool(t *testing.T) {
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
 			val := true
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bool (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_bool (ID, Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
 				var (
 					id   []uint64
 					col1 []bool

@@ -56,7 +56,7 @@ func TestString(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_string")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_string (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_string (Col1, Col2, Col3)"); assert.NoError(t, err) {
 				if err := batch.Append("A", []string{"A", "B", "C"}, nil); assert.NoError(t, err) {
 					if assert.NoError(t, batch.Send()) {
 						var (

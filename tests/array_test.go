@@ -183,7 +183,7 @@ func TestColumnarArray(t *testing.T) {
 				col3DataColArr = append(col3DataColArr, col3Data)
 			}
 
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_array (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_array (Col1, Col2, Col3)"); assert.NoError(t, err) {
 				if err := batch.Column(0).Append(col1DataColArr); !assert.NoError(t, err) {
 					return
 				}

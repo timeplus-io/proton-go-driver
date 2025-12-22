@@ -53,14 +53,14 @@ func TestAbort(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_abort")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort (Col1)"); assert.NoError(t, err) {
 				if assert.NoError(t, batch.Abort()) {
 					if err := batch.Abort(); assert.Error(t, err) {
 						assert.Equal(t, proton.ErrBatchAlreadySent, err)
 					}
 				}
 			}
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_abort (Col1)"); assert.NoError(t, err) {
 				if assert.NoError(t, batch.Append(uint8(1))) && assert.NoError(t, batch.Send()) {
 					var col1 uint8
 					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_abort WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1); assert.NoError(t, err) {

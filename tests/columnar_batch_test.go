@@ -55,7 +55,7 @@ func TestColumnarInterface(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_column_interface")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_column_interface (Col1, Col2, Col3)"); assert.NoError(t, err) {
 				var (
 					col1Data    []uint8
 					col2Data    []string

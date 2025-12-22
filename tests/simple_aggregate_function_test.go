@@ -53,7 +53,7 @@ func TestSimpleAggregateFunction(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_simple_aggregate_function")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_simple_aggregate_function (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_simple_aggregate_function (Col1, Col2, Col3)"); assert.NoError(t, err) {
 				var (
 					col1Data = uint64(42)
 					col2Data = float64(256.1)

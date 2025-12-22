@@ -62,7 +62,7 @@ func TestUInt8(t *testing.T) {
 			Col4  []*uint8
 		}
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uint8 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uint8 (ID, Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
 				data := uint8(42)
 				if !assert.NoError(t, err) {
 					return
@@ -129,7 +129,7 @@ func TestColumnarUInt8(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_uint8")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uint8 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_uint8 (ID, Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
 				var (
 					id       []uint64
 					col1Data []uint8

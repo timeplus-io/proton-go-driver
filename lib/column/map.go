@@ -145,11 +145,14 @@ func (col *Map) Decode(decoder *binary.Decoder, rows int) error {
 	if err := col.offsets.Decode(decoder, rows); err != nil {
 		return err
 	}
-	size := int(col.offsets.col[len(col.offsets.col)-1])
-	if err := col.keys.Decode(decoder, size); err != nil {
-		return err
+	if i := len(col.offsets.col); i != 0 {
+		size := int(col.offsets.col[i-1])
+		if err := col.keys.Decode(decoder, size); err != nil {
+			return err
+		}
+		return col.values.Decode(decoder, size)
 	}
-	return col.values.Decode(decoder, size)
+	return nil
 }
 
 func (col *Map) Encode(encoder *binary.Encoder) error {

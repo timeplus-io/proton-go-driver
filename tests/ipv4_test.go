@@ -56,7 +56,7 @@ func TestIPv4(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_ipv4")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv4 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv4 (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
 				var (
 					col1Data = net.ParseIP("127.0.0.1")
 					col2Data = net.ParseIP("8.8.8.8")
@@ -193,7 +193,7 @@ func TestColumnarIPv4(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_ipv4")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv4 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_ipv4 (Col1, Col2, Col3)"); assert.NoError(t, err) {
 				var (
 					col1Data []*net.IP
 					col2Data []*net.IP

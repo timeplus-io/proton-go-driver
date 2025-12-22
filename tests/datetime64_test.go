@@ -61,7 +61,7 @@ func TestDateTime64(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_datetime64")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64 (Col1, Col2, Col3, Col4, Col5, Col6)"); assert.NoError(t, err) {
 				var (
 					datetime1 = time.Now().Truncate(time.Millisecond)
 					datetime2 = time.Now().Truncate(time.Nanosecond)
@@ -256,7 +256,7 @@ func TestColumnarDateTime64(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_datetime64")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_datetime64 (ID, Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
 				var (
 					id       []uint64
 					col1Data []time.Time

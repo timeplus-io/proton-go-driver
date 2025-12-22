@@ -19,9 +19,10 @@ package tests
 
 import (
 	"context"
-	"github.com/timeplus-io/proton-go-driver/v2/types"
 	"testing"
 	"time"
+
+	"github.com/timeplus-io/proton-go-driver/v2/types"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/timeplus-io/proton-go-driver/v2"
@@ -65,7 +66,7 @@ func TestDate(t *testing.T) {
 		}
 
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_date (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_date (ID, Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
 				tim, err := time.Parse("2006-01-02 15:04:05", "2022-01-12 00:00:00")
 				date := types.Date{tim}
 				if !assert.NoError(t, err) {
@@ -209,7 +210,7 @@ func TestColumnarDate(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_date")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_date (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_date (ID, Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
 				var (
 					id       []uint64
 					col1Data []types.Date

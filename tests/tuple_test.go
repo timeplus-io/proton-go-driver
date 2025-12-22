@@ -141,7 +141,7 @@ func TestColumnarTuple(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM test_tuple")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_tuple (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_tuple (ID, Col1, Col2, Col3)"); assert.NoError(t, err) {
 				var (
 					id        []uint64
 					col1Data  = [][]interface{}{}
