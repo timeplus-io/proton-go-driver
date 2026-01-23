@@ -25,9 +25,9 @@ import (
 )
 
 func TestStdMap(t *testing.T) {
-	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
+	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463?allow_suspicious_low_cardinality_types=1"); assert.NoError(t, err) {
 		const ddl = `
-		CREATE STREAM test_map (
+		CREATE STREAM test_std_map (
 			  Col1 map(string, uint64)
 			, Col2 map(string, uint64)
 			, Col3 map(string, uint64)
@@ -36,14 +36,14 @@ func TestStdMap(t *testing.T) {
 		) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_map")
+			conn.Exec("DROP STREAM test_std_map")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_map (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_map (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
 				var (
 					col1Data = map[string]uint64{
 						"key_col_1_1": 1,
@@ -72,7 +72,7 @@ func TestStdMap(t *testing.T) {
 							col4 []map[string]string
 							col5 map[string]uint64
 						)
-						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_map WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_map WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, col3Data, col3)

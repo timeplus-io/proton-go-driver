@@ -56,21 +56,21 @@ func TestDynamic(t *testing.T) {
 	conn := setupDynamicTest(t)
 
 	const ddl = `
-			CREATE STREAM IF NOT EXISTS test_dynamic (
+			CREATE STREAM IF NOT EXISTS test_std_dynamic (
 				  c dynamic                  
 			) Engine = MergeTree() ORDER BY tuple_cast()
 		`
 	_, err := conn.ExecContext(ctx, ddl)
 	require.NoError(t, err)
 	defer func() {
-		_, err := conn.ExecContext(ctx, "DROP STREAM IF EXISTS test_dynamic")
+		_, err := conn.ExecContext(ctx, "DROP STREAM IF EXISTS test_std_dynamic")
 		require.NoError(t, err)
 	}()
 
 	tx, err := conn.BeginTx(ctx, nil)
 	require.NoError(t, err)
 
-	batch, err := tx.PrepareContext(ctx, "INSERT INTO test_dynamic (c)")
+	batch, err := tx.PrepareContext(ctx, "INSERT INTO test_std_dynamic (c)")
 	require.NoError(t, err)
 
 	_, err = batch.ExecContext(ctx, proton.NewDynamicWithType(true, "bool"))
@@ -101,7 +101,7 @@ func TestDynamic(t *testing.T) {
 
 	require.NoError(t, tx.Commit())
 
-	rows, err := conn.QueryContext(ctx, "SELECT c FROM test_dynamic")
+	rows, err := conn.QueryContext(ctx, "SELECT c FROM test_std_dynamic")
 	require.NoError(t, err)
 
 	var row chcol.Dynamic
@@ -158,7 +158,7 @@ func TestDynamic_ScanWithType(t *testing.T) {
 	conn := setupDynamicTest(t)
 
 	const ddl = `
-			CREATE STREAM IF NOT EXISTS test_dynamic (
+			CREATE STREAM IF NOT EXISTS test_std_dynamic (
 				  c dynamic                 
 			) Engine = MergeTree() ORDER BY tuple_cast()
 		`
@@ -166,14 +166,14 @@ func TestDynamic_ScanWithType(t *testing.T) {
 	require.NoError(t, err)
 
 	defer func() {
-		_, err := conn.ExecContext(ctx, "DROP STREAM IF EXISTS test_dynamic")
+		_, err := conn.ExecContext(ctx, "DROP STREAM IF EXISTS test_std_dynamic")
 		require.NoError(t, err)
 	}()
 
 	tx, err := conn.BeginTx(ctx, nil)
 	require.NoError(t, err)
 
-	batch, err := tx.PrepareContext(ctx, "INSERT INTO test_dynamic (c)")
+	batch, err := tx.PrepareContext(ctx, "INSERT INTO test_std_dynamic (c)")
 	require.NoError(t, err)
 
 	_, err = batch.ExecContext(ctx, proton.NewDynamicWithType(true, "bool"))
@@ -185,7 +185,7 @@ func TestDynamic_ScanWithType(t *testing.T) {
 
 	require.NoError(t, tx.Commit())
 
-	rows, err := conn.QueryContext(ctx, "SELECT c FROM test_dynamic")
+	rows, err := conn.QueryContext(ctx, "SELECT c FROM test_std_dynamic")
 	require.NoError(t, err)
 
 	var row chcol.Dynamic

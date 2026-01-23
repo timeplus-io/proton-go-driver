@@ -57,7 +57,7 @@ func TestIssue502(t *testing.T) {
 			conn.Exec(ctx, "DROP STREAM issue_502")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_502 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO issue_502 (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				for part := 0; part < 10; part++ {
 					if err := batch.Append(uint8(part), uint8(part)+10, uint8(part)+20); !assert.NoError(t, err) {
 						return

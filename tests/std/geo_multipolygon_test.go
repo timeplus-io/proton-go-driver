@@ -34,20 +34,20 @@ func TestStdGeoMultiPolygon(t *testing.T) {
 	}))
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-		CREATE STREAM test_geo_multipolygon (
+		CREATE STREAM test_std_geo_multipolygon (
 			  Col1 multi_polygon
 			, Col2 array(multi_polygon)
 		) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_geo_multipolygon")
+			conn.Exec("DROP STREAM test_std_geo_multipolygon")
 		}()
 		if _, err := conn.ExecContext(ctx, ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_geo_multipolygon (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_geo_multipolygon (* except _tp_time)"); assert.NoError(t, err) {
 				var (
 					col1Data = orb.MultiPolygon{
 						orb.Polygon{
@@ -124,7 +124,7 @@ func TestStdGeoMultiPolygon(t *testing.T) {
 							col1 orb.MultiPolygon
 							col2 []orb.MultiPolygon
 						)
-						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_geo_multipolygon WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_geo_multipolygon WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 						}

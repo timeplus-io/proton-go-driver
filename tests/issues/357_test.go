@@ -42,7 +42,7 @@ func TestIssue357(t *testing.T) {
 				return
 			}
 			const query = ` -- foo.bar Insert comment
-				INSERT INTO issue_357 (* except _tp_time)
+				INSERT INTO issue_357 (* except (_tp_time, _tp_sn))
 				`
 			if batch, err := scope.Prepare(query); assert.NoError(t, err) {
 				if _, err := batch.Exec(int32(42), time.Now()); assert.NoError(t, err) {

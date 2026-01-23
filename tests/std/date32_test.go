@@ -29,7 +29,7 @@ import (
 func TestStdDate32(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-			CREATE STREAM test_date32 (
+			CREATE STREAM test_std_date32 (
 				  ID   uint8
 				, Col1 date32
 				, Col2 nullable(date32)
@@ -38,7 +38,7 @@ func TestStdDate32(t *testing.T) {
 			) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_date32")
+			conn.Exec("DROP STREAM test_std_date32")
 		}()
 		type result struct {
 			ColID uint8 `ch:"ID"`
@@ -52,7 +52,7 @@ func TestStdDate32(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_date32 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_date32 (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				var (
 					time1, _ = time.Parse("2006-01-02 15:04:05", "2283-11-11 00:00:00")
 					time2, _ = time.Parse("2006-01-02 15:04:05", "1925-01-01 00:00:00")
@@ -70,7 +70,7 @@ func TestStdDate32(t *testing.T) {
 						result1 result
 						result2 result
 					)
-					if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_date32 WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 1).Scan(
+					if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_date32 WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 1).Scan(
 						&result1.ColID,
 						&result1.Col1,
 						&result1.Col2,
@@ -84,7 +84,7 @@ func TestStdDate32(t *testing.T) {
 							assert.Equal(t, []*types.Date{&date2, nil, &date1}, result1.Col4)
 						}
 					}
-					if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_date32 WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 2).Scan(
+					if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_date32 WHERE _tp_time > earliest_ts() AND ID = $1 LIMIT 1", 2).Scan(
 						&result2.ColID,
 						&result2.Col1,
 						&result2.Col2,

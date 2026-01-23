@@ -28,21 +28,21 @@ import (
 func TestStdArray(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-		CREATE STREAM test_array (
+		CREATE STREAM test_std_array (
 			  Col1 array(string)
 			, Col2 array(array(uint32))
 			, Col3 array(array(array(datetime)))
 		) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_array")
+			conn.Exec("DROP STREAM test_std_array")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_array (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_array (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				var (
 					timestamp = time.Now().Truncate(time.Second)
 					col1Data  = []string{"A", "b", "c"}
@@ -79,7 +79,7 @@ func TestStdArray(t *testing.T) {
 					}
 				}
 				if assert.NoError(t, scope.Commit()) {
-					if rows, err := conn.Query("SELECT (* except _tp_time) FROM test_array WHERE _tp_time > earliest_ts() LIMIT 1"); assert.NoError(t, err) {
+					if rows, err := conn.Query("SELECT (* except _tp_time) FROM test_std_array WHERE _tp_time > earliest_ts() LIMIT 1"); assert.NoError(t, err) {
 						for rows.Next() {
 							var (
 								col1 []string

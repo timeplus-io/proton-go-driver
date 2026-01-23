@@ -34,20 +34,20 @@ func TestStdGeoPoint(t *testing.T) {
 	}))
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-		CREATE STREAM test_geo_point (
+		CREATE STREAM test_std_geo_point (
 			Col1 point
 			, Col2 array(point)
 		)
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_geo_point")
+			conn.Exec("DROP STREAM test_std_geo_point")
 		}()
 		if _, err := conn.ExecContext(ctx, ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_geo_point (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_geo_point (* except _tp_time)"); assert.NoError(t, err) {
 				if _, err := batch.Exec(
 					orb.Point{11, 22},
 					[]orb.Point{
@@ -60,7 +60,7 @@ func TestStdGeoPoint(t *testing.T) {
 							col1 orb.Point
 							col2 []orb.Point
 						)
-						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_geo_point WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_geo_point WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, orb.Point{11, 22}, col1)
 							assert.Equal(t, []orb.Point{
 								{1, 2},

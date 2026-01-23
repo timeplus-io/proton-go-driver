@@ -28,7 +28,7 @@ import (
 func TestStdBigInt(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-		CREATE STREAM test_bigint (
+		CREATE STREAM test_std_bigint (
 			  Col1 int128
 			, Col2 array(int128)
 			, Col3 int256
@@ -38,14 +38,14 @@ func TestStdBigInt(t *testing.T) {
 		) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_bigint")
+			conn.Exec("DROP STREAM test_std_bigint")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_bigint (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_bigint (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				var (
 					col1Data = big.NewInt(128)
 					col2Data = []*big.Int{
@@ -76,7 +76,7 @@ func TestStdBigInt(t *testing.T) {
 							col5 big.Int
 							col6 []*big.Int
 						)
-						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_bigint WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_bigint WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, *col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, *col3Data, col3)
@@ -94,7 +94,7 @@ func TestStdBigInt(t *testing.T) {
 func TestStdNullableBigInt(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-		CREATE STREAM test_nullable_bigint (
+		CREATE STREAM test_std_nullable_bigint (
 			  Col1 nullable(int128)
 			, Col2 array(nullable(int128))
 			, Col3 nullable(int256)
@@ -104,14 +104,14 @@ func TestStdNullableBigInt(t *testing.T) {
 		) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_nullable_bigint")
+			conn.Exec("DROP STREAM test_std_nullable_bigint")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_nullable_bigint (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_nullable_bigint (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				var (
 					col1Data = big.NewInt(128)
 					col2Data = []*big.Int{
@@ -142,7 +142,7 @@ func TestStdNullableBigInt(t *testing.T) {
 							col5 *big.Int
 							col6 []*big.Int
 						)
-						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_nullable_bigint WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_nullable_bigint WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, *col1Data, *col1)
 							assert.Equal(t, col2Data, col2)
 							assert.Equal(t, *col3Data, *col3)

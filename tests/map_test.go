@@ -132,17 +132,17 @@ func TestColmnarMap(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE STREAM test_map (
+		CREATE STREAM test_map_columnar (
 			  Col1 map(string, uint64)
 			, Col2 map(string, uint64)
 			, Col3 map(string, uint64)
 		) 
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP STREAM test_map")
+			conn.Exec(ctx, "DROP STREAM test_map_columnar")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map (Col1, Col2, Col3)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_map_columnar (Col1, Col2, Col3)"); assert.NoError(t, err) {
 				var (
 					col1Data = []map[string]uint64{}
 					col2Data = []map[string]uint64{}
@@ -184,7 +184,7 @@ func TestColmnarMap(t *testing.T) {
 						}
 						col3Data = map[string]uint64{}
 					)
-					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_map WHERE _tp_time > earliest_ts() AND Col1['key_col_1_10_1'] = $1 LIMIT 1", 10).Scan(&col1, &col2, &col3); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_map_columnar WHERE _tp_time > earliest_ts() AND Col1['key_col_1_10_1'] = $1 LIMIT 1", 10).Scan(&col1, &col2, &col3); assert.NoError(t, err) {
 						assert.Equal(t, col1Data, col1)
 						assert.Equal(t, col2Data, col2)
 						assert.Equal(t, col3Data, col3)

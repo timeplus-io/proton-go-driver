@@ -45,7 +45,7 @@ func (bin *BinFixedString) Scan(src interface{}) error {
 func TestStdFixedString(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-		CREATE STREAM test_fixed_string (
+		CREATE STREAM test_std_fixed_string (
 				Col1 fixed_string(10)
 			, Col2 fixed_string(10)
 			, Col3 nullable(fixed_string(10))
@@ -54,14 +54,14 @@ func TestStdFixedString(t *testing.T) {
 		) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_fixed_string")
+			conn.Exec("DROP STREAM test_std_fixed_string")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_fixed_string (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_fixed_string (Col1, Col2, Col3, Col4, Col5)"); assert.NoError(t, err) {
 				var (
 					col1Data = "ClickHouse"
 					col2Data = &BinFixedString{}
@@ -79,7 +79,7 @@ func TestStdFixedString(t *testing.T) {
 								col4 []string
 								col5 []*string
 							)
-							if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_fixed_string WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
+							if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_fixed_string WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5); assert.NoError(t, err) {
 								assert.Equal(t, col1Data, col1)
 								assert.Equal(t, col2Data.data, col2.data)
 								assert.Equal(t, col3Data, col3)

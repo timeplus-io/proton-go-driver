@@ -27,7 +27,7 @@ import (
 func TestStdEnum(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-			CREATE STREAM test_enum (
+			CREATE STREAM test_std_enum (
 				  Col1 enum  ('hello'   = 1,  'world' = 2)
 				, Col2 enum8 ('click'   = 5,  'house' = 25)
 				, Col3 enum16('house' = 10,   'value' = 50)
@@ -38,14 +38,14 @@ func TestStdEnum(t *testing.T) {
 			) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_enum")
+			conn.Exec("DROP STREAM test_std_enum")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_enum (Col1, Col2, Col3, Col4, Col5, Col6, Col7)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_enum (Col1, Col2, Col3, Col4, Col5, Col6, Col7)"); assert.NoError(t, err) {
 				var (
 					col1Data = "hello"
 					col2Data = "click"
@@ -74,7 +74,7 @@ func TestStdEnum(t *testing.T) {
 							col6 []*string
 							col7 []*string
 						)
-						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_enum WHERE _tp_time > earliest_ts() LIMIT 1").Scan(
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_enum WHERE _tp_time > earliest_ts() LIMIT 1").Scan(
 							&col1, &col2, &col3, &col4,
 							&col5, &col6, &col7,
 						); assert.NoError(t, err) {

@@ -52,11 +52,11 @@ func TestLowCardinality(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE STREAM test_lowcardinality (
-			  Col1 low_cardinality(string)
-			, Col2 low_cardinality(fixed_string(2))
-			, Col3 low_cardinality(datetime)
-			, Col4 low_cardinality(int32)
+			CREATE STREAM test_lowcardinality (
+				  Col1 low_cardinality(string)
+				, Col2 low_cardinality(fixed_string(2))
+				, Col3 low_cardinality(datetime)
+				, Col4 low_cardinality(int32)
 			, Col5 array(low_cardinality(string))
 			, Col6 array(array(low_cardinality(string)))
 			, Col7 low_cardinality(nullable(string))
@@ -169,7 +169,7 @@ func TestColmnarlow_cardinality(t *testing.T) {
 			return
 		}
 		const ddl = `
-		CREATE STREAM test_lowcardinality (
+		CREATE STREAM test_lowcardinality_columnar (
 			  Col1 low_cardinality(string)
 			, Col2 low_cardinality(fixed_string(2))
 			, Col3 low_cardinality(datetime)
@@ -177,10 +177,10 @@ func TestColmnarlow_cardinality(t *testing.T) {
 		) 
 		`
 		defer func() {
-			conn.Exec(ctx, "DROP STREAM test_lowcardinality")
+			conn.Exec(ctx, "DROP STREAM test_lowcardinality_columnar")
 		}()
 		if err := conn.Exec(ctx, ddl); assert.NoError(t, err) {
-			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_lowcardinality (Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
+			if batch, err := conn.PrepareBatch(ctx, "INSERT INTO test_lowcardinality_columnar (Col1, Col2, Col3, Col4)"); assert.NoError(t, err) {
 				var (
 					rnd       = rand.Int31()
 					timestamp = time.Now()
@@ -209,7 +209,7 @@ func TestColmnarlow_cardinality(t *testing.T) {
 				}
 				if assert.NoError(t, batch.Send()) {
 					var count uint64
-					if err := conn.QueryRow(ctx, "SELECT count() FROM test_lowcardinality WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT count() FROM test_lowcardinality_columnar WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
 						assert.Equal(t, uint64(10), count)
 					}
 					var (
@@ -218,7 +218,7 @@ func TestColmnarlow_cardinality(t *testing.T) {
 						col3 time.Time
 						col4 int32
 					)
-					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_lowcardinality WHERE _tp_time > earliest_ts() AND Col4 = $1 LIMIT 1", rnd+6).Scan(&col1, &col2, &col3, &col4); assert.NoError(t, err) {
+					if err := conn.QueryRow(ctx, "SELECT (* except _tp_time) FROM test_lowcardinality_columnar WHERE _tp_time > earliest_ts() AND Col4 = $1 LIMIT 1", rnd+6).Scan(&col1, &col2, &col3, &col4); assert.NoError(t, err) {
 						assert.Equal(t, timestamp.String(), col1)
 						assert.Equal(t, "RU", col2)
 						assert.Equal(t, timestamp.Add(time.Duration(6)*time.Minute).Truncate(time.Second), col3)
