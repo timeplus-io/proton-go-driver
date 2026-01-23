@@ -61,18 +61,28 @@ func (t Type) Column(name string, tz *time.Location) (Interface, error) {
 			size:   16,
 			chType: t,
 			name:   name,
+			signed: true,
+		}, nil
+	case "uint128":
+		return &BigInt{
+			size:   16,
+			chType: t,
+			name:   name,
+			signed: false,
 		}, nil
 	case "int256":
 		return &BigInt{
 			size:   32,
 			chType: t,
 			name:   name,
+			signed: true,
 		}, nil
 	case "uint256":
 		return &BigInt{
 			size:   32,
 			chType: t,
 			name:   name,
+			signed: false,
 		}, nil
 	case "ipv4":
 		return &IPv4{name: name}, nil
