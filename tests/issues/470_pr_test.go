@@ -39,7 +39,7 @@ func Test470PR(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO issue_470_pr (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO issue_470_pr (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				if _, err := batch.Exec(nil); assert.Error(t, err) {
 					assert.Contains(t, err.Error(), "converting <nil> to array(string) is unsupported")
 				}

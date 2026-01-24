@@ -236,7 +236,12 @@ func (col *Decimal) Encode(encoder *binary.Encoder) error {
 			default:
 				bi = v.BigInt()
 			}
-			bigIntToRaw(scratch[i*size:(i+1)*size], bi)
+			if err := bigIntToRawSigned(scratch[i*size:(i+1)*size], bi); err != nil {
+				return &Error{
+					ColumnType: string(col.chType),
+					Err:        err,
+				}
+			}
 		}
 		return encoder.Raw(scratch)
 	}

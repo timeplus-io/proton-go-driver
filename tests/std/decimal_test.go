@@ -28,7 +28,7 @@ import (
 func TestStdDecimal(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-			CREATE STREAM test_decimal (
+			CREATE STREAM test_std_decimal (
 				Col1 decimal32(5)
 				, Col2 decimal(18,5)
 				, Col3 nullable(decimal(15,3))
@@ -36,14 +36,14 @@ func TestStdDecimal(t *testing.T) {
 			) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_decimal")
+			conn.Exec("DROP STREAM test_std_decimal")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_decimal (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_decimal (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				if _, err := batch.Exec(
 					decimal.New(25, 0),
 					decimal.New(30, 0),
@@ -63,7 +63,7 @@ func TestStdDecimal(t *testing.T) {
 						col3 decimal.Decimal
 						col4 []decimal.Decimal
 					)
-					if rows, err := conn.Query("SELECT (* except _tp_time) FROM test_decimal WHERE _tp_time > earliest_ts() LIMIT 1"); assert.NoError(t, err) {
+					if rows, err := conn.Query("SELECT (* except _tp_time) FROM test_std_decimal WHERE _tp_time > earliest_ts() LIMIT 1"); assert.NoError(t, err) {
 						if columnTypes, err := rows.ColumnTypes(); assert.NoError(t, err) {
 							for i, column := range columnTypes {
 								switch i {

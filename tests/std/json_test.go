@@ -55,21 +55,21 @@ func TestJSONPaths(t *testing.T) {
 	conn := setupJSONTest(t)
 
 	const ddl = `
-			CREATE STREAM IF NOT EXISTS test_json (
+			CREATE STREAM IF NOT EXISTS test_std_json (
 				  c json(Name string, Age int64, KeysNumbers map(string, int64), SKIP fake.field)
 			) Engine = MergeTree() ORDER BY tuple_cast()
 		`
 	_, err := conn.ExecContext(ctx, ddl)
 	require.NoError(t, err)
 	defer func() {
-		_, err := conn.ExecContext(ctx, "DROP STREAM IF EXISTS test_json")
+		_, err := conn.ExecContext(ctx, "DROP STREAM IF EXISTS test_std_json")
 		require.NoError(t, err)
 	}()
 
 	tx, err := conn.BeginTx(ctx, nil)
 	require.NoError(t, err)
 
-	batch, err := tx.PrepareContext(ctx, "INSERT INTO test_json (c)")
+	batch, err := tx.PrepareContext(ctx, "INSERT INTO test_std_json (c)")
 	require.NoError(t, err)
 
 	jsonRow := chcol.NewJSON()
@@ -96,7 +96,7 @@ func TestJSONPaths(t *testing.T) {
 
 	require.NoError(t, tx.Commit())
 
-	rows, err := conn.QueryContext(ctx, "SELECT c FROM test_json")
+	rows, err := conn.QueryContext(ctx, "SELECT c FROM test_std_json")
 	require.NoError(t, err)
 
 	var row chcol.JSON
@@ -165,21 +165,21 @@ func TestJSONStruct(t *testing.T) {
 	conn := setupJSONTest(t)
 
 	const ddl = `
-			CREATE TABLE IF NOT EXISTS test_json (
+			CREATE TABLE IF NOT EXISTS test_std_json (
 				  c json(Name string, Age int64, KeysNumbers map(string, int64), SKIP fake.field)
 			) Engine = MergeTree() ORDER BY tuple_cast()
 		`
 	_, err := conn.ExecContext(ctx, ddl)
 	require.NoError(t, err)
 	defer func() {
-		_, err := conn.ExecContext(ctx, "DROP STREAM IF EXISTS test_json")
+		_, err := conn.ExecContext(ctx, "DROP STREAM IF EXISTS test_std_json")
 		require.NoError(t, err)
 	}()
 
 	tx, err := conn.BeginTx(ctx, nil)
 	require.NoError(t, err)
 
-	batch, err := tx.PrepareContext(ctx, "INSERT INTO test_json (c)")
+	batch, err := tx.PrepareContext(ctx, "INSERT INTO test_std_json (c)")
 	require.NoError(t, err)
 
 	inputRow := TestStruct{
@@ -229,7 +229,7 @@ func TestJSONStruct(t *testing.T) {
 
 	require.NoError(t, tx.Commit())
 
-	rows, err := conn.QueryContext(ctx, "SELECT c FROM test_json")
+	rows, err := conn.QueryContext(ctx, "SELECT c FROM test_std_json")
 	require.NoError(t, err)
 
 	var row TestStruct
@@ -264,21 +264,21 @@ func TestJSONString(t *testing.T) {
 	require.NoError(t, err)
 
 	const ddl = `
-			CREATE STREAM IF NOT EXISTS test_json (
+			CREATE STREAM IF NOT EXISTS test_std_json (
 				  c json(Name string, Age int64, KeysNumbers map(string, int64), SKIP fake.field)
 			) Engine = MergeTree() ORDER BY tuple_cast()
 		`
 	_, err = conn.ExecContext(ctx, ddl)
 	require.NoError(t, err)
 	defer func() {
-		_, err := conn.ExecContext(ctx, "DROP STREAM IF EXISTS test_json")
+		_, err := conn.ExecContext(ctx, "DROP STREAM IF EXISTS test_std_json")
 		require.NoError(t, err)
 	}()
 
 	tx, err := conn.BeginTx(ctx, nil)
 	require.NoError(t, err)
 
-	batch, err := tx.PrepareContext(ctx, "INSERT INTO test_json (c)")
+	batch, err := tx.PrepareContext(ctx, "INSERT INTO test_std_json (c)")
 	require.NoError(t, err)
 
 	inputRow := TestStruct{
@@ -315,7 +315,7 @@ func TestJSONString(t *testing.T) {
 
 	require.NoError(t, tx.Commit())
 
-	rows, err := conn.QueryContext(ctx, "SELECT c FROM test_json")
+	rows, err := conn.QueryContext(ctx, "SELECT c FROM test_std_json")
 	require.NoError(t, err)
 
 	var row json.RawMessage

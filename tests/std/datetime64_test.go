@@ -28,7 +28,7 @@ import (
 func TestStdDateTime64(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-			CREATE STREAM test_datetime64 (
+			CREATE STREAM test_std_datetime64 (
 				  Col1 datetime64(3)
 				, Col2 datetime64(9, 'Europe/Moscow')
 				, Col3 datetime64(0, 'Europe/London')
@@ -38,14 +38,14 @@ func TestStdDateTime64(t *testing.T) {
 			) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_datetime64")
+			conn.Exec("DROP STREAM test_std_datetime64")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_datetime64 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_datetime64 (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				var (
 					datetime1 = time.Now().Truncate(time.Millisecond)
 					datetime2 = time.Now().Truncate(time.Nanosecond)
@@ -68,7 +68,7 @@ func TestStdDateTime64(t *testing.T) {
 							col5 []time.Time
 							col6 []*time.Time
 						)
-						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_datetime64 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_datetime64 WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2, &col3, &col4, &col5, &col6); assert.NoError(t, err) {
 							assert.Equal(t, datetime1, col1)
 							assert.Equal(t, datetime2.UnixNano(), col2.UnixNano())
 							assert.Equal(t, datetime3.UnixNano(), col3.UnixNano())

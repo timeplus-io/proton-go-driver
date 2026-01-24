@@ -15,39 +15,17 @@ jobs:
       fail-fast: true
       matrix:
         go:
-          - '1.16'
-          - '1.17'
-          - '1.18'
-          - '1.19'
-          - '1.20'
-          - '1.21'
+          - '1.22.x'
+          - '1.23.x'
         proton:
           - latest
 
-    services:
-      proton:
-        image: ghcr.io/timeplus-io/proton:${{ matrix.proton }}
-        ports:
-          - 3218:3218 # HTTP Streaming
-          - 8123:8123 # HTTP Snapshot
-          - 8463:8463 # TCP Streaming
-          - 5432:5432 # Postgres Snapshot
-          - 7587:7587 # TCP Snapshot
-        env:
-          MAX_CONCURRENT_QUERIES: 100               # Default: 100
-          MAX_CONCURRENT_SELECT_QUERIES: 100        # Default: 100
-          MAX_CONCURRENT_INSERT_QUERIES: 100        # Default: 100
-          MAX_CONCURRENT_STREAMING_QUERIES: 100     # Default: 100
-          MAX_SERVER_MEMORY_USAGE_TO_RAM_RATIO: 0.9 # Default: 0.9
-          MAX_SERVER_MEMORY_CACHE_TO_RAM_RATIO: 0.5 # Default: 0.5
-
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
 
       - name: Install Go ${{ matrix.go }}
-        uses: actions/setup-go@v2.1.5
+        uses: actions/setup-go@v5
         with:
-          stable: false
           go-version: ${{ matrix.go }}
 
       - name: Run tests
@@ -56,6 +34,40 @@ jobs:
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
           df -h
+          docker run -d --name proton \
+            -p 3218:3218 \
+            -p 8123:8123 \
+            -p 8463:8463 \
+            -p 5432:5432 \
+            -p 7587:7587 \
+            -e MAX_CONCURRENT_QUERIES=100 \
+            -e MAX_CONCURRENT_SELECT_QUERIES=100 \
+            -e MAX_CONCURRENT_INSERT_QUERIES=100 \
+            -e MAX_CONCURRENT_STREAMING_QUERIES=100 \
+            -e MAX_SERVER_MEMORY_USAGE_TO_RAM_RATIO=0.9 \
+            -e MAX_SERVER_MEMORY_CACHE_TO_RAM_RATIO=0.5 \
+            ghcr.io/timeplus-io/proton:${{ matrix.proton }} \
+            /bin/bash -c "sed -i'' 's/preallocate: true/preallocate: false/g' /etc/proton-server/config.yaml && exec /entrypoint.sh"
+          ready=0
+          for i in $(seq 1 60); do
+            if curl -fsS "http://127.0.0.1:8123/?query=SELECT%201" | grep -qx "1"; then
+              echo "Proton is ready"
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "Proton did not become ready within 60 seconds"
+            docker logs --tail=200 proton || true
+            exit 1
+          fi
           go test -v .
           go test -v ./tests
           go test -v ./lib/...
+
+      - name: Dump Proton logs (on failure)
+        if: failure()
+        run: |
+          docker ps -a
+          docker logs --tail=200 proton || true

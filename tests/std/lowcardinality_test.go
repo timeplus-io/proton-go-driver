@@ -34,7 +34,7 @@ func TestStdLowCardinality(t *testing.T) {
 	}))
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-		CREATE STREAM test_lowcardinality (
+		CREATE STREAM test_std_lowcardinality (
 			  Col1 low_cardinality(string)
 			, Col2 low_cardinality(fixed_string(2))
 			, Col3 low_cardinality(datetime)
@@ -46,14 +46,14 @@ func TestStdLowCardinality(t *testing.T) {
 		) 
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_lowcardinality")
+			conn.Exec("DROP STREAM test_std_lowcardinality")
 		}()
 		if _, err := conn.ExecContext(ctx, ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO test_lowcardinality (Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_lowcardinality (Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8)"); assert.NoError(t, err) {
 				var (
 					rnd       = rand.Int31()
 					timestamp = time.Now()
@@ -87,7 +87,7 @@ func TestStdLowCardinality(t *testing.T) {
 				}
 				if assert.NoError(t, scope.Commit()) {
 					var count uint64
-					if err := conn.QueryRow("SELECT count() FROM test_lowcardinality WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
+					if err := conn.QueryRow("SELECT count() FROM test_std_lowcardinality WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&count); assert.NoError(t, err) {
 						assert.Equal(t, uint64(10), count)
 					}
 					for i := 0; i < 10; i++ {
@@ -101,7 +101,7 @@ func TestStdLowCardinality(t *testing.T) {
 							col7 *string
 							col8 [][]*string
 						)
-						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_lowcardinality WHERE _tp_time > earliest_ts() AND Col4 = $1 LIMIT 1", rnd+int32(i)).Scan(&col1, &col2, &col3, &col4, &col5, &col6, &col7, &col8); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_lowcardinality WHERE _tp_time > earliest_ts() AND Col4 = $1 LIMIT 1", rnd+int32(i)).Scan(&col1, &col2, &col3, &col4, &col5, &col6, &col7, &col8); assert.NoError(t, err) {
 							assert.Equal(t, timestamp.String(), col1)
 							assert.Equal(t, "RU", col2)
 							assert.Equal(t, timestamp.Add(time.Duration(i)*time.Minute).Truncate(time.Second), col3)

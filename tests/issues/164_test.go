@@ -41,7 +41,7 @@ func TestIssue164(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := scope.Prepare("INSERT INTO issue_164 (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO issue_164 (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				stmtParams := make([]interface{}, 0)
 				stmtParams = append(stmtParams, sql.NamedArg{Name: "id", Value: int32(10)})
 				stmtParams = append(stmtParams, sql.NamedArg{Name: "anything", Value: nil})

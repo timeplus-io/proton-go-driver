@@ -28,13 +28,13 @@ import (
 func TestStdUUID(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-			CREATE STREAM test_uuid (
+			CREATE STREAM test_std_uuid (
 				  Col1 uuid
 				, Col2 uuid
-			) 
+			)
 		`
 		defer func() {
-			conn.Exec("DROP STREAM test_uuid")
+			conn.Exec("DROP STREAM test_std_uuid")
 		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 			scope, err := conn.Begin()
@@ -42,7 +42,7 @@ func TestStdUUID(t *testing.T) {
 				return
 			}
 
-			if batch, err := scope.Prepare("INSERT INTO test_uuid (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_uuid (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				var (
 					col1Data = uuid.New()
 					col2Data = uuid.New()
@@ -53,7 +53,7 @@ func TestStdUUID(t *testing.T) {
 							col1 uuid.UUID
 							col2 uuid.UUID
 						)
-						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_uuid WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_std_uuid WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, col1)
 							assert.Equal(t, col2Data, col2)
 						}
@@ -67,18 +67,21 @@ func TestStdUUID(t *testing.T) {
 func TestStdNullableUUID(t *testing.T) {
 	if conn, err := sql.Open("proton", "proton://127.0.0.1:8463"); assert.NoError(t, err) {
 		const ddl = `
-			CREATE STREAM test_uuid (
+			CREATE STREAM test_std_nullable_uuid (
 				  Col1 nullable(uuid)
 				, Col2 nullable(uuid)
 			)
 		`
+		defer func() {
+			conn.Exec("DROP STREAM test_std_nullable_uuid")
+		}()
 		if _, err := conn.Exec(ddl); assert.NoError(t, err) {
 
 			scope, err := conn.Begin()
-			if assert.NoError(t, err) {
+			if !assert.NoError(t, err) {
 				return
 			}
-			if batch, err := conn.Prepare("INSERT INTO test_uuid (* except _tp_time)"); assert.NoError(t, err) {
+			if batch, err := scope.Prepare("INSERT INTO test_std_nullable_uuid (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 				var (
 					col1Data = uuid.New()
 					col2Data = uuid.New()
@@ -89,7 +92,10 @@ func TestStdNullableUUID(t *testing.T) {
 							col1 *uuid.UUID
 							col2 *uuid.UUID
 						)
-						if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_uuid WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
+						if err := conn.QueryRow(
+							"SELECT (* except _tp_time) FROM test_std_nullable_uuid WHERE _tp_time > earliest_ts() AND Col1 = $1 LIMIT 1",
+							col1Data,
+						).Scan(&col1, &col2); assert.NoError(t, err) {
 							assert.Equal(t, col1Data, *col1)
 							assert.Equal(t, col2Data, *col2)
 						}
@@ -97,14 +103,14 @@ func TestStdNullableUUID(t *testing.T) {
 				}
 			}
 		}
-		if _, err := conn.Exec("TRUNCATE STREAM test_uuid"); !assert.NoError(t, err) {
+		if _, err := conn.Exec("TRUNCATE STREAM test_std_nullable_uuid"); !assert.NoError(t, err) {
 			return
 		}
 		scope, err := conn.Begin()
-		if assert.NoError(t, err) {
+		if !assert.NoError(t, err) {
 			return
 		}
-		if batch, err := scope.Prepare("INSERT INTO test_uuid (* except _tp_time)"); assert.NoError(t, err) {
+		if batch, err := scope.Prepare("INSERT INTO test_std_nullable_uuid (* except (_tp_time, _tp_sn))"); assert.NoError(t, err) {
 			var col1Data = uuid.New()
 			if _, err := batch.Exec(col1Data, nil); assert.NoError(t, err) {
 				if assert.NoError(t, scope.Commit()) {
@@ -112,7 +118,10 @@ func TestStdNullableUUID(t *testing.T) {
 						col1 *uuid.UUID
 						col2 *uuid.UUID
 					)
-					if err := conn.QueryRow("SELECT (* except _tp_time) FROM test_uuid WHERE _tp_time > earliest_ts() LIMIT 1").Scan(&col1, &col2); assert.NoError(t, err) {
+					if err := conn.QueryRow(
+						"SELECT (* except _tp_time) FROM test_std_nullable_uuid WHERE _tp_time > earliest_ts() AND Col1 = $1 LIMIT 1",
+						col1Data,
+					).Scan(&col1, &col2); assert.NoError(t, err) {
 						if assert.Nil(t, col2) {
 							assert.Equal(t, col1Data, *col1)
 						}

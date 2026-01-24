@@ -45,9 +45,9 @@ func TestIssue482(t *testing.T) {
 	if assert.NoError(t, err) {
 		const query = `
 			SELECT
-				to_datetime('2020-02-01 00:00:00'), -- Not issued date
-				to_datetime('2061-02-01 00:00:00'), -- Issued date
-				to_datetime64(to_unix_timestamp(to_datetime('2064-01-01 00:00:00')), 3), -- Depend code
+				to_datetime('2020-02-01 00:00:00', 'UTC'), -- Not issued date
+				to_datetime('2061-02-01 00:00:00', 'UTC'), -- Issued date
+				to_datetime64(to_unix_timestamp(to_datetime('2064-01-01 00:00:00', 'UTC')), 3, 'UTC'), -- Depend code
 				to_datetime(2147483647), -- Int 32 max value to timestamp
 				to_datetime(2147483648) -- Test for range over int32
 		`
