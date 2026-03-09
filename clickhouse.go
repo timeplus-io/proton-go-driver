@@ -40,6 +40,7 @@ type (
 )
 
 var (
+	ErrStreamingBufferClosed          = errors.New("proton: streaming buffer has already been closed")
 	ErrBatchAlreadySent               = errors.New("proton: batch has already been sent")
 	ErrAcquireConnTimeout             = errors.New("proton: acquire conn timeout. you can increase the number of max open conn or the dial timeout")
 	ErrUnsupportedServerRevision      = errors.New("proton: unsupported server revision")
@@ -144,6 +145,14 @@ func (ch *proton) PrepareBatch(ctx context.Context, query string) (driver.Batch,
 		return nil, err
 	}
 	return conn.prepareBatch(ctx, query, ch.release)
+}
+
+func (ch *proton) PrepareStreamingBuffer(ctx context.Context, query string) (driver.StreamingBuffer, error) {
+	conn, err := ch.acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return conn.prepareStreamingBuffer(ctx, query, ch.release)
 }
 
 func (ch *proton) AsyncInsert(ctx context.Context, query string, wait bool) error {
